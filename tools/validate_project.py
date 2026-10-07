@@ -30,8 +30,8 @@ def require(condition: bool, message: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
-    server = (ROOT / "codigo.js").read_text(encoding="utf-8")
-    client = (ROOT / "index.html").read_text(encoding="utf-8")
+    server = (ROOT / "Codigo.gs").read_text(encoding="utf-8")
+    client = (ROOT / "Index.html").read_text(encoding="utf-8")
 
     try:
         manifest = json.loads((ROOT / "appsscript.json").read_text(encoding="utf-8"))
