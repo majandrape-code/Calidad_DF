@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Factory - Financial Data · BBVA</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  
+  <style>
+    :root {
+      --navy:      #0A1628;
+      --blue-dark: #0D2B55; --blue-mid:  #1A4B8C; --blue-acc:  #2563EB;
+      --blue-light:#3B82F6; --blue-pale: #DBEAFE; --orange:    #F97316; --orange-d:  #EA580C;
+      --orange-l:  #FED7AA; --white:     #FFFFFF; --gray-50:   #F8FAFC; --gray-100:  #F1F5F9;
+      --gray-200:  #E2E8F0;
+      --gray-400:  #94A3B8; --gray-600:  #475569; --green:     #10B981;
+      --red:       #EF4444;
+      --yellow:    #F59E0B; --shadow-sm: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 16px rgba(10,22,40,.15);
+      --shadow-lg: 0 8px 32px rgba(10,22,40,.20);
+      
+      --bbva-azul-oscuro: #003366; --bbva-azul-lateral: #004a8d; --bbva-naranja: #f58220;
+      --verde-prod: #c8e6c9; --verde-texto: #2e7d32; --rosado-dev: #ffcdd2; --rosado-texto: #b71c1c;
+      --gris-unk: #e0e0e0; --gris-texto: #616161; --gris-fondo: #f4f7f9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Barlow', sans-serif; background: var(--gray-100); color: var(--navy); min-height: 100vh; overflow: hidden; }
+
+    .topbar { background: var(--bbva-azul-oscuro); border-bottom: 3px solid var(--bbva-naranja); height: 64px; display: flex; align-items: center; padding: 0 28px; gap: 16px; position: relative; z-index: 1000; }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: .5px; color: var(--white); display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 10px; height: 10px; background: var(--bbva-naranja); border-radius: 50%; }
+    .topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,.15); margin: 0 8px; }
+    .topbar-title { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 600; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; }
+    .topbar-spacer { flex: 1; }
+    .topbar-user { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--white); }
+    .avatar { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--white); }
+    
+    .btn-toggle-view { background: var(--bbva-naranja); color: var(--white); border: none; padding: 10px 24px; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(245, 130, 32, 0.35); display: flex; align-items: center; gap: 8px; }
+    .btn-toggle-view:hover { background: #e06914; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 130, 32, 0.5); }
+    .btn-toggle-view:active { transform: translateY(0); }
+
+    .topbar-nav { display: flex; align-items: center; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,.15); border-radius: 8px; background: rgba(255,255,255,.06); }
+    .nav-view-btn { height: 34px; border: none; border-radius: 6px; padding: 0 13px; background: transparent; color: rgba(255,255,255,.68); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+    .nav-view-btn:hover { color: white; background: rgba(255,255,255,.1); }
+    .nav-view-btn.active { color: white; background: var(--bbva-naranja); }
+    .nav-view-btn svg { width: 15px; height: 15px; }
+    .nav-quality-group { height: 38px; display: flex; align-items: stretch; border-radius: 7px; overflow: hidden; background: rgba(255,255,255,.04); }
+    .nav-quality-group.active { background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+    .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.12); padding: 0 10px; background: transparent; color: rgba(255,255,255,.75); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+    .nav-quality-main:hover { color: white; background: rgba(255,255,255,.08); }
+    .nav-quality-main svg { width: 15px; height: 15px; }
+    .nav-quality-submodules { display: flex; align-items: center; gap: 2px; padding: 3px; }
+    .nav-submodule-btn { height: 30px; border: none; border-radius: 5px; padding: 0 10px; background: transparent; color: rgba(255,255,255,.62); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; white-space: nowrap; }
+    .nav-submodule-btn:hover { color: white; background: rgba(255,255,255,.1); }
+    .nav-submodule-btn.active { color: white; background: var(--bbva-naranja); }
+
+    #view-dashboard { display: block; height: calc(100vh - 64px); overflow-y: auto; overflow-x: hidden; }
+    #view-traceability { display: none; height: calc(100vh - 64px); flex-direction: row; background-color: var(--gris-fondo); }
+    #view-admin { display: none; height: calc(100vh - 64px); overflow-y: auto; background: var(--gray-100); }
+
+    .admin-shell { max-width: 1500px; margin: 0 auto; padding: 26px 30px 50px; }
+    .admin-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .admin-heading h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; color: var(--navy); }
+    .admin-heading p { margin-top: 4px; color: var(--gray-600); font-size: 13px; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .admin-btn { min-height: 36px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 13px; background: white; color: var(--bbva-azul-lateral); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; transition: all .2s; display: inline-flex; align-items: center; gap: 7px; }
+    .admin-btn:hover { border-color: var(--bbva-azul-lateral); color: var(--bbva-azul-oscuro); background: var(--gray-50); }
+    .admin-btn.primary { background: var(--bbva-naranja); border-color: var(--bbva-naranja); color: white; box-shadow: 0 3px 10px rgba(245,130,32,.3); }
+    .admin-btn.primary:hover { background: #e06914; border-color: #e06914; color: white; box-shadow: 0 4px 14px rgba(245,130,32,.45); }
+    .admin-btn:disabled { cursor: wait; opacity: .55; }
+    .admin-band { background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+    .admin-band-head { padding: 15px 18px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .admin-band-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: var(--navy); }
+    .admin-band-head p { color: var(--gray-400); font-size: 11px; margin-top: 2px; }
+    .admin-band-body { padding: 18px; }
+    .admin-config-grid { display: grid; grid-template-columns: minmax(200px, .7fr) minmax(300px, 1.5fr) minmax(150px, .55fr); gap: 10px 14px; align-items: end; }
+    .admin-field label { display: block; margin-bottom: 5px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .admin-field input { width: 100%; height: 38px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 10px; color: var(--navy); background: white; font-family: 'Barlow', sans-serif; font-size: 12px; outline: none; }
+    .admin-field input:focus { border-color: var(--blue-acc); box-shadow: 0 0 0 2px var(--blue-pale); }
+    .admin-field input:disabled { background: var(--gray-50); color: var(--gray-600); }
+    .admin-field .field-hint { color: var(--gray-400); font-size: 10px; margin-top: 4px; }
+    .admin-resource-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .admin-resource { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; min-width: 0; background: var(--white); }
+    .admin-resource-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .admin-resource h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; color: var(--navy); }
+    .admin-resource p { color: var(--gray-600); font-size: 11px; margin-top: 6px; overflow-wrap: anywhere; }
+    .admin-resource a { color: var(--blue-acc); text-decoration: none; }
+    .admin-state { flex-shrink: 0; border-radius: 20px; padding: 3px 8px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+    .admin-state.ok { background: #D1FAE5; color: #065F46; }
+    .admin-state.error { background: #FEE2E2; color: #991B1B; }
+    .admin-state.sin-probar { background: var(--gray-100); color: var(--gray-600); }
+    .flow-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+    .flow-column { padding: 4px 18px 12px; position: relative; }
+    .flow-column + .flow-column { border-left: 1px solid var(--gray-200); }
+    .flow-column h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; text-transform: uppercase; color: var(--blue-dark); margin-bottom: 10px; }
+    .flow-item { position: relative; padding: 9px 10px 9px 14px; margin-bottom: 7px; background: var(--gray-50); border-left: 3px solid var(--blue-acc); border-radius: 0 6px 6px 0; }
+    .flow-column.output .flow-item { border-left-color: var(--bbva-naranja); }
+    .flow-item strong { display: block; color: var(--navy); font-size: 12px; }
+    .flow-item span { display: block; color: var(--gray-600); font-size: 10px; margin-top: 2px; }
+    .admin-data-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    .admin-table-wrap { overflow: auto; max-height: 330px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .admin-table th { position: sticky; top: 0; z-index: 1; background: var(--bbva-azul-oscuro); color: rgba(255,255,255,.7); padding: 10px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; border-bottom: 1px solid var(--gray-200); }
+    .admin-table td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); color: var(--gray-600); vertical-align: top; }
+    .admin-table td strong { color: var(--navy); }
+    .active-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--gray-400); margin-right: 5px; }
+    .active-dot.online { background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,.13); }
+    .toast-stack { position: fixed; right: 20px; bottom: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 8px; width: min(380px, calc(100vw - 40px)); }
+    .app-toast { background: var(--navy); color: white; border-left: 4px solid var(--blue-light); border-radius: 7px; padding: 12px 14px; box-shadow: var(--shadow-lg); font-size: 12px; line-height: 1.4; animation: slideUp .2s ease; }
+    .app-toast.error { border-left-color: var(--red); }
+    .app-toast.success { border-left-color: var(--green); }
+    .app-toast.warning { border-left-color: var(--yellow); }
+
+    @media (max-width: 1000px) {
+      .topbar-title, .topbar-divider { display: none; }
+      .admin-config-grid, .admin-resource-grid, .flow-grid, .admin-data-grid { grid-template-columns: 1fr; }
+      .flow-column + .flow-column { border-left: none; border-top: 1px solid var(--gray-200); padding-top: 16px; }
+      .admin-shell { padding: 20px 16px 40px; }
+    }
+
+    /* DASHBOARD STYLES */
+    .date-strip {
+      background: linear-gradient(135deg, var(--bbva-azul-oscuro) 0%, #0D2B55 100%);
+      border-bottom: 3px solid var(--bbva-naranja);
+      padding: 0 28px;
+      height: auto;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 20px rgba(10,22,40,.25);
+      position: relative;
+    }
+
+    /* Bloque izquierdo: fecha */
+    .date-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 10px 0;
+      border-right: 1px solid rgba(255,255,255,.12);
+      flex-shrink: 0;
+    }
+    .date-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,.5);
+      white-space: nowrap;
+    }
+    .date-capsule {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,.1);
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .date-capsule:focus-within { border-color: var(--bbva-naranja); }
+    .fecha-mode-select {
+      border: none;
+      background: rgba(255,255,255,.15);
+      font-family: 'Barlow Condensed', sans-serif;
+      padding: 0 10px;
+      height: 36px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      color: white;
+      border-right: 1px solid rgba(255,255,255,.15);
+      letter-spacing: .5px;
+    }
+    .fecha-mode-select option { color: var(--navy); background: white; }
+    .date-capsule input[type="date"] {
+      border: none;
+      outline: none;
+      padding: 0 12px;
+      height: 36px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      background: transparent;
+      cursor: pointer;
+      color-scheme: dark;
+    }
+    .date-sep-range {
+      color: rgba(255,255,255,.4);
+      font-size: 11px;
+      padding: 0 4px;
+      pointer-events: none;
+    }
+    .btn-load {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bbva-naranja);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 18px;
+      height: 36px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(245,130,32,.4);
+    }
+    .btn-load:hover { background: #e06914; box-shadow: 0 4px 14px rgba(245,130,32,.55); transform: translateY(-1px); }
+    .btn-load svg { width: 14px; height: 14px; }
+
+    /* Bloque central: filtros de proceso */
+    .process-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    .proc-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .btn-proc {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.7);
+      border: 1.5px solid rgba(255,255,255,.15);
+      padding: 0 13px;
+      height: 30px;
+      border-radius: 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+    .btn-proc:hover {
+      background: rgba(255,255,255,.15);
+      color: white;
+      border-color: rgba(255,255,255,.35);
+    }
+    .btn-proc.active {
+      background: var(--bbva-naranja);
+      color: white;
+      border-color: var(--bbva-naranja);
+      box-shadow: 0 2px 8px rgba(245,130,32,.4);
+    }
+    .btn-proc-icon { font-size: 11px; }
+
+    /* Bloque derecho: pill de estado */
+    .date-strip-right { 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0 10px 20px;
+      border-left: 1px solid rgba(255,255,255,.12);
+      flex-shrink: 0;
+    }
+    .status-pill {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .pill-ok  { background: rgba(16,185,129,.2); color: #6EE7B7; border: 1px solid rgba(16,185,129,.3); }
+    .pill-warn{ background: rgba(245,158,11,.2);  color: #FCD34D; border: 1px solid rgba(245,158,11,.3); }
+    .pill-err { background: rgba(239,68,68,.2);   color: #FCA5A5; border: 1px solid rgba(239,68,68,.3); }
+    .pill-pending { background: rgba(148,163,184,.2); color: #CBD5E1; border: 1px solid rgba(148,163,184,.35); }
+    #strip-info { font-size: 11px; color: rgba(255,255,255,.5); font-weight: 500; }
+
+    #empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 120px); gap: 20px; color: var(--gray-400); }
+    #empty-state h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; color: var(--gray-600); }
+    #empty-state p { font-size: 14px; max-width: 340px; text-align: center; }
+
+    /* Overlay de carga inicial — reloj centrado mientras se traen los datos */
+    #loading-overlay { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: rgba(255,255,255,0.94); backdrop-filter: blur(2px); }
+    #loading-overlay .clock-loader { width: 84px; height: 84px; }
+    #loading-overlay .clock-loader .hand-m { transform-origin: 50px 50px; animation: clock-spin 1.1s linear infinite; }
+    #loading-overlay .clock-loader .hand-h { transform-origin: 50px 50px; animation: clock-spin 6.6s linear infinite; }
+    #loading-overlay .load-text { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--gray-600); letter-spacing: .6px; text-transform: uppercase; }
+    #loading-overlay .load-sub { font-size: 12px; color: var(--gray-400); margin-top: -14px; }
+    @keyframes clock-spin { to { transform: rotate(360deg); } }
+
+    #dashboard-content { display: none; }
+    #dashboard-content.mode-tecnico .left-panel { box-shadow: inset 4px 0 0 var(--red); }
+    #dashboard-content.mode-funcional .left-panel { box-shadow: inset 4px 0 0 var(--yellow); }
+    .layout { display: grid; grid-template-columns: 340px 1fr; gap: 0; min-height: calc(100vh - 124px); }
+
+    .left-panel { background: var(--blue-dark); padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; border-right: 1px solid rgba(255,255,255,.06); }
+    .panel-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 4px; }
+    .date-heading { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--white); line-height: 1; }
+    .date-heading span { color: var(--orange); }
+
+    .kpi-card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; transition: transform .2s, border-color .2s; }
+    .kpi-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.22); }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 12px 0 0 12px; }
+    .kpi-card.ok::before   { background: var(--green); } .kpi-card.warn::before { background: var(--yellow); } .kpi-card.err::before  { background: var(--red); } .kpi-card.pending::before { background: #94A3B8; }
+    .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .kpi-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .kpi-icon.ok { background: rgba(16,185,129,.18); color: var(--green); } .kpi-icon.warn { background: rgba(245,158,11,.18); color: var(--yellow); } .kpi-icon.err { background: rgba(239,68,68,.18); color: var(--red); } .kpi-icon.pending { background: rgba(148,163,184,.18); color: #CBD5E1; }
+    .kpi-icon svg { width: 20px; height: 20px; }
+    .kpi-badge { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+    .badge-ok { background: rgba(16,185,129,.2); color: #6EE7B7; } .badge-warn { background: rgba(245,158,11,.2);  color: #FCD34D; } .badge-err { background: rgba(239,68,68,.2);   color: #FCA5A5; } .badge-pending { background: rgba(148,163,184,.2); color: #CBD5E1; }
+    .kpi-value { font-family: 'Barlow Condensed', sans-serif; font-size: 42px; font-weight: 800; color: var(--white); line-height: 1; margin-top: 10px; }
+    .kpi-value sub { font-size: 18px; font-weight: 600; color: rgba(255,255,255,.5); vertical-align: middle; }
+    .kpi-label { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 4px; font-weight: 500; }
+    .kpi-bar-wrap { margin-top: 14px; background: rgba(255,255,255,.08); border-radius: 4px; height: 6px; overflow: hidden; }
+    .kpi-bar { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .kpi-bar.ok { background: var(--green); } .kpi-bar.warn { background: var(--yellow); } .kpi-bar.err { background: var(--red); } .kpi-bar.pending { background: #94A3B8; }
+
+    .alert-card { border-radius: 10px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; font-size: 12px; }
+    .alert-card.warn { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); color: #FCD34D; }
+    .alert-card.err  { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.3);  color: #FCA5A5; }
+    .alert-card.ok   { background: rgba(16,185,129,.1);  border: 1px solid rgba(16,185,129,.3); color: #6EE7B7; }
+    .alert-card.pending { background: rgba(148,163,184,.12); border: 1px solid rgba(148,163,184,.3); color: #CBD5E1; }
+    .alert-card svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+    .alert-card strong { font-weight: 700; display: block; margin-bottom: 2px; }
+
+    .right-panel { padding: 20px 28px 24px; background: var(--gray-100); display: flex; flex-direction: column; gap: 14px; }
+    .right-header { width: 100%; }
+    .right-controls { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+
+    /* FILTER BAR — dos filas */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-row-top {
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 12px 12px 0 0;
+      padding: 10px 16px;
+      border-bottom: none;
+    }
+    .filter-row-bottom {
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 0 0 12px 12px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--gray-200);
+      box-shadow: 0 2px 8px rgba(10,22,40,.06);
+    }
+    .filter-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--gray-400);
+      white-space: nowrap;
+      padding-right: 6px;
+      border-right: 1.5px solid var(--gray-200);
+      margin-right: 4px;
+      line-height: 1;
+    }
+    .filter-sep { width: 1.5px; height: 20px; background: var(--gray-200); margin: 0 6px; flex-shrink: 0; }
+    .filter-spacer { flex: 1; min-width: 8px; }
+
+    /* CHIPS DE ESTADO */
+    .chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--gray-200);
+      background: var(--white);
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .chip:hover { border-color: var(--blue-acc); color: var(--blue-acc); background: #EFF6FF; }
+    .chip.active { background: var(--blue-dark); border-color: var(--blue-dark); color: white; box-shadow: 0 2px 6px rgba(13,43,85,.25); }
+    .chip.ok-chip.active   { background: #059669; border-color: #059669; }
+    .chip.warn-chip.active { background: #D97706; border-color: #D97706; }
+    .chip.err-chip.active  { background: #DC2626; border-color: #DC2626; }
+    .chip.pending-chip.active { background: #64748B; border-color: #64748B; }
+    .chip.ok-chip:not(.active):hover   { border-color: #059669; color: #059669; background: #ECFDF5; }
+    .chip.warn-chip:not(.active):hover { border-color: #D97706; color: #D97706; background: #FFFBEB; }
+    .chip.err-chip:not(.active):hover  { border-color: #DC2626; color: #DC2626; background: #FEF2F2; }
+    .chip.pending-chip:not(.active):hover { border-color: #64748B; color: #64748B; background: #F1F5F9; }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    /* GOV DROPDOWN */
+    .gov-dropdown-container { position: relative; display: inline-block; }
+    .gov-dropdown-btn {
+      height: 28px;
+      padding: 0 10px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 7px;
+      background: white;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .gov-dropdown-btn:hover { border-color: var(--blue-acc); color: var(--blue-acc); }
+    .gov-dropdown-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 34px;
+      background: white;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
+      padding: 8px;
+      z-index: 500;
+      min-width: 170px;
+    }
+    .gov-dropdown-content.show { display: block; }
+    .gov-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 6px 8px;
+      cursor: pointer;
+      border-radius: 6px;
+      color: var(--gray-600);
+    }
+    .gov-dropdown-item:hover { background: var(--gray-50); }
+    .gov-dropdown-item input[type="checkbox"] { accent-color: var(--blue-acc); width: 13px; height: 13px; }
+    .gov-dropdown-item label { cursor: pointer; }
+
+    /* SELECTS */
+    .monitor-select {
+      height: 28px;
+      padding: 0 8px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 7px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-600);
+      outline: none;
+      background: white;
+      transition: border-color .15s;
+      cursor: pointer;
+    }
+    .monitor-select:hover, .monitor-select:focus { border-color: var(--blue-acc); }
+
+    /* TOGGLE TRAZABILIDAD */
+    .toggle-traz {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: white;
+      color: var(--gray-600);
+      border: 1.5px solid var(--gray-200);
+      padding: 0 12px;
+      height: 28px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .toggle-traz:hover { border-color: var(--bbva-naranja); color: var(--bbva-naranja); }
+    .toggle-traz.active { background: var(--bbva-naranja); border-color: var(--bbva-naranja); color: white; box-shadow: 0 2px 6px rgba(245,130,32,.3); }
+    .toggle-icon { width: 24px; height: 13px; border-radius: 10px; background: var(--gray-400); position: relative; transition: all .2s; flex-shrink: 0; }
+    .toggle-icon::after { content: ''; position: absolute; left: 2px; top: 1.5px; width: 10px; height: 10px; background: white; border-radius: 50%; transition: all .2s; }
+    .toggle-traz.active .toggle-icon { background: rgba(255,255,255,.35); }
+    .toggle-traz.active .toggle-icon::after { transform: translateX(11px); }
+
+    /* BÚSQUEDAS */
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--gray-400); width: 12px; height: 12px; pointer-events: none; }
+    .search-wrap input {
+      width: 130px;
+      padding: 0 10px 0 26px;
+      height: 28px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 7px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      outline: none;
+      background: white;
+      transition: border-color .15s;
+      color: var(--navy);
+    }
+    .search-wrap input:focus { border-color: var(--blue-acc); }
+
+    .table-wrapper { background: var(--white); border-radius: 14px; border: 1.5px solid var(--gray-200); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .data-table thead tr { background: var(--bbva-azul-oscuro); } 
+    .data-table thead th { padding: 12px 16px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.7); white-space: nowrap; cursor: pointer; user-select: none; transition: color .15s; }
+    .data-table thead th:hover { color: rgba(255,255,255,1); }
+    .data-table thead th.sorted { color: var(--orange); }
+    .data-table thead th .sort-arrow { margin-left: 4px; opacity: .5; font-size: 10px; }
+    .data-table thead th.sorted .sort-arrow { opacity: 1; color: var(--orange); }
+    .data-table tbody tr { border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background .15s; }
+    .data-table tbody tr:hover { background: #EFF6FF; }
+    .data-table tbody tr.row-err:hover  { background: #FEF2F2; }
+    .data-table tbody tr.row-warn:hover { background: #FFFBEB; }
+    .data-table tbody tr.row-pending:hover { background: #F8FAFC; }
+    .data-table td { padding: 11px 16px; vertical-align: middle; }
+
+    .td-status { width: 6px; padding: 0 0 0 6px !important; }
+    .row-bar { width: 4px; height: 36px; border-radius: 2px; }
+    .row-bar.ok { background: var(--green); } .row-bar.warn { background: var(--yellow); } .row-bar.err { background: var(--red); } .row-bar.pending { background: #94A3B8; }
+    .td-name { min-width: 180px; }
+    .tname { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: .2px; }
+    .tschema { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+    .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .sbadge-ok { background: #D1FAE5; color: #065F46; } .sbadge-ok .dot { background: var(--green); }
+    .sbadge-warn { background: #FEF3C7; color: #92400E; } .sbadge-warn .dot { background: var(--yellow); }
+    .sbadge-err { background: #FEE2E2; color: #991B1B; } .sbadge-err .dot { background: var(--red); }
+    .sbadge-pending { background: #E2E8F0; color: #475569; } .sbadge-pending .dot { background: #94A3B8; }
+
+    .td-quality { min-width: 130px; }
+    .quality-wrap { display: flex; align-items: center; gap: 8px; }
+    .quality-val { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; width: 44px; text-align: right; flex-shrink: 0; }
+    .quality-val.q-ok { color: var(--green); } .quality-val.q-warn { color: #D97706; } .quality-val.q-err { color: var(--red); } .quality-val.q-pending { color: #64748B; }
+    .qbar-track { flex: 1; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+    .qbar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+    .qbar-ok { background: var(--green); } .qbar-warn { background: var(--yellow); } .qbar-err { background: var(--red); } .qbar-pending { background: #94A3B8; }
+
+    .td-volume { min-width: 100px; }
+    .vol-val { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--navy); }
+    .td-time { white-space: nowrap; font-size: 13px; color: var(--gray-600); min-width: 90px; }
+    .td-periodicity { white-space: nowrap; font-size: 13px; color: var(--gray-600); min-width: 70px; font-weight: 600;}
+    .td-issues { max-width: 200px; }
+    .issue-text { font-size: 12px; color: var(--red); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; display: block;}
+    .issue-text.txt-warn { color: #92400E; }
+    .issue-text.txt-pending { color: #64748B; }
+    .no-issue { font-size: 12px; color: var(--gray-400); }
+    .td-action { width: 36px; text-align: center; }
+    .btn-detail { width: 28px; height: 28px; border: 1.5px solid var(--gray-200); border-radius: 6px; background: var(--white); color: var(--blue-acc); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .15s; }
+    .btn-detail:hover { background: var(--blue-acc); color: var(--white); border-color: var(--blue-acc); }
+    .btn-detail svg { width: 13px; height: 13px; }
+    .table-footer { padding: 10px 16px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--gray-400); }
+    .empty-row td { text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px; }
+    
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,22,40,.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: 20px; width: 850px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: slideUp .25s ease; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { background: var(--blue-dark); padding: 24px 28px; border-radius: 20px 20px 0 0; display: flex; align-items: flex-start; justify-content: space-between; }
+    .modal-header h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800; color: var(--white); }
+    .modal-header .sub { font-size: 14px; color: rgba(255,255,255,.5); margin-top: 2px; }
+    .btn-close { width: 32px; height: 32px; border: none; background: rgba(255,255,255,.1); border-radius: 8px; color: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .btn-close:hover { background: rgba(255,255,255,.2); }
+    .btn-close svg { width: 16px; height: 16px; }
+    .modal-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+    .modal.stability-modal { width: 1120px; }
+    .modal-kpi-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+    .mkpi { background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 14px; text-align: center; }
+    .mkpi-val { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--navy); }
+    .mkpi-lbl { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; }
+    .section-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); padding-bottom: 8px; }
+    .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .log-table th { text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--gray-400); border-bottom: 1.5px solid var(--gray-200); font-weight: 600; }
+    .log-table td { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); }
+
+    .stability-launch { width: 100%; margin-top: 14px; border: none; border-radius: 12px; padding: 13px 14px; background: linear-gradient(135deg,var(--blue-dark),var(--blue-acc)); color: white; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: 'Barlow Condensed',sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .3px; box-shadow: 0 6px 16px rgba(0,74,141,.2); transition: transform .15s,box-shadow .15s; }
+    .stability-launch:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,74,141,.28); }
+    .stability-launch small { display: block; font-family: 'Barlow',sans-serif; font-size: 10px; font-weight: 400; opacity: .7; margin-top: 2px; }
+    .stability-filters { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1.2fr; gap: 10px; padding: 14px; border: 1px solid var(--gray-200); background: var(--gray-50); border-radius: 12px; }
+    .stability-filter label { display: block; font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px; }
+    .stability-filter select,.stability-filter input { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--gray-200); border-radius: 7px; background: white; color: var(--navy); font-family: 'Barlow',sans-serif; outline: none; }
+    .stability-table-wrap { border: 1px solid var(--gray-200); border-radius: 12px; overflow: auto; max-height: 430px; }
+    .stability-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .stability-table th { position: sticky; top: 0; z-index: 1; background: var(--blue-dark); color: white; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+    .stability-table td { padding: 10px; border-bottom: 1px solid var(--gray-100); }
+    .stability-table tbody tr { cursor: pointer; transition: background .15s; }
+    .stability-table tbody tr:hover { background: #f0f7ff; }
+    .stability-processes { font-size: 11px; color: var(--gray-600); }
+    .stability-back { align-self: flex-start; border: 1px solid var(--gray-200); border-radius: 7px; background: white; color: var(--blue-acc); padding: 8px 12px; cursor: pointer; font-weight: 700; }
+    .stability-detail-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 18px; align-items: start; }
+
+    /* TRAZABILIDAD STYLES */
+    #sidebar-traz { width: 320px; background-color: var(--blue-dark); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 15px rgba(0,0,0,0.2); z-index: 20; }
+    .sidebar-traz-header { padding: 25px 20px; color: white; text-align: center; border-bottom: 2px solid var(--bbva-naranja); }
+    .sidebar-traz-header h2 { margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
+    
+    #buscador-traz { width: 85%; padding: 12px; border: none; border-radius: 8px; margin: 15px auto 5px auto; outline: none; display: block; font-family: 'Barlow', sans-serif; font-size: 14px; }
+    .btn-exportar-csv { display: block; width: 85%; padding: 10px; margin: 5px auto 15px auto; background-color: var(--bbva-naranja); color: white; border: none; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: background 0.2s; }
+    .btn-exportar-csv:hover { background-color: #e06914; }
+
+    #listaTablas { flex-grow: 1; overflow-y: auto; padding: 10px; }
+    .btn-tabla { display: block; width: 100%; padding: 12px; margin-bottom: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; text-align: left; cursor: pointer; color: white; font-family: 'Barlow', sans-serif; font-size: 14px; transition: all 0.2s; }
+    .btn-tabla:hover { background: var(--bbva-naranja); }
+    .btn-tabla.active { background: var(--bbva-naranja); border-left: 5px solid white; font-weight: bold; }
+
+    #main-content-traz { flex-grow: 1; display: flex; flex-direction: column; height: calc(100vh - 64px); overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+    #header-app-traz { background: white; padding: 15px 30px; border-bottom: 1px solid #e1e6eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    #tituloTabla { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 26px; color: var(--bbva-azul-oscuro); margin: 0; }
+    .traz-header-actions { display: flex; align-items: center; gap: 16px; }
+    .traz-direction-tabs { display: inline-flex; padding: 3px; gap: 3px; background: #eef2f5; border: 1px solid #d1d9e0; border-radius: 9px; }
+    .traz-direction-tab { border: none; background: transparent; color: #667085; border-radius: 6px; padding: 8px 13px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; transition: all .18s; white-space: nowrap; }
+    .traz-direction-tab:hover { color: var(--bbva-azul-oscuro); background: rgba(255,255,255,.65); }
+    .traz-direction-tab.active { color: white; background: var(--bbva-azul-oscuro); box-shadow: 0 2px 6px rgba(0,74,141,.22); }
+    .traz-zoom-help { font-size: .85rem; color: #888; white-space: nowrap; }
+    
+    #kpi-container-traz { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 15px 30px; background: #eef2f5; border-bottom: 1px solid #d1d9e0; flex-shrink: 0; }
+    .kpi-card-traz { background: white; padding: 14px 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); border-left: 4px solid var(--bbva-azul-oscuro); }
+    .kpi-card-traz.kpi-prod { border-left-color: var(--verde-texto); }
+    .kpi-card-traz.kpi-dev { border-left-color: var(--rosado-texto); }
+    .kpi-card-traz.kpi-unk { border-left-color: var(--gris-texto); }
+    .kpi-card-traz.kpi-alert { border-left-color: #d32f2f; background-color: #fff8f8; }
+    .kpi-flex-traz { display: flex; justify-content: space-between; align-items: center; }
+    .kpi-num-traz { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; color: #111; margin: 0; line-height: 1; }
+    .kpi-label-traz { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; color: #666; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; margin: 6px 0 0 0; }
+
+    #canvas-wrapper { flex-grow: 1; min-height: 300px; margin: 20px; background: white; border-radius: 12px; border: 1px solid #d1d9e0; position: relative; overflow: hidden; cursor: grab; transition: height 0.1s linear; }
+    #canvas-wrapper:active { cursor: grabbing; }
+    #contenedor-mermaid { width: 100%; height: 100%; min-width: 100%; min-height: 100%; position: absolute; top: 0; left: 0; }
+
+    #resizer-traz { height: 10px; background-color: #e1e6eb; cursor: row-resize; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; border-top: 1px solid #d1d9e0; flex-shrink: 0;}
+    #resizer-traz:hover, #resizer-traz.active { background-color: var(--bbva-naranja); }
+    .resizer-grip { width: 40px; height: 3px; background: rgba(0, 0, 0, 0.2); border-radius: 2px; }
+
+    #footer-report { flex-shrink: 0; background: white; border-top: 4px solid var(--bbva-azul-oscuro); display: flex; flex-direction: column; min-height: 320px; }
+    .footer-header-traz { padding: 12px 30px; background: #fafafa; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+    .footer-header-traz h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 20px; color: var(--bbva-azul-oscuro); margin: 0; }
+    .table-scroll { flex-grow: 1; padding: 0; } 
+    
+    .traz-table { width: 100%; border-collapse: collapse; }
+    .traz-table thead th { position: sticky; top: 0; background: var(--bbva-azul-oscuro); color: white; padding: 12px 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-align: left; z-index: 10; }
+    .traz-table td { border: 1px solid #eee; padding: 0; font-size: 14px; font-family: 'Barlow', sans-serif; height: 100%; }
+    .cell-text { padding: 12px 16px; font-weight: 500; }
+    
+    .status-cell { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 48px; font-weight: 700; font-size: 11px; letter-spacing: 0.5px; text-align: center; text-transform: uppercase; margin: 0; }
+    .prod { background-color: var(--verde-prod); color: var(--verde-texto); } 
+    .dev { background-color: var(--rosado-dev); color: var(--rosado-texto); } 
+    .unk { background-color: var(--gris-unk); color: var(--gris-texto); } 
+
+    .btn-action { border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; color: white; margin-left: 10px; transition: 0.3s; }
+    .btn-mail { background: var(--bbva-azul-lateral); }
+    .btn-mail:hover { background: var(--bbva-azul-oscuro); }
+    .btn-mail-afectadas { background: var(--bbva-naranja); color: white; }
+    .btn-mail-afectadas:hover { background: #e06914; }
+    .btn-small-alert { background: #d32f2f; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      Data Factory
+    </div>
+    <div class="topbar-divider"></div>
+    <span class="topbar-title" id="topbar-area">Financial Data</span>
+    
+    <div class="topbar-divider"></div>
+    <div style="display: flex; flex-direction: column; justify-content: center;">
+      <span id="topbar-view-title" style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: white; letter-spacing: .5px;">MVP Técnico</span>
+      <span id="topbar-view-subtitle" style="font-size: 11px; color: var(--gray-400); font-weight: 500;">Control de reglas críticas de calidad</span>
+    </div>
+
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user">
+      <nav class="topbar-nav" aria-label="Vistas de la aplicación">
+        <div id="nav-dashboard" class="nav-quality-group active">
+          <button class="nav-quality-main" onclick="mostrarCalidad('tecnico')" title="Abrir Calidad en MVP Técnico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Calidad
+          </button>
+          <div class="nav-quality-submodules" role="tablist" aria-label="Submódulos de Calidad">
+            <button id="quality-mode-tecnico" class="nav-submodule-btn active" role="tab" aria-selected="true" onclick="mostrarCalidad('tecnico')">MVP Técnico</button>
+            <button id="quality-mode-funcional" class="nav-submodule-btn" role="tab" aria-selected="false" onclick="mostrarCalidad('funcional')">Funcional</button>
+          </div>
+        </div>
+        <button id="nav-traceability" class="nav-view-btn" onclick="mostrarVista('traceability')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 12h5a4 4 0 0 0 4-4V7M12 12a4 4 0 0 1 4 4v1"/></svg>
+          Trazabilidad
+        </button>
+        <button id="nav-admin" class="nav-view-btn" onclick="mostrarVista('admin')" title="Administración">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.13.37.36.7.68.94.3.23.67.36 1.05.36H21v4h-.09a1.7 1.7 0 0 0-1.51.7Z"/></svg>
+          Administración
+        </button>
+      </nav>
+      <div class="avatar"><?!= userInitials ?></div>
+    </div>
+  </header>
+
+  <div id="view-dashboard">
+    <div class="date-strip">
+
+      <!-- BLOQUE FECHA -->
+      <div class="date-block">
+        <span class="date-label">📅 Corte</span>
+        <div class="date-capsule">
+          <select id="frecuencia-selector" class="fecha-mode-select" onchange="alternarFrecuenciaCorte()">
+            <option value="diaria">Diarios</option>
+            <option value="mensual">Mensuales</option>
+          </select>
+          <select id="fecha-selector-modo" class="fecha-mode-select" onchange="alternarModoFechaInput()">
+            <option value="simple">Única</option>
+            <option value="rango">Rango</option>
+          </select>
+          <input type="date" id="date-picker">
+          <span class="date-sep-range" id="date-sep-rango" style="display:none;">→</span>
+          <input type="date" id="date-picker-fin" style="display:none;">
+        </div>
+        <button class="btn-load" onclick="loadDashboard()" id="btn-load">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+          </svg>
+          Cargar
+        </button>
+      </div>
+
+      <!-- BLOQUE PROCESO -->
+      <div class="process-block">
+        <span class="proc-label">Proceso</span>
+        <button class="btn-proc active" onclick="setProcesoFilter('all', this)">
+          <span class="btn-proc-icon">⬡</span> Todo
+        </button>
+        <button class="btn-proc" onclick="setProcesoFilter('contable', this)">
+          <span class="btn-proc-icon">📊</span> Cubo Contable
+        </button>
+        <button class="btn-proc" onclick="setProcesoFilter('operacional', this)">
+          <span class="btn-proc-icon">⚙️</span> Cubo Operacional
+        </button>
+        <button class="btn-proc" onclick="setProcesoFilter('flow', this)">
+          <span class="btn-proc-icon">🔄</span> Flow Actividad
+        </button>
+        <button class="btn-proc" onclick="setProcesoFilter('ficod', this)">
+          <span class="btn-proc-icon">🏦</span> FICOD
+        </button>
+        <button class="btn-proc" onclick="setProcesoFilter('ifrs9', this)">
+          <span class="btn-proc-icon">📋</span> IFRS9
+        </button>
+      </div>
+
+      <!-- BLOQUE ESTADO -->
+      <div class="date-strip-right" id="strip-status" style="display:none">
+        <span id="strip-pill" class="status-pill"></span>
+        <span id="strip-info"></span>
+      </div>
+
+    </div>
+
+    <!-- Reloj de carga inicial (visible al entrar; se oculta cuando llegan los datos) -->
+    <div id="loading-overlay">
+      <svg class="clock-loader" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+        <line class="hand-h" x1="50" y1="50" x2="50" y2="30" stroke="#004a8d" stroke-width="5" stroke-linecap="round"/>
+        <line class="hand-m" x1="50" y1="50" x2="50" y2="16" stroke="#f58220" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="4.5" fill="#004a8d"/>
+      </svg>
+      <div class="load-text">Cargando datos de calidad…</div>
+      <div class="load-sub">Conectando con la base corporativa</div>
+    </div>
+
+    <div id="empty-state">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      <h2>Selecciona una fecha de corte</h2>
+      <p>Elige la fecha (gf_cutoff_date) en el selector superior y pulsa <strong>Cargar datos</strong> para leer la matriz de calidad.</p>
+    </div>
+
+    <div id="dashboard-content" class="mode-tecnico">
+      <div class="layout">
+        
+        <aside class="left-panel">
+          <div>
+            <div class="panel-section-title" id="quality-mode-kpi-label">MVP Técnico · Reglas críticas</div>
+            <div class="panel-section-title">Fecha de Corte Seleccionada</div>
+            <div class="date-heading" id="left-date">—</div>
+            <div id="left-proceso-label" style="margin-top:6px;font-size:11px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:.6px;display:none;"></div>
+          </div>
+          <div>
+            <div class="panel-section-title">Estado global</div>
+            <div class="kpi-card" id="kpi-global">
+              <div class="kpi-top">
+                <div class="kpi-icon" id="kpi-global-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <span class="kpi-badge" id="kpi-global-badge">—</span>
+              </div>
+              <div class="kpi-value" id="kpi-global-val">—</div>
+              <div class="kpi-label" id="kpi-global-lbl">—</div>
+              <div class="kpi-bar-wrap"><div class="kpi-bar" id="kpi-global-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel-section-title" id="kpi-success-title">Reglas críticas evaluadas</div>
+            <div class="kpi-card ok">
+              <div class="kpi-top">
+                <div class="kpi-icon ok">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <span class="kpi-badge badge-ok">OK</span>
+              </div>
+              <div class="kpi-value"><span id="kpi-ok">0</span><sub> / <span id="kpi-total">0</span></sub></div>
+              <div class="kpi-label" id="kpi-success-label">Reglas críticas exitosas</div>
+              <div class="kpi-bar-wrap"><div class="kpi-bar ok" id="bar-ok" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel-section-title" id="kpi-failures-title">Fallos críticos</div>
+            <div class="kpi-card" id="kpi-err-card">
+              <div class="kpi-top">
+                <div class="kpi-icon err" id="kpi-e-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                </div>
+                <span class="kpi-badge" id="kpi-e-badge">—</span>
+              </div>
+              <div class="kpi-value" id="kpi-errors">0</div>
+              <div class="kpi-label" id="kpi-errors-label">Reglas críticas con fallo</div>
+              <div class="kpi-bar-wrap"><div class="kpi-bar err" id="bar-err" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div id="alert-messages"></div>
+          <button class="stability-launch" onclick="openStabilityMonitor()">
+            <span>📈 Monitoreo de estabilidad<small>Calidad de los últimos 45 días corridos</small></span>
+            <span>›</span>
+          </button>
+        </aside>
+
+        <main class="right-panel">
+          <div class="right-header">
+            <div class="right-controls">
+
+              <!-- FILA 1: Estado de calidad + Toggle Trazabilidad -->
+              <div class="filter-row filter-row-top">
+                <span class="filter-section-label">Estado calidad</span>
+                <div id="filter-chips" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <span class="chip active" data-filter="all" onclick="setStatusFilter('all',this)">Todas las tablas</span>
+                  <span class="chip ok-chip" data-filter="ok" onclick="setStatusFilter('ok',this)"><span class="chip-dot" style="background:#059669;"></span>Exitosas</span>
+                  <span id="status-filter-warn" class="chip warn-chip" data-filter="warn" onclick="setStatusFilter('warn',this)" style="display:none;"><span class="chip-dot" style="background:#D97706;"></span>Advertencias</span>
+                  <span class="chip pending-chip" data-filter="pending" onclick="setStatusFilter('pending',this)"><span class="chip-dot" style="background:#94A3B8;"></span>Pendientes</span>
+                  <span id="status-filter-err" class="chip err-chip" data-filter="err" onclick="setStatusFilter('err',this)"><span class="chip-dot" style="background:#DC2626;"></span>Con Fallos</span>
+                </div>
+                <div class="filter-sep" style="margin:0 8px;"></div>
+                <!-- Toggle trazabilidad — solo afecta filtros de Proceso y Tabla -->
+                <div class="toggle-traz" id="toggle-traz-btn" onclick="toggleTraceability(this)" title="Añade tablas fuente al resultado de proceso/tabla">
+                  <div class="toggle-icon"></div>
+                  Trazabilidades
+                </div>
+              </div>
+
+              <!-- FILA 2: Búsqueda + Gobierno + Responsable + Dirección -->
+              <div class="filter-row filter-row-bottom">
+
+                <!-- Búsquedas -->
+                <div class="search-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" placeholder="Buscar tabla…" id="search-input" oninput="filterCards()">
+                </div>
+                <div class="search-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" placeholder="Hora…" id="search-hora" oninput="filterCards()" style="width:90px;">
+                </div>
+
+                <div class="filter-sep"></div>
+
+                <!-- Gobierno -->
+                <span class="filter-section-label">Gobierno</span>
+                <div class="gov-dropdown-container">
+                  <div class="gov-dropdown-btn" onclick="toggleGovDropdown()">
+                    🏛️ <span id="gov-badge-txt">Prod, Unk</span>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="gov-dropdown-content" id="gov-dropdown-menu">
+                    <div class="gov-dropdown-item"><input type="checkbox" id="chk-gov-prod" value="productiva" checked onchange="filterCards()"><label for="chk-gov-prod">✅ Productiva</label></div>
+                    <div class="gov-dropdown-item"><input type="checkbox" id="chk-gov-dev" value="en desarrollo" onchange="filterCards()"><label for="chk-gov-dev">🔧 En Desarrollo</label></div>
+                    <div class="gov-dropdown-item"><input type="checkbox" id="chk-gov-unk" value="desconocido" checked onchange="filterCards()"><label for="chk-gov-unk">❓ Desconocido</label></div>
+                  </div>
+                </div>
+
+                <div class="filter-sep"></div>
+
+                <!-- Responsable -->
+                <span class="filter-section-label">Responsable</span>
+                <select id="select-gov-rol" class="monitor-select" onchange="recalcularDesplegableResponsables()" style="width:120px;">
+                  <option value="dataEngineer">Data Engineer</option>
+                  <option value="dataScientist">Data Scientist</option>
+                </select>
+                <select id="select-gov-nombre" class="monitor-select" onchange="filterCards()" style="width:130px;">
+                  <option value="all">— Todos —</option>
+                </select>
+
+                <div class="filter-sep"></div>
+
+                <!-- Dirección (multi-select dropdown) -->
+                <span class="filter-section-label">Dirección</span>
+                <div class="gov-dropdown-container" id="dir-dropdown-container">
+                  <div class="gov-dropdown-btn" onclick="toggleDirDropdown()">
+                    📍 <span id="dir-badge-txt">Todas</span>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  <div class="gov-dropdown-content" id="dir-dropdown-menu" style="min-width:180px;">
+                    <div id="dir-dropdown-items"></div>
+                  </div>
+                </div>
+
+                <div class="filter-sep"></div>
+                <span class="filter-section-label">Periodicidad</span>
+                <select id="select-periodicidad" class="monitor-select" onchange="filterCards()" style="width:105px;">
+                  <option value="all">Todas</option>
+                  <option value="diaria">Diaria</option>
+                  <option value="mensual">Mensual</option>
+                </select>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrapper fade-in">
+            <table class="data-table" id="data-table">
+              <thead>
+                <tr>
+                  <th style="width:6px;padding:0"></th>
+                  <th onclick="sortBy('cutoffDate')" id="th-cutoff">Fecha Corte <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('name')" id="th-name">Tabla Auditada <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('status')" id="th-status">Estado <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('quality')" id="th-quality">% Prom. Calidad <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('rows')" id="th-rows">Volumen Máx <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('startTime')" id="th-time">Hora Calidad <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('periodicidad')" id="th-periodicity">Periodicidad <span class="sort-arrow">↕</span></th>
+                  <th onclick="sortBy('ttm')" id="th-ttm">TTM <span class="sort-arrow">↕</span></th>
+                  <th id="th-issues">Incidencias (Reglas)</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <tr class="empty-row"><td colspan="11">Carga una fecha para ver los datos</td></tr>
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <span id="table-count">—</span>
+              <span id="table-lastrun"></span>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" id="modal-content">
+      <div class="modal-header" id="modal-header">
+        <div>
+          <h3 id="modal-title">—</h3>
+          <div class="sub" id="modal-sub">—</div>
+        </div>
+        <button class="btn-close" onclick="closeModalBtn()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="view-traceability">
+    <div id="sidebar-traz">
+
+      <!-- BÚSQUEDA + DESCARGA (sin título encima) -->
+      <div style="display:flex;align-items:center;gap:6px;padding:14px 16px 6px 16px;">
+        <input type="text" id="buscador-traz" style="flex:1;padding:9px 12px;border:none;border-radius:8px;outline:none;font-family:'Barlow',sans-serif;font-size:13px;" placeholder="🔍 Buscar tabla..." onkeyup="filtrarTablas()">
+        <button onclick="descargarCsvTodasLasTablas()" title="Descargar universo de tablas (CSV)" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:7px;padding:8px 10px;cursor:pointer;color:white;font-size:13px;transition:background .2s;" onmouseover="this.style.background='rgba(245,130,32,0.7)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">📥</button>
+      </div>
+
+      <!-- HUÉRFANAS — sutil, debajo del buscador -->
+      <div id="sidebar-huerfanas-widget" style="display:none;margin:0 16px 6px 16px;background:rgba(211,47,47,0.15);border:1px solid rgba(211,47,47,0.35);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span style="font-size:11px;color:#ffb3b3;font-weight:600;line-height:1.3;">⚠️ <span id="kpi-huerfanas-val-sidebar">0</span> tablas sin definición .txt</span>
+        <button class="btn-small-alert" id="btnHuerfanas" onclick="alertarHuerfanas()" style="white-space:nowrap;font-size:10px;padding:3px 8px;">📧 Reportar</button>
+      </div>
+
+      <div id="listaTablas" style="margin-top:4px;">Cargando catálogo maestro...</div>
+    </div>
+
+    <div id="main-content-traz">
+      <div id="header-app-traz">
+        <h1 id="tituloTabla">Seleccione una tabla</h1>
+        <div class="traz-header-actions">
+          <div class="traz-direction-tabs" role="tablist" aria-label="Dirección de trazabilidad">
+            <button id="tab-traz-entrada" class="traz-direction-tab active" role="tab" aria-selected="true" onclick="cambiarDireccionTrazabilidad('entrada')">Tablas de entrada</button>
+            <button id="tab-traz-salida" class="traz-direction-tab" role="tab" aria-selected="false" onclick="cambiarDireccionTrazabilidad('salida')">Tablas de salida</button>
+          </div>
+          <span class="traz-zoom-help">Zoom: Rueda o Scrollbar | Mover: Arrastrar</span>
+        </div>
+      </div>
+      
+      <div id="kpi-container-traz">
+        <div class="kpi-card-traz"><p class="kpi-num-traz" id="kpi-total-traz">-</p><p class="kpi-label-traz">Tablas Catálogo</p></div>
+        <div class="kpi-card-traz kpi-prod"><p class="kpi-num-traz" id="kpi-prod-val" style="color: var(--verde-texto);">-</p><p class="kpi-label-traz">Productivas</p></div>
+        <div class="kpi-card-traz kpi-dev"><p class="kpi-num-traz" id="kpi-dev-val" style="color: var(--rosado-texto);">-</p><p class="kpi-label-traz">En Desarrollo</p></div>
+        <div class="kpi-card-traz kpi-unk"><p class="kpi-num-traz" id="kpi-unk-val" style="color: var(--gris-texto);">-</p><p class="kpi-label-traz">Desconocidas</p></div>
+        <!-- KPI 5: Notebook LM -->
+        <div class="kpi-card-traz" style="border-left:4px solid var(--bbva-naranja);display:flex;flex-direction:column;justify-content:space-between;gap:10px;">
+          <p class="kpi-label-traz" style="margin:0;">¿Tienes dudas funcionales sobre el modelo?</p>
+          <a href="https://notebooklm.google.com/notebook/1810b87a-2028-4deb-9f51-fe46fc356d6d/preview" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--bbva-naranja);color:white;text-decoration:none;padding:7px 12px;border-radius:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;transition:background .2s;width:fit-content;" onmouseover="this.style.background='#e06914'" onmouseout="this.style.background='var(--bbva-naranja)'">
+            📖 Abrir Notebook LM
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div id="canvas-wrapper"><div id="contenedor-mermaid"></div></div>
+
+      <div id="resizer-traz" title="Arrastra para cambiar el tamaño de la tabla"><div class="resizer-grip"></div></div>
+
+      <div id="footer-report">
+        <div class="footer-header-traz">
+          <h3 id="titulo-reporte-traz">Trazabilidad exhaustiva Data Factory</h3>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-mail-afectadas" id="btnMailAfectadas" style="display:none;" onclick="enviarMailAfectadas()">📤 Enviar Tablas Destino</button>
+            <button class="btn-action btn-mail" id="btnMail" style="display:none;" onclick="enviarMail()">📧 Enviar Tablas Fuente</button>
+          </div>
+        </div>
+        <div class="table-scroll"><div id="tabla-reporte"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-admin">
+    <div class="admin-shell">
+      <div class="admin-heading">
+        <div>
+          <h1>Administración de la aplicación</h1>
+          <p id="admin-user-label">Configuración, conexiones y flujo operativo de Calidad.</p>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" id="btn-admin-refresh" onclick="cargarAdministracion(true)">Actualizar estado</button>
+          <button class="admin-btn" id="btn-admin-test" onclick="probarConexionesAdmin()">Probar conexiones</button>
+          <button class="admin-btn" id="btn-admin-cache" onclick="invalidarCacheAdmin()">Vaciar caché</button>
+        </div>
+      </div>
+
+      <section class="admin-band">
+        <div class="admin-band-head">
+          <div><h2>Orígenes y frecuencia de lectura</h2><p>Se admiten IDs o URLs completas de Drive. El guardado prueba todos los recursos antes de aplicarlos.</p></div>
+          <button class="admin-btn primary" id="btn-admin-save" onclick="guardarConfiguracionAdmin()">Guardar configuración</button>
+        </div>
+        <div class="admin-band-body admin-config-grid">
+          <div class="admin-field"><label>Recurso</label><input value="Carpeta de trazabilidad" disabled></div>
+          <div class="admin-field"><label>Ruta o ID de Drive</label><input id="admin-trazabilidad-id" autocomplete="off"></div>
+          <div class="admin-field"><label>Releer cada</label><input id="admin-trazabilidad-ttl" type="number" min="60" max="21600"><div class="field-hint">segundos, entre 60 y 21600</div></div>
+
+          <div class="admin-field"><label>Recurso</label><input value="Catálogo de gobierno" disabled></div>
+          <div class="admin-field"><label>Ruta o ID del Google Sheet</label><input id="admin-gobierno-id" autocomplete="off"></div>
+          <div class="admin-field"><label>Releer cada</label><input id="admin-gobierno-ttl" type="number" min="60" max="21600"><div class="field-hint">segundos, entre 60 y 21600</div></div>
+
+          <div class="admin-field"><label>Recurso</label><input value="Matriz de calidad" disabled></div>
+          <div class="admin-field"><label>Ruta o ID del Google Sheet</label><input id="admin-calidad-id" autocomplete="off"></div>
+          <div class="admin-field"><label>Releer cada</label><input id="admin-calidad-ttl" type="number" min="60" max="21600"><div class="field-hint">segundos, entre 60 y 21600</div></div>
+        </div>
+      </section>
+
+      <section class="admin-band">
+        <div class="admin-band-head"><div><h2>Estado de conexiones</h2><p>Prueba permisos, existencia de carpetas y hojas requeridas.</p></div><span id="admin-cache-version" class="admin-state sin-probar">Caché —</span></div>
+        <div class="admin-band-body"><div id="admin-resources" class="admin-resource-grid"></div></div>
+      </section>
+
+      <section class="admin-band">
+        <div class="admin-band-head"><div><h2>Flujo de la herramienta</h2><p>Entradas, transformación y salidas que pertenecen al dominio de Calidad.</p></div></div>
+        <div class="admin-band-body flow-grid" id="admin-flow"></div>
+      </section>
+
+      <div class="admin-data-grid">
+        <section class="admin-band">
+          <div class="admin-band-head"><div><h2>Archivos de trazabilidad</h2><p>Nombres y última modificación informada por Drive.</p></div><span id="admin-files-count" class="admin-state sin-probar">Sin probar</span></div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Archivo</th><th>Última modificación</th><th>Tamaño</th></tr></thead><tbody id="admin-files-body"><tr><td colspan="3">Pulsa “Probar conexiones”.</td></tr></tbody></table></div>
+        </section>
+        <section class="admin-band">
+          <div class="admin-band-head"><div><h2>Usuarios recientes</h2><p>“Activo” significa actividad registrada durante los últimos 15 minutos.</p></div></div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Usuario</th><th>Última conexión</th><th>Estado</th></tr></thead><tbody id="admin-users-body"></tbody></table></div>
+        </section>
+      </div>
+
+      <section class="admin-band">
+        <div class="admin-band-head"><div><h2>Historial operativo</h2><p>Últimas lecturas, pruebas, cambios y reportes. No registra contenido de los datos.</p></div></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Recurso</th><th>Resultado</th><th>Duración</th><th>Detalle</th></tr></thead><tbody id="admin-operations-body"></tbody></table></div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <script>
+    let currentView = 'dashboard';
+    let tableData = [], currentStatus = 'all', currentHora = '', currentSearch = '', sortKey = 'status', sortDir = 1;
+    let currentProceso = 'all'; 
+    let currentQualityMode = 'tecnico';
+    let includeTraceability = false; 
+    const STATUS_ORDER = { err: 0, warn: 1, pending: 2, ok: 3 };
+    
+    let datosRelaciones = [], estadosTablas = {}, funcionalTablas = {}, dsTablas = {},
+        deTablas = {}, relacionesActuales = [], arrHuerfanasGlobal = [], listaTablasOficialGlobal = [];
+    let tablaTrazSeleccionada = '';
+    let direccionTrazabilidad = 'entrada';
+    let versionRenderTrazabilidad = 0;
+    let procesosTablasGlobal = {};
+    let periodicidadTablas   = {};
+    let direccionTablas      = {};
+    let ttmTablas            = {};
+    let stabilityReport      = null;
+    let stabilityFilterState = { proceso:'all', de:'all', direccion:'all', search:'' };
+    let adminData            = null;
+    let adminCargada         = false;
+    const PROCESS_LABELS = { contable:'Cubo Contable', operacional:'Cubo Operacional', flow:'Flow Actividad', ficod:'FICOD', ifrs9:'IFRS9' };
+
+    function limpiarTablaRobusto(nombreStr) { 
+        if(!nombreStr) return "";
+        return String(nombreStr).replace(/\\/g, '').trim(); 
+    }
+
+    function escapeHtml(valor) {
+      return String(valor === null || valor === undefined ? '' : valor)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function tablaEnVistaCalidad(tabla) {
+      const vista = tabla.vistas && tabla.vistas[currentQualityMode]
+        ? tabla.vistas[currentQualityMode]
+        : { status:tabla.status, quality:tabla.quality, issues:tabla.issues || [], totalReglas:0, reglasOk:0, reglasFallidas:0, reglasPendientes:0 };
+      const detalle = tabla.detallesVista && tabla.detallesVista[currentQualityMode];
+      return Object.assign({}, tabla, vista, {
+        tablaBase: tabla,
+        qualityMode: currentQualityMode,
+        reglas: detalle ? detalle.reglas : [],
+        historico: detalle ? detalle.historico : undefined,
+        limiteHistorico: detalle ? detalle.limiteHistorico : (String(tabla.periodicidad).toLowerCase() === 'mensual' ? 3 : 10),
+        detallePendiente: !detalle
+      });
+    }
+
+    function tablasEnVistaCalidad() {
+      const tablasVista = tableData.map(tablaEnVistaCalidad);
+      return currentQualityMode === 'funcional'
+        ? tablasVista.filter(tabla => Number(tabla.totalReglas || 0) > 0)
+        : tablasVista;
+    }
+
+    function mensajeError(error) {
+      return error && error.message ? error.message : String(error || 'Error desconocido');
+    }
+
+    function callServer(functionName, ...args) {
+      return new Promise((resolve, reject) => {
+        const runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(error => reject(new Error(mensajeError(error))));
+        runner[functionName](...args);
+      });
+    }
+
+    function showToast(mensaje, tipo = 'info') {
+      const stack = document.getElementById('toast-stack');
+      if (!stack) return;
+      const toast = document.createElement('div');
+      toast.className = `app-toast ${tipo}`;
+      toast.textContent = String(mensaje || '');
+      stack.appendChild(toast);
+      window.setTimeout(() => toast.remove(), 5000);
+    }
+
+    function formatoFechaHora(valor) {
+      if (!valor) return '—';
+      const fecha = new Date(valor);
+      if (Number.isNaN(fecha.getTime())) return String(valor);
+      return fecha.toLocaleString('es-UY', {
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+      });
+    }
+
+    // fecha activa global (se actualiza al cargar)
+    let fechaActivaFiltro = '';
+    let fechaReferenciaEstabilidad = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: { lineColor: '#004a8d', primaryColor: '#ffffff' }, flowchart: { curve: 'basis', rankSpacing: 60, nodeSpacing: 40, useMaxWidth: false } });
+
+        callServer('obtenerDatosTrazabilidad')
+          .then(function(res) {
+              datosRelaciones          = res.relaciones.map(r => limpiarTablaRobusto(r));
+              estadosTablas            = res.estados;
+              funcionalTablas          = res.funcionales || {};
+              dsTablas                 = res.dataScientists;
+              deTablas                 = res.dataEngineers;
+              procesosTablasGlobal     = res.procesosTablas;
+              periodicidadTablas       = res.periodicidadTablas || {};
+              direccionTablas          = res.direccionTablas    || {};
+              ttmTablas                = res.ttmTablas           || {};
+              listaTablasOficialGlobal = res.listaTablasOficial.map(t => limpiarTablaRobusto(t));
+              const tablasOrdenadas    = listaTablasOficialGlobal.slice().sort();
+              renderLista(tablasOrdenadas);
+              generarIndicadoresEntrada(tablasOrdenadas, res.archivosTxtExistentes);
+              // Si calidad ya cargó, reconstruir el combo de responsables con los mapas completos
+              if (tableData.length > 0) {
+                recalcularDesplegableResponsables();
+                recalcularDesplegableDirecciones();
+              }
+          })
+            .catch(function(err) {
+              const lista = document.getElementById('listaTablas');
+              if (lista) lista.textContent = 'No se pudo cargar la trazabilidad: ' + mensajeError(err);
+              showToast('No se pudo cargar la trazabilidad: ' + mensajeError(err), 'error');
+              console.error('Error cargando trazabilidad y gobierno:', err);
+            });
+
+        // Carga la calidad de la última fecha disponible automáticamente (en paralelo)
+        // para que el dashboard aparezca poblado sin esperar al botón "Cargar".
+        cargarCalidadInicial();
+
+        const registrarPresencia = () => callServer('registrarConexionUsuario')
+          .catch(err => console.warn('No se pudo registrar la conexión del usuario:', mensajeError(err)));
+        registrarPresencia();
+        window.setInterval(registrarPresencia, 5 * 60 * 1000);
+    });
+
+    // Trae la última fecha disponible + sus datos de calidad en una sola llamada
+    // y pinta el dashboard al entrar a la app.
+    function cargarCalidadInicial() {
+      const btnLoad = document.getElementById('btn-load');
+      const originalText = btnLoad.innerHTML;
+      const emptyState = document.getElementById('empty-state');
+      const strip = document.getElementById('strip-status');
+
+      btnLoad.innerHTML = "⌛ Extrayendo Data...";
+      btnLoad.disabled = true;
+      emptyState.style.display = 'none';
+      strip.style.display = 'flex';
+      document.getElementById('strip-info').textContent = "Consultando base de datos corporativa...";
+
+      const restaurarBoton = () => {
+        btnLoad.innerHTML = originalText;
+        btnLoad.disabled = false;
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+      };
+
+      callServer('obtenerCargaInicial')
+        .then(function(carga) {
+          // carga es { ultimaFecha, datos: { filas, procesos, dir, ds, de } }
+          if (!carga || !carga.ultimaFecha) {
+            // Sin datos: restaurar el estado vacío para que el usuario elija fecha manualmente
+            emptyState.style.display = 'flex';
+            strip.style.display = 'none';
+            restaurarBoton();
+            return;
+          }
+          document.getElementById('date-picker').value = carga.ultimaFecha;
+          fechaActivaFiltro = carga.ultimaFecha;
+          fechaReferenciaEstabilidad = carga.ultimaFecha;
+          aplicarDatosMonitor(carga.datos, carga.ultimaFecha);
+          restaurarBoton();
+        })
+        .catch(function(err) {
+          emptyState.style.display = 'flex';
+          strip.style.display = 'flex';
+          document.getElementById('strip-info').textContent = 'No se pudo iniciar el monitor: ' + mensajeError(err);
+          restaurarBoton();
+          showToast('No se pudo iniciar el monitor: ' + mensajeError(err), 'error');
+          console.error('Error en carga inicial de calidad:', err);
+        });
+    }
+
+    function alternarModoFechaInput() {
+      const modo = document.getElementById('fecha-selector-modo').value;
+      const pickerFin = document.getElementById('date-picker-fin');
+      const sep = document.getElementById('date-sep-rango');
+      if (modo === 'rango') {
+        pickerFin.style.display = 'inline-block';
+        if (sep) sep.style.display = 'inline';
+      } else {
+        pickerFin.style.display = 'none';
+        if (sep) sep.style.display = 'none';
+      }
+    }
+
+    function alternarFrecuenciaCorte() {
+      const frecuencia = document.getElementById('frecuencia-selector').value;
+      const modo = document.getElementById('fecha-selector-modo');
+      if (frecuencia === 'mensual') {
+        modo.value = 'rango';
+        modo.disabled = true;
+      } else {
+        modo.disabled = false;
+      }
+      alternarModoFechaInput();
+    }
+
+    function toggleGovDropdown() {
+      document.getElementById('gov-dropdown-menu').classList.toggle('show');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.gov-dropdown-container')) {
+        document.getElementById('gov-dropdown-menu').classList.remove('show');
+      }
+      if (!e.target.closest('#dir-dropdown-container')) {
+        const dm = document.getElementById('dir-dropdown-menu');
+        if (dm) dm.classList.remove('show');
+      }
+    });
+
+    function toggleDirDropdown() {
+      document.getElementById('dir-dropdown-menu').classList.toggle('show');
+    }
+
+    function recalcularDesplegableDirecciones() {
+      const itemsDiv = document.getElementById('dir-dropdown-items');
+      if (!itemsDiv) return;
+
+      // Recoger las direcciones actualmente marcadas antes de reconstruir
+      const marcadas = new Set();
+      itemsDiv.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => marcadas.add(cb.value));
+
+      // Construir el universo de direcciones desde el mapa (fuente única de verdad)
+      const dirs = new Set(['Local']);
+      Object.values(direccionTablas).forEach(d => { if (d && d.trim()) dirs.add(d.trim()); });
+
+      itemsDiv.innerHTML = '';
+      Array.from(dirs).sort().forEach(d => {
+        const checked = (marcadas.size === 0 || marcadas.has(d)) ? 'checked' : '';
+        itemsDiv.innerHTML += `<div class="gov-dropdown-item">
+          <input type="checkbox" id="chk-dir-${d.replace(/\s+/g,'_')}" value="${d}" ${checked} onchange="actualizarBadgeDir();filterCards()">
+          <label for="chk-dir-${d.replace(/\s+/g,'_')}">${d}</label>
+        </div>`;
+      });
+      actualizarBadgeDir();
+    }
+
+    function actualizarBadgeDir() {
+      const itemsDiv = document.getElementById('dir-dropdown-items');
+      if (!itemsDiv) return;
+      const todas   = itemsDiv.querySelectorAll('input[type="checkbox"]');
+      const marcadas = itemsDiv.querySelectorAll('input[type="checkbox"]:checked');
+      const badge    = document.getElementById('dir-badge-txt');
+      if (!badge) return;
+      if (marcadas.length === 0 || marcadas.length === todas.length) {
+        badge.textContent = 'Todas';
+      } else {
+        badge.textContent = Array.from(marcadas).map(cb => cb.value.substring(0,6)).join(', ');
+      }
+    }
+
+    function recalcularDesplegableResponsables() {
+      const rol      = document.getElementById('select-gov-rol').value;
+      const combo    = document.getElementById('select-gov-nombre');
+      const selActual = combo.value;
+
+      // Elegir el mapa correcto según el rol seleccionado
+      // Si aún no han llegado los mapas de trazabilidad, usar el mapa del backend de calidad
+      const mapaRespActual = (rol === 'dataEngineer') ? deTablas : dsTablas;
+
+      const bolsaNombres = new Set(['BAU']);
+      if (Object.keys(mapaRespActual).length > 0) {
+        // Mapa de gobierno disponible — usarlo como fuente de verdad
+        Object.values(mapaRespActual).forEach(n => {
+          if (n && n.trim() !== '' && n.trim() !== 'BAU') bolsaNombres.add(n.trim());
+        });
+      } else {
+        // Fallback: leer desde tableData (puede estar parcialmente correcto)
+        tableData.forEach(t => {
+          const n = (rol === 'dataEngineer') ? t.dataEngineer : t.dataScientist;
+          if (n && n.trim() !== '' && n.trim() !== 'BAU') bolsaNombres.add(n.trim());
+        });
+      }
+
+      combo.innerHTML = '<option value="all">— Todos —</option>';
+      Array.from(bolsaNombres).sort().forEach(nombre => {
+        combo.innerHTML += `<option value="${nombre}">${nombre}</option>`;
+      });
+      if (selActual && selActual !== 'all' && bolsaNombres.has(selActual)) {
+        combo.value = selActual;
+      }
+      // NO llamar filterCards() aquí
+    }
+
+    function toggleViews() {
+      mostrarVista(currentView === 'dashboard' ? 'traceability' : 'dashboard');
+    }
+
+    function mostrarVista(vista) {
+      const esCalidadFuncional = currentQualityMode === 'funcional';
+      const configuracion = {
+        dashboard: {
+          display:'block', titulo:esCalidadFuncional ? 'Fallos Funcionales' : 'MVP Técnico',
+          subtitulo:esCalidadFuncional ? 'Control de advertencias y reglas no críticas' : 'Control de reglas críticas de calidad'
+        },
+        traceability: {
+          display:'flex', titulo:'Trazabilidad Técnica',
+          subtitulo:'Explora las relaciones de entrada y salida de cada tabla'
+        },
+        admin: {
+          display:'block', titulo:'Administración',
+          subtitulo:'Orígenes, conexiones, caché y flujo operativo'
+        }
+      };
+      if (!configuracion[vista]) return;
+      ['dashboard', 'traceability', 'admin'].forEach(nombre => {
+        const elemento = document.getElementById(`view-${nombre}`);
+        if (elemento) elemento.style.display = nombre === vista ? configuracion[nombre].display : 'none';
+        const boton = document.getElementById(`nav-${nombre}`);
+        if (boton) boton.classList.toggle('active', nombre === vista);
+      });
+      currentView = vista;
+      document.getElementById('topbar-view-title').textContent = configuracion[vista].titulo;
+      document.getElementById('topbar-view-subtitle').textContent = configuracion[vista].subtitulo;
+      if (vista === 'admin' && !adminCargada) cargarAdministracion(false);
+    }
+
+    function setAdminBusy(ocupado) {
+      ['btn-admin-refresh', 'btn-admin-test', 'btn-admin-cache', 'btn-admin-save'].forEach(id => {
+        const boton = document.getElementById(id);
+        if (boton) boton.disabled = ocupado;
+      });
+    }
+
+    async function cargarAdministracion(probar) {
+      setAdminBusy(true);
+      try {
+        adminData = await callServer(probar ? 'probarConexionesAdministracion' : 'obtenerPanelAdministracion');
+        adminCargada = true;
+        renderAdministracion(adminData);
+      } catch (error) {
+        showToast(mensajeError(error), 'error');
+        document.getElementById('admin-resources').innerHTML = `<div class="alert-card err"><div><strong>No se pudo abrir Administración</strong>${escapeHtml(mensajeError(error))}</div></div>`;
+      } finally {
+        setAdminBusy(false);
+      }
+    }
+
+    function renderAdministracion(data) {
+      const config = data.configuracion || {};
+      document.getElementById('admin-user-label').textContent = `Administrador: ${data.usuario.email}`;
+      document.getElementById('admin-trazabilidad-id').value = config.trazabilidadFolderId || '';
+      document.getElementById('admin-gobierno-id').value = config.gobiernoSheetId || '';
+      document.getElementById('admin-calidad-id').value = config.calidadSheetId || '';
+      document.getElementById('admin-trazabilidad-ttl').value = config.cacheTrazabilidadSegundos || 300;
+      document.getElementById('admin-gobierno-ttl').value = config.cacheGobiernoSegundos || 600;
+      document.getElementById('admin-calidad-ttl').value = config.cacheCalidadSegundos || 600;
+      document.getElementById('admin-cache-version').textContent = `Caché v${config.cacheVersion || 1}`;
+
+      document.getElementById('admin-resources').innerHTML = (data.recursos || []).map(recurso => {
+        const ultima = recurso.ultimaOperacion ? formatoFechaHora(recurso.ultimaOperacion.fecha) : 'Sin lecturas registradas';
+        const nombre = recurso.url
+          ? `<a href="${escapeHtml(recurso.url)}" target="_blank" rel="noopener">${escapeHtml(recurso.nombre || recurso.etiqueta)}</a>`
+          : escapeHtml(recurso.nombre || recurso.etiqueta);
+        return `<article class="admin-resource">
+          <div class="admin-resource-top"><div><h3>${escapeHtml(recurso.etiqueta)}</h3><p>${escapeHtml(recurso.tipo)}</p></div><span class="admin-state ${escapeHtml(recurso.estado)}">${escapeHtml(recurso.estado)}</span></div>
+          <p><strong>${nombre}</strong></p><p>${escapeHtml(recurso.detalle || 'Pendiente de prueba')}</p><p>Última operación: ${escapeHtml(ultima)}</p>
+        </article>`;
+      }).join('');
+
+      const flujo = data.flujo || { entradas:[], procesos:[], salidas:[] };
+      const columnaFlujo = (titulo, items, clase) => `<div class="flow-column ${clase || ''}"><h3>${titulo}</h3>${items.map(item => {
+        const nombre = typeof item === 'string' ? item : item.nombre;
+        const detalle = typeof item === 'string' ? 'Proceso interno' : (item.uso || item.destino || item.formato || '');
+        return `<div class="flow-item"><strong>${escapeHtml(nombre)}</strong><span>${escapeHtml(detalle)}</span></div>`;
+      }).join('')}</div>`;
+      document.getElementById('admin-flow').innerHTML =
+        columnaFlujo('Entradas', flujo.entradas || [], 'input') +
+        columnaFlujo('Transformación', flujo.procesos || [], 'process') +
+        columnaFlujo('Salidas', flujo.salidas || [], 'output');
+
+      const archivos = data.archivosTrazabilidad || [];
+      document.getElementById('admin-files-count').textContent = `${archivos.length} TXT`;
+      document.getElementById('admin-files-count').className = `admin-state ${archivos.length ? 'ok' : 'sin-probar'}`;
+      document.getElementById('admin-files-body').innerHTML = archivos.length
+        ? archivos.map(archivo => `<tr><td><strong>${escapeHtml(archivo.nombre)}</strong></td><td>${escapeHtml(formatoFechaHora(archivo.ultimaModificacion))}</td><td>${Number(archivo.bytes || 0).toLocaleString('es-UY')} bytes</td></tr>`).join('')
+        : '<tr><td colspan="3">Pulsa “Probar conexiones” para leer el inventario.</td></tr>';
+
+      const conexiones = data.conexiones || [];
+      document.getElementById('admin-users-body').innerHTML = conexiones.length
+        ? conexiones.map(item => `<tr><td><strong>${escapeHtml(item.email)}</strong></td><td>${escapeHtml(formatoFechaHora(item.ultimaConexion))}</td><td><span class="active-dot ${item.activa ? 'online' : ''}"></span>${item.activa ? 'Activo' : 'Reciente'}</td></tr>`).join('')
+        : '<tr><td colspan="3">Aún no hay conexiones registradas.</td></tr>';
+
+      const operaciones = data.operaciones || [];
+      document.getElementById('admin-operations-body').innerHTML = operaciones.length
+        ? operaciones.map(item => `<tr><td>${escapeHtml(formatoFechaHora(item.fecha))}</td><td>${escapeHtml(item.usuario)}</td><td><strong>${escapeHtml(item.accion)}</strong></td><td>${escapeHtml(item.recurso)}</td><td><span class="admin-state ${item.estado}">${escapeHtml(item.estado)}</span></td><td>${Number(item.duracionMs || 0).toLocaleString('es-UY')} ms</td><td>${escapeHtml(item.detalle)}</td></tr>`).join('')
+        : '<tr><td colspan="7">Aún no hay operaciones registradas.</td></tr>';
+    }
+
+    async function probarConexionesAdmin() {
+      await cargarAdministracion(true);
+      if (adminData) showToast('Prueba de conexiones finalizada.', 'success');
+    }
+
+    async function guardarConfiguracionAdmin() {
+      const configuracion = {
+        trazabilidadFolderId: document.getElementById('admin-trazabilidad-id').value,
+        gobiernoSheetId: document.getElementById('admin-gobierno-id').value,
+        calidadSheetId: document.getElementById('admin-calidad-id').value,
+        cacheTrazabilidadSegundos: document.getElementById('admin-trazabilidad-ttl').value,
+        cacheGobiernoSegundos: document.getElementById('admin-gobierno-ttl').value,
+        cacheCalidadSegundos: document.getElementById('admin-calidad-ttl').value
+      };
+      setAdminBusy(true);
+      try {
+        adminData = await callServer('guardarConfiguracionAdministracion', configuracion);
+        renderAdministracion(adminData);
+        showToast('Configuración guardada y conexiones verificadas.', 'success');
+      } catch (error) {
+        showToast(mensajeError(error), 'error');
+      } finally {
+        setAdminBusy(false);
+      }
+    }
+
+    async function invalidarCacheAdmin() {
+      setAdminBusy(true);
+      try {
+        const resultado = await callServer('invalidarCachesAdministracion');
+        showToast(resultado.mensaje, 'success');
+        await cargarAdministracion(false);
+      } catch (error) {
+        showToast(mensajeError(error), 'error');
+      } finally {
+        setAdminBusy(false);
+      }
+    }
+
+    function loadDashboard() {
+      const modo = document.getElementById('fecha-selector-modo').value;
+      const frecuenciaCorte = document.getElementById('frecuencia-selector').value;
+      const dateVal = document.getElementById('date-picker').value;
+      const dateValFin = document.getElementById('date-picker-fin').value;
+      
+      if (!dateVal) return;
+      if (modo === 'rango' && !dateValFin) {
+        showToast('Selecciona la fecha final del rango.', 'warning');
+        document.getElementById('date-picker-fin').focus();
+        return;
+      }
+      if (modo === 'rango' && dateValFin < dateVal) {
+        showToast('La fecha final no puede ser anterior a la fecha inicial.', 'warning');
+        return;
+      }
+      fechaActivaFiltro = dateVal; // guardar fecha activa para el modal
+      fechaReferenciaEstabilidad = modo === 'rango' ? dateValFin : dateVal;
+
+      const btnLoad = document.getElementById('btn-load');
+      const originalText = btnLoad.innerHTML;
+      btnLoad.innerHTML = "⌛ Extrayendo Data...";
+      btnLoad.disabled = true;
+      document.getElementById('empty-state').style.display = 'none';
+      const strip = document.getElementById('strip-status');
+      strip.style.display = 'flex';
+      document.getElementById('strip-info').textContent = "Consultando base de datos corporativa...";
+      
+      callServer('obtenerDatosMonitor', dateVal, modo === 'rango' ? dateValFin : '', frecuenciaCorte)
+        .then(function(res) {
+          aplicarDatosMonitor(res, dateVal);
+          btnLoad.innerHTML = originalText;
+          btnLoad.disabled = false;
+        })
+        .catch(function(err) {
+          document.getElementById('strip-info').textContent = 'No se pudieron cargar los datos: ' + mensajeError(err);
+          btnLoad.innerHTML = originalText;
+          btnLoad.disabled = false;
+          showToast('No se pudieron cargar los datos: ' + mensajeError(err), 'error');
+          console.error('Error cargando el monitor de calidad:', err);
+        });
+    }
+
+    // Aplica la respuesta de obtenerDatosMonitor (o de obtenerCargaInicial.datos)
+    // res es { filas, procesos, dir, ds, de }
+    function aplicarDatosMonitor(res, dateVal) {
+      tableData = (res && res.filas) ? res.filas : [];
+      tableData.forEach(tabla => { tabla.detallesVista = {}; });
+
+      // Poblar TODOS los mapas desde la respuesta de calidad
+      // Garantiza que filtros funcionen aunque trazabilidad no haya cargado aún
+      if (res && res.procesos && Object.keys(res.procesos).length > 0) procesosTablasGlobal = res.procesos;
+      if (res && res.dir     && Object.keys(res.dir).length     > 0) direccionTablas      = res.dir;
+      if (res && res.funcional && Object.keys(res.funcional).length > 0) funcionalTablas = res.funcional;
+      if (res && res.ds      && Object.keys(res.ds).length      > 0) dsTablas             = res.ds;
+      if (res && res.de      && Object.keys(res.de).length      > 0) deTablas             = res.de;
+
+      recalcularDesplegableResponsables();
+      recalcularDesplegableDirecciones();
+      renderDashboardUI(dateVal);
+    }
+
+    function setProcesoFilter(proc, btnEl) {
+      currentProceso = proc;
+      document.querySelectorAll('.btn-proc').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderCards(); 
+    }
+
+    function setQualityMode(modo) {
+      currentQualityMode = modo === 'funcional' ? 'funcional' : 'tecnico';
+      currentStatus = 'all';
+      const esFuncional = currentQualityMode === 'funcional';
+      const dashboard = document.getElementById('dashboard-content');
+      dashboard.classList.toggle('mode-funcional', esFuncional);
+      dashboard.classList.toggle('mode-tecnico', !esFuncional);
+      document.getElementById('quality-mode-tecnico').classList.toggle('active', !esFuncional);
+      document.getElementById('quality-mode-tecnico').setAttribute('aria-selected', String(!esFuncional));
+      document.getElementById('quality-mode-funcional').classList.toggle('active', esFuncional);
+      document.getElementById('quality-mode-funcional').setAttribute('aria-selected', String(esFuncional));
+      document.getElementById('quality-mode-kpi-label').textContent = esFuncional
+        ? 'Fallos Funcionales · Reglas no críticas' : 'MVP Técnico · Reglas críticas';
+      document.getElementById('status-filter-warn').style.display = esFuncional ? 'inline-flex' : 'none';
+      document.getElementById('status-filter-err').style.display = esFuncional ? 'none' : 'inline-flex';
+      document.querySelectorAll('#filter-chips .chip').forEach(chip => chip.classList.remove('active'));
+      document.querySelector('#filter-chips [data-filter="all"]').classList.add('active');
+      document.getElementById('topbar-view-title').textContent = esFuncional ? 'Fallos Funcionales' : 'MVP Técnico';
+      document.getElementById('topbar-view-subtitle').textContent = esFuncional
+        ? 'Control de advertencias y reglas no críticas' : 'Control de reglas críticas de calidad';
+      actualizarResumenSuperior();
+      renderCards();
+    }
+
+    function mostrarCalidad(modo) {
+      setQualityMode(modo);
+      mostrarVista('dashboard');
+    }
+
+    function toggleTraceability(el) {
+      includeTraceability = !includeTraceability;
+      if(includeTraceability) el.classList.add('active');
+      else el.classList.remove('active');
+      renderCards();
+    }
+
+    function renderDashboardUI(dateVal) {
+      document.getElementById('dashboard-content').style.display = 'block';
+      actualizarResumenSuperior();
+
+      const dParts = dateVal.split('-');
+      const d = new Date(dParts[0], dParts[1] - 1, dParts[2]);
+      document.getElementById('left-date').innerHTML = `${d.getDate().toString().padStart(2,'0')} <span>${['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'][d.getMonth()]}</span> ${d.getFullYear()}`;
+      renderCards();
+    }
+
+    function actualizarResumenSuperior() {
+      const datosVista = tablasEnVistaCalidad();
+      const ok = datosVista.filter(t => t.status === 'ok').length;
+      const warn = datosVista.filter(t => t.status === 'warn').length;
+      const pending = datosVista.filter(t => t.status === 'pending').length;
+      const err = datosVista.filter(t => t.status === 'err').length;
+      const total = datosVista.length;
+      const pill = document.getElementById('strip-pill');
+      if (err > 0) { pill.className = 'status-pill pill-err'; pill.textContent = 'CON FALLOS'; }
+      else if (warn > 0) { pill.className = 'status-pill pill-warn'; pill.textContent = 'CON ADVERTENCIAS'; }
+      else if (pending > 0) { pill.className = 'status-pill pill-pending'; pill.textContent = 'PENDIENTE DE CARGA'; }
+      else { pill.className = 'status-pill pill-ok'; pill.textContent = 'CALIDAD ÓPTIMA'; }
+      
+      document.getElementById('strip-info').textContent = `${ok}/${total} tablas OK · ${pending} pendientes · ${warn} con advertencias · ${err} con fallos`;
+    }
+
+    function sortBy(key) {
+      if (sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = key === 'status' ? 1 : -1; }
+      document.querySelectorAll('.data-table thead th').forEach(th => th.classList.remove('sorted'));
+      const thMap = { name:'th-name', status:'th-status', quality:'th-quality', rows:'th-rows', startTime:'th-time', cutoffDate:'th-cutoff', periodicidad:'th-periodicity', ttm:'th-ttm' };
+      if (thMap[key]) document.getElementById(thMap[key]).classList.add('sorted');
+      renderCards();
+    }
+
+    function setStatusFilter(f, el) { currentStatus = f; document.querySelectorAll('#filter-chips .chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); renderCards(); }
+    
+    function filterCards() { 
+      currentSearch = (document.getElementById('search-input').value || '').trim();
+      currentHora   = (document.getElementById('search-hora').value  || '').trim();
+      renderCards(); 
+    }
+
+    function renderCards() {
+      // Siempre leer valores frescos del DOM
+      currentSearch = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      currentHora   = (document.getElementById('search-hora').value  || '').trim().toLowerCase();
+      const currentPeriodicidad = document.getElementById('select-periodicidad').value;
+
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      
+      let estadosBolsa = [];
+      if(document.getElementById('chk-gov-prod').checked) estadosBolsa.push('productiva');
+      if(document.getElementById('chk-gov-dev').checked) estadosBolsa.push('en desarrollo');
+      if(document.getElementById('chk-gov-unk').checked) estadosBolsa.push('desconocido');
+
+      document.getElementById('gov-badge-txt').innerText = estadosBolsa.map(x => x.substring(0,4)).join(', ');
+
+      const filtroRol = document.getElementById('select-gov-rol').value;
+      const filtroNombreResponsable = document.getElementById('select-gov-nombre').value;
+      // Direcciones seleccionadas (checkboxes multi-select)
+      const itemsDir = document.getElementById('dir-dropdown-items');
+      const dirCheckboxes = itemsDir ? itemsDir.querySelectorAll('input[type="checkbox"]') : [];
+      const diresTodas = dirCheckboxes.length === 0 || 
+                         itemsDir.querySelectorAll('input[type="checkbox"]:checked').length === dirCheckboxes.length ||
+                         itemsDir.querySelectorAll('input[type="checkbox"]:checked').length === 0;
+      const diresSeleccionadas = diresTodas ? null : 
+        new Set(Array.from(itemsDir.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value));
+
+      // ─── PASO 1: universo por Proceso (+ trazabilidad opcional) ──────────────
+      // El proceso define el conjunto base de tablas. Si el toggle de
+      // trazabilidad está activo, ese conjunto se expande con sus tablas fuente
+      // (aguas arriba). Este universo NO depende de los demás filtros: búsqueda,
+      // responsable, estado, gobierno, dirección y hora se aplican DESPUÉS para
+      // estrechar el resultado. Así un filtro secundario nunca hace desaparecer
+      // las tablas de trazabilidad, sino que filtra dentro de ellas.
+      // Clave normalizada de tabla: minúsculas, sin barras invertidas, sin espacios.
+      // Se usa la MISMA normalización para gobierno, relaciones y tableData, de modo
+      // que el cruce entre las tres fuentes sea consistente.
+      const clave = (nombre) => (nombre || '').toString().toLowerCase().replace(/\\/g, '').trim();
+
+      // universoNombres = null  →  sin restricción de proceso (todas las tablas)
+      let universoNombres = null;
+      if (currentProceso !== 'all') {
+        universoNombres = new Set();
+
+        // Semilla: TODAS las tablas marcadas para el proceso en gobierno, tengan o
+        // no datos de calidad cargados. Así la trazabilidad puede recorrer el linaje
+        // completo aunque alguna tabla intermedia no tenga fila de calidad en la
+        // fecha cargada (antes la semilla salía solo de tableData y rompía la cadena).
+        Object.keys(procesosTablasGlobal).forEach(key => {
+          const pd = procesosTablasGlobal[key];
+          if (pd && pd[currentProceso] === true) universoNombres.add(clave(key));
+        });
+
+        // Expansión por trazabilidad: añadir tablas fuente (aguas arriba)
+        if (includeTraceability && universoNombres.size > 0) {
+          let buscador   = Array.from(universoNombres);
+          let procesadas = new Set(universoNombres);
+          while (buscador.length > 0) {
+            const actual = buscador.shift();
+            datosRelaciones.forEach(rel => {
+              const partes = rel.split('-->');
+              if (partes.length === 2 && clave(partes[1]) === actual) {
+                const origen = clave(partes[0]);
+                if (!procesadas.has(origen)) {
+                  procesadas.add(origen);
+                  universoNombres.add(origen);
+                  buscador.push(origen);
+                }
+              }
+            });
+          }
+        }
+      }
+
+      // ─── PASO 2: filtros que estrechan el universo ───────────────────────────
+      // Se aplican siempre, sobre el universo (proceso + trazabilidad o todas).
+      let filtered = tablasEnVistaCalidad().filter(t => {
+        if (universoNombres && !universoNombres.has(clave(t.name))) return false;
+
+        const matchSearch    = !currentSearch || t.name.toLowerCase().includes(currentSearch);
+        const matchHora      = !currentHora   || t.startTime.toLowerCase().includes(currentHora);
+        const matchStatus    = currentStatus === 'all' || t.status === currentStatus;
+        const matchPeriodicidad = currentPeriodicidad === 'all' || String(t.periodicidad || '').toLowerCase() === currentPeriodicidad;
+        const matchGovEstado = estadosBolsa.indexOf(t.estadoGob.toLowerCase()) !== -1;
+
+        let respActual = (filtroRol === 'dataEngineer') ? t.dataEngineer : t.dataScientist;
+        const matchResponsable = (filtroNombreResponsable === 'all' || respActual === filtroNombreResponsable);
+
+        let matchDir = true;
+        if (diresSeleccionadas) {
+          matchDir = diresSeleccionadas.has(direccionTablas[clave(t.name)] || 'Local');
+        }
+
+        return matchSearch && matchHora && matchStatus && matchPeriodicidad && matchGovEstado && matchResponsable && matchDir;
+      });
+
+      filtered.sort((a, b) => {
+        let av, bv;
+        if (sortKey === 'status') { av = STATUS_ORDER[a.status]; bv = STATUS_ORDER[b.status]; }
+        else if (sortKey === 'name') { return sortDir * a.name.localeCompare(b.name); }
+        else if (sortKey === 'cutoffDate') { return sortDir * a.cutoffDate.localeCompare(b.cutoffDate); }
+        else { av = (a[sortKey] !== undefined) ? parseFloat(a[sortKey]) : 0; bv = (b[sortKey] !== undefined) ? parseFloat(b[sortKey]) : 0; }
+        return sortDir * (av - bv);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="11">No hay registros para los filtros seleccionados.</td></tr>';
+        document.getElementById('table-count').textContent = '0 tablas';
+        updateLeftKPIs([]);
+        return;
+      }
+
+      const badgeClass = { ok:'sbadge-ok', warn:'sbadge-warn', pending:'sbadge-pending', err:'sbadge-err' };
+      const badgeLabel = { ok:'100% OK', warn:'Advertencia', pending:'Pendiente', err:'Fallos' };
+      const qClass = { ok:'q-ok', warn:'q-warn', pending:'q-pending', err:'q-err' };
+      const qBarClass = { ok:'qbar-ok', warn:'qbar-warn', pending:'qbar-pending', err:'qbar-err' };
+      const frag = document.createDocumentFragment();
+
+      filtered.forEach(t => {
+        const rowsFmt = `<span class="vol-val">${t.rows.toLocaleString('es-ES')}</span>`;
+        const ttmValor = String(t.ttm || '1').trim();
+        const ttmTexto = ttmValor.startsWith('+') ? ttmValor : `+${ttmValor}`;
+        const issueClass = t.status === 'warn' ? 'txt-warn' : (t.status === 'pending' ? 'txt-pending' : '');
+        const issueHtml = t.issues.length > 0 ? `<span class="issue-text ${issueClass}">${t.issues.join(', ')}</span>` : `<span class="no-issue">—</span>`;
+        const tr = document.createElement('tr');
+        tr.className = `row-${t.status}`;
+        tr.innerHTML = `<td class="td-status"><div class="row-bar ${t.status}"></div></td><td class="td-periodicity">${t.cutoffDate || '—'}</td><td class="td-name"><div class="tname">${t.name}</div><div class="tschema">${t.schema}</div></td><td><span class="status-badge ${badgeClass[t.status]}"><span class="dot"></span>${badgeLabel[t.status]}</span></td><td class="td-quality"><div class="quality-wrap"><span class="quality-val ${qClass[t.status]}">${t.quality}%</span><div class="qbar-track"><div class="qbar-fill ${qBarClass[t.status]}" style="width:${t.quality}%"></div></div></div></td><td class="td-volume">${rowsFmt}</td><td class="td-time">${t.startTime}</td><td class="td-periodicity">${escapeHtml(t.periodicidad || '—')}</td><td class="td-periodicity">${escapeHtml(ttmTexto)}</td><td class="td-issues">${issueHtml}</td><td class="td-action"><button class="btn-detail" title="Ver detalle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button></td>`;
+        tr.onclick = () => openModal(t);
+        frag.appendChild(tr);
+      });
+
+      tbody.appendChild(frag);
+
+      const ok   = filtered.filter(t => t.status === 'ok').length;
+      const warn = filtered.filter(t => t.status === 'warn').length;
+      const pending = filtered.filter(t => t.status === 'pending').length;
+      const err  = filtered.filter(t => t.status === 'err').length;
+      document.getElementById('table-count').textContent = `${filtered.length} registro${filtered.length !== 1 ? 's' : ''} · ${ok} OK · ${pending} pend. · ${warn} adv. · ${err} error${err !== 1 ? 'es' : ''}`;
+
+      updateLeftKPIs(filtered);
+    }
+
+    function updateLeftKPIs(filtered) {
+      const esFuncional = currentQualityMode === 'funcional';
+      const total = filtered.reduce((suma, tabla) => suma + Number(tabla.totalReglas || 0), 0);
+      const ok = filtered.reduce((suma, tabla) => suma + Number(tabla.reglasOk || 0), 0);
+      const pending = filtered.reduce((suma, tabla) => suma + Number(tabla.reglasPendientes || 0), 0);
+      const fallidas = filtered.reduce((suma, tabla) => suma + Number(tabla.reglasFallidas || 0), 0);
+      const pct   = total === 0 ? 0 : Math.round((ok / total) * 100);
+
+      // Etiqueta de proceso activo en panel izquierdo
+      const labelProceso = currentProceso === 'all' ? '' : ` · ${document.querySelector('.btn-proc.active')?.textContent.trim() || ''}`;
+      document.getElementById('kpi-global-lbl').textContent = (esFuncional
+        ? 'Tasa de reglas no críticas exitosas' : 'Tasa de reglas críticas exitosas') + labelProceso;
+      document.getElementById('kpi-success-title').textContent = esFuncional
+        ? 'Reglas no críticas evaluadas' : 'Reglas críticas evaluadas';
+      document.getElementById('kpi-success-label').textContent = esFuncional
+        ? 'Reglas no críticas exitosas' : 'Reglas críticas exitosas';
+      document.getElementById('kpi-failures-title').textContent = esFuncional
+        ? 'Advertencias funcionales' : 'Fallos críticos';
+      document.getElementById('kpi-errors-label').textContent = esFuncional
+        ? 'Reglas no críticas con advertencia' : 'Reglas críticas con fallo';
+      const procesoLabelEl = document.getElementById('left-proceso-label');
+      if (currentProceso !== 'all') {
+        procesoLabelEl.textContent = '▸ ' + (document.querySelector('.btn-proc.active')?.textContent.trim() || '');
+        procesoLabelEl.style.display = 'block';
+      } else {
+        procesoLabelEl.style.display = 'none';
+      }
+
+      const estadoGlobal = fallidas > 0 ? (esFuncional ? 'warn' : 'err') : (pending > 0 ? 'pending' : 'ok');
+      document.getElementById('kpi-global').className = `kpi-card ${estadoGlobal}`;
+      document.getElementById('kpi-global-icon').className = `kpi-icon ${estadoGlobal}`;
+      document.getElementById('kpi-global-badge').className = `kpi-badge badge-${estadoGlobal}`;
+      document.getElementById('kpi-global-badge').textContent = fallidas > 0
+        ? (esFuncional ? 'CON ADVERTENCIAS' : 'REQUIERE ATENCIÓN')
+        : (pending > 0 ? 'PENDIENTE DE CARGA' : 'SALUDABLE');
+      document.getElementById('kpi-global-val').textContent = pct + '%';
+      document.getElementById('kpi-global-bar').className = `kpi-bar ${estadoGlobal}`;
+      document.getElementById('kpi-global-bar').style.width = pct + '%';
+
+      document.getElementById('kpi-ok').textContent = ok;
+      document.getElementById('kpi-total').textContent = total;
+      document.getElementById('bar-ok').style.width = total === 0 ? '0%' : (ok / total * 100) + '%';
+
+      const claseFallo = esFuncional ? 'warn' : 'err';
+      document.getElementById('kpi-err-card').className = `kpi-card ${fallidas > 0 ? claseFallo : 'ok'}`;
+      document.getElementById('kpi-e-badge').className = `kpi-badge ${fallidas > 0 ? 'badge-' + claseFallo : 'badge-ok'}`;
+      document.getElementById('kpi-e-badge').textContent = fallidas > 0 ? (esFuncional ? 'ADVERTENCIAS' : 'FALLOS') : 'LIMPIO';
+      document.getElementById('kpi-errors').textContent = fallidas;
+      document.getElementById('bar-err').className = `kpi-bar ${fallidas > 0 ? claseFallo : 'ok'}`;
+      document.getElementById('bar-err').style.width = total === 0 ? '0%' : (fallidas / total * 100) + '%';
+
+      const alertBox = document.getElementById('alert-messages'); alertBox.innerHTML = '';
+      if (total === 0) {
+        alertBox.innerHTML = `<div class="alert-card warn"><div><strong>Sin reglas en esta selección</strong>No hay reglas ${esFuncional ? 'no críticas' : 'críticas'} para los filtros aplicados.</div></div>`;
+      } else if (fallidas > 0 && esFuncional) {
+        alertBox.innerHTML = `<div class="alert-card warn"><div><strong>${fallidas} advertencia${fallidas!==1?'s':''} funcional${fallidas!==1?'es':''}</strong>Corresponden a reglas no críticas y no afectan el MVP Técnico.</div></div>`;
+      } else if (fallidas > 0) {
+        alertBox.innerHTML = `<div class="alert-card err"><div><strong>${fallidas} fallo${fallidas!==1?'s':''} crítico${fallidas!==1?'s':''}</strong>Revisar las reglas de MVP Técnico.</div></div>`;
+      } else if (pending > 0) {
+        alertBox.innerHTML = `<div class="alert-card pending"><div><strong>${pending} regla${pending!==1?'s':''} pendiente${pending!==1?'s':''}</strong>El ANS todavía no ha vencido.</div></div>`;
+      } else {
+        alertBox.innerHTML = `<div class="alert-card ok"><div><strong>Calidad completada sin incidencias</strong>Todas las reglas ${esFuncional ? 'no críticas' : 'críticas'} están OK.</div></div>`;
+      }
+    }
+
+    function openStabilityMonitor() {
+      if (!fechaReferenciaEstabilidad) {
+        showToast('Carga primero una fecha única o un rango para definir el período de estabilidad.', 'warning');
+        return;
+      }
+      stabilityReport = null;
+      stabilityFilterState = { proceso:'all', de:'all', direccion:'all', search:'' };
+      document.getElementById('modal-content').classList.add('stability-modal');
+      document.getElementById('modal-title').textContent = 'Monitoreo de estabilidad';
+      document.getElementById('modal-sub').textContent = 'Calculando los últimos 45 días corridos…';
+      document.getElementById('modal-header').style.borderBottom = '3px solid var(--bbva-naranja)';
+      document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Analizando estabilidad por tabla y regla…</div>';
+      document.getElementById('modal-overlay').classList.add('open');
+
+      callServer('obtenerMonitoreoEstabilidad', fechaReferenciaEstabilidad)
+        .then(function(res) {
+          stabilityReport = res || { desde:'', hasta:'', tablas:[] };
+          renderStabilityReport();
+        })
+        .catch(function(err) {
+          document.getElementById('modal-sub').textContent = 'No se pudo generar el informe';
+          document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>Error cargando estabilidad</strong>${escapeHtml(mensajeError(err))}</div></div>`;
+          showToast('No se pudo cargar estabilidad: ' + mensajeError(err), 'error');
+          console.error('Error cargando monitoreo de estabilidad:', err);
+        });
+    }
+
+    function stabilityOptions(valores, seleccionado, etiquetas) {
+      return valores.map(v => `<option value="${escapeHtml(v)}" ${v === seleccionado ? 'selected' : ''}>${escapeHtml(etiquetas && etiquetas[v] ? etiquetas[v] : v)}</option>`).join('');
+    }
+
+    function renderStabilityReport() {
+      const tablas = (stabilityReport && stabilityReport.tablas) || [];
+      const procesos = Array.from(new Set(tablas.flatMap(t => t.procesos || []))).sort();
+      const dataEngineers = Array.from(new Set(tablas.map(t => t.dataEngineer || 'BAU'))).sort((a,b) => a.localeCompare(b));
+      const direcciones = Array.from(new Set(tablas.map(t => t.direccion || 'Local'))).sort((a,b) => a.localeCompare(b));
+
+      document.getElementById('modal-title').textContent = 'Monitoreo de estabilidad';
+      document.getElementById('modal-sub').textContent = stabilityReport.desde && stabilityReport.hasta
+        ? `${stabilityReport.desde} → ${stabilityReport.hasta} · 45 días corridos` : 'Sin datos disponibles';
+      document.getElementById('modal-body').innerHTML = `
+        <div class="stability-filters">
+          <div class="stability-filter"><label>Proceso</label><select id="stability-proceso" onchange="renderStabilityRows()"><option value="all">Todos</option>${stabilityOptions(procesos, stabilityFilterState.proceso, PROCESS_LABELS)}</select></div>
+          <div class="stability-filter"><label>Data Engineer</label><select id="stability-de" onchange="renderStabilityRows()"><option value="all">Todos</option>${stabilityOptions(dataEngineers, stabilityFilterState.de)}</select></div>
+          <div class="stability-filter"><label>Dirección</label><select id="stability-dir" onchange="renderStabilityRows()"><option value="all">Todas</option>${stabilityOptions(direcciones, stabilityFilterState.direccion)}</select></div>
+          <div class="stability-filter"><label>Tabla</label><input id="stability-search" value="${escapeHtml(stabilityFilterState.search)}" placeholder="Buscar tabla…" oninput="renderStabilityRows()"></div>
+        </div>
+        <div class="modal-kpi-row">
+          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-tablas">0</div><div class="mkpi-lbl">Tablas</div></div>
+          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-promedio">0%</div><div class="mkpi-lbl">Promedio calidad</div></div>
+          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-estables">0</div><div class="mkpi-lbl">Estables al 100%</div></div>
+          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-incidencias">0</div><div class="mkpi-lbl">Incidencias</div></div>
+        </div>
+        <div class="stability-table-wrap">
+          <table class="stability-table">
+            <thead><tr><th>Tabla</th><th>Proceso</th><th>Data Engineer</th><th>Dirección</th><th>Días</th><th>Promedio</th><th>Incidencias</th></tr></thead>
+            <tbody id="stability-table-body"></tbody>
+          </table>
+        </div>`;
+      renderStabilityRows();
+    }
+
+    function renderStabilityRows() {
+      if (!stabilityReport) return;
+      const procEl = document.getElementById('stability-proceso');
+      const deEl = document.getElementById('stability-de');
+      const dirEl = document.getElementById('stability-dir');
+      const searchEl = document.getElementById('stability-search');
+      if (!procEl || !deEl || !dirEl || !searchEl) return;
+
+      stabilityFilterState = {
+        proceso: procEl.value,
+        de: deEl.value,
+        direccion: dirEl.value,
+        search: searchEl.value
+      };
+      const busqueda = stabilityFilterState.search.trim().toLowerCase();
+      const filtradas = stabilityReport.tablas.filter(t => {
+        if (stabilityFilterState.proceso !== 'all' && !(t.procesos || []).includes(stabilityFilterState.proceso)) return false;
+        if (stabilityFilterState.de !== 'all' && t.dataEngineer !== stabilityFilterState.de) return false;
+        if (stabilityFilterState.direccion !== 'all' && t.direccion !== stabilityFilterState.direccion) return false;
+        return !busqueda || t.nombre.toLowerCase().includes(busqueda);
+      }).sort((a,b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.promedio - b.promedio || a.nombre.localeCompare(b.nombre));
+
+      const tbody = document.getElementById('stability-table-body');
+      if (filtradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">No hay tablas para los filtros seleccionados.</td></tr>';
+      } else {
+        tbody.innerHTML = filtradas.map(t => {
+          const indice = stabilityReport.tablas.indexOf(t);
+          const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+          const incidencias = t.errores + t.advertencias + t.diasVolumenCero;
+          const qClass = t.status === 'ok' ? 'q-ok' : (t.status === 'warn' ? 'q-warn' : (t.status === 'pending' ? 'q-pending' : 'q-err'));
+          return `<tr onclick="openStabilityTable(${indice})">
+            <td><strong>${escapeHtml(t.nombre)}</strong></td><td class="stability-processes">${escapeHtml(procesos)}</td>
+            <td>${escapeHtml(t.dataEngineer)}</td><td>${escapeHtml(t.direccion)}</td><td>${t.diasConDatos}</td>
+            <td><span class="quality-val ${qClass}">${t.promedio}%</span></td><td>${incidencias}</td></tr>`;
+        }).join('');
+      }
+
+      const promedio = filtradas.length ? filtradas.reduce((s,t) => s + t.promedio, 0) / filtradas.length : 0;
+      const estables = filtradas.filter(t => t.status === 'ok' && t.promedio === 100).length;
+      const incidencias = filtradas.reduce((s,t) => s + t.errores + t.advertencias + t.diasVolumenCero, 0);
+      document.getElementById('stability-kpi-tablas').textContent = filtradas.length;
+      document.getElementById('stability-kpi-promedio').textContent = promedio.toFixed(2) + '%';
+      document.getElementById('stability-kpi-estables').textContent = estables;
+      document.getElementById('stability-kpi-incidencias').textContent = incidencias;
+    }
+
+    function openStabilityTable(indice) {
+      const t = stabilityReport && stabilityReport.tablas ? stabilityReport.tablas[indice] : null;
+      if (!t) return;
+      if (!t.detalleIncluido) {
+        document.getElementById('modal-title').textContent = t.nombre;
+        document.getElementById('modal-sub').textContent = 'Cargando estabilidad y desglose de reglas…';
+        document.getElementById('modal-body').innerHTML = '<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de estabilidad…</div>';
+        callServer('obtenerMonitoreoEstabilidad', fechaReferenciaEstabilidad, t.nombre)
+          .then(function(res) {
+            if (res && res.tablas && res.tablas.length > 0) {
+              Object.assign(t, res.tablas[0]);
+              t.detalleIncluido = true;
+              openStabilityTable(indice);
+            } else {
+              document.getElementById('modal-body').innerHTML = '<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div class="alert-card warn"><div><strong>Sin detalle</strong>No se encontraron datos para esta tabla en el período.</div></div>';
+            }
+          })
+          .catch(function(err) {
+            document.getElementById('modal-body').innerHTML = `<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div class="alert-card err"><div><strong>Error cargando el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
+          });
+        return;
+      }
+      document.getElementById('modal-title').textContent = t.nombre;
+      document.getElementById('modal-sub').textContent = `Estabilidad ${stabilityReport.desde} → ${stabilityReport.hasta} · ${t.dataEngineer} · ${t.direccion}`;
+      const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+      const reglasRows = t.reglas.length ? t.reglas.map(r => {
+        const clase = r.pendientes > 0 && r.ejecuciones === 0 ? 'q-pending' : (r.fallos > 0 || r.promedio < 100 ? 'q-err' : 'q-ok');
+        return `<tr><td>${escapeHtml(r.id)}</td><td>${escapeHtml(r.nombre)}</td><td><span class="quality-val ${clase}">${r.promedio}%</span></td><td>${r.ejecuciones}</td><td>${r.fallos}</td></tr>`;
+      }).join('') : '<tr><td colspan="5">Sin reglas disponibles.</td></tr>';
+      const diasRows = t.serieDiaria.slice().reverse().map(d => `<tr><td>${escapeHtml(d.fecha)}</td><td><strong>${d.promedio}%</strong></td></tr>`).join('');
+
+      document.getElementById('modal-body').innerHTML = `
+        <button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button>
+        <div class="modal-kpi-row">
+          <div class="mkpi"><div class="mkpi-val">${t.promedio}%</div><div class="mkpi-lbl">Promedio 45 días</div></div>
+          <div class="mkpi"><div class="mkpi-val">${t.diasConDatos}</div><div class="mkpi-lbl">Días con datos</div></div>
+          <div class="mkpi"><div class="mkpi-val">${t.errores + t.advertencias}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
+          <div class="mkpi"><div class="mkpi-val">${t.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--gray-600);"><strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(t.dataEngineer)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(t.direccion)}</div>
+        <div class="stability-detail-grid">
+          <div><div class="section-sub">Desglose por regla</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>ID</th><th>Regla</th><th>Promedio</th><th>Ejecuciones</th><th>Fallos</th></tr></thead><tbody>${reglasRows}</tbody></table></div></div>
+          <div><div class="section-sub">Promedio diario</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>Fecha</th><th>Calidad</th></tr></thead><tbody>${diasRows}</tbody></table></div></div>
+        </div>`;
+    }
+
+    function openModal(t) {
+      document.getElementById('modal-content').classList.remove('stability-modal');
+      document.getElementById('modal-title').textContent = t.name;
+      const nombreVista = t.qualityMode === 'funcional' ? 'Fallos Funcionales' : 'MVP Técnico';
+      document.getElementById('modal-sub').textContent = `${nombreVista} · ${t.schema} · UUAA: ${t.uuaa} · Corte: ${t.cutoffDate}`;
+      
+      const statusColor = {ok:'var(--green)',warn:'var(--yellow)',pending:'#94A3B8',err:'var(--red)'}[t.status];
+      document.getElementById('modal-header').style.borderBottom = `3px solid ${statusColor}`;
+
+      if (t.detallePendiente) {
+        document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de reglas…</div>';
+        document.getElementById('modal-overlay').classList.add('open');
+        t.detallePendiente = false;
+        callServer('obtenerDetalleReglasCalidad', t.name, t.cutoffDate, t.qualityMode)
+          .then(function(reglas) {
+            t.reglas = Array.isArray(reglas) ? reglas : [];
+            delete t.historico;
+            if (t.tablaBase) {
+              if (!t.tablaBase.detallesVista) t.tablaBase.detallesVista = {};
+              t.tablaBase.detallesVista[t.qualityMode] = {
+                reglas: t.reglas
+              };
+            }
+            openModal(t);
+          })
+          .catch(function(err) {
+            t.detallePendiente = true;
+            document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>No se pudo cargar el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
+          });
+        return;
+      }
+
+      const rowsFmt = t.rows.toLocaleString('es-ES');
+
+      // La fecha de corte es la del objeto específico (clave fecha+tabla), no el picker
+      const fechaCorteActiva = t.cutoffDate || '—';
+
+      const ruleRows = (t.reglas || []).map(r => {
+          const estadoRegla = String(r.estado || '').toLowerCase();
+          const isOk = estadoRegla === 'exitosa';
+          const isWarn = estadoRegla === 'advertencia' || estadoRegla === 'warning';
+          const isPending = estadoRegla === 'pendiente';
+          const stColor = isOk ? '#065F46' : (isWarn ? '#92400E' : (isPending ? '#475569' : '#991b1b'));
+          const stBg = isOk ? '#d1fae5' : (isWarn ? '#FEF3C7' : (isPending ? '#E2E8F0' : '#fca5a5'));
+          const badge = `<span style="background:${stBg};color:${stColor};padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">${String(r.estado || 'Desconocido').toUpperCase()}</span>`;
+          const colorCumplimiento = isOk ? 'var(--green)' : (isWarn ? 'var(--yellow)' : (isPending ? '#64748B' : 'var(--red)'));
+          const cumplimientoTexto = isPending || isNaN(r.cumplimiento) ? '—' : `${r.cumplimiento}%`;
+          // Cada regla muestra su propio cutoffDate (ya viene del backend correcto)
+          return `<tr>
+            <td style="color:var(--gray-600);font-weight:600;white-space:nowrap;">${r.cutoffDate || fechaCorteActiva}</td>
+            <td style="color:var(--gray-400)">${r.id}</td>
+            <td style="font-weight:600;color:var(--navy)">${r.nombre}</td>
+            <td style="color:var(--gray-600)">${escapeHtml(r.campo || '—')}</td>
+            <td>${isNaN(r.numerador) ? r.numerador : Number(r.numerador).toLocaleString('es-ES')}</td>
+            <td>${isNaN(r.denominador) ? r.denominador : Number(r.denominador).toLocaleString('es-ES')}</td>
+            <td style="font-weight:bold; color:${colorCumplimiento}">${cumplimientoTexto}</td>
+            <td>${badge}</td>
+           </tr>`;
+      }).join('');
+      
+      document.getElementById('modal-body').innerHTML = `
+        <div class="modal-kpi-row">
+          <div class="mkpi"><div class="mkpi-val">${rowsFmt}</div><div class="mkpi-lbl">Volumen Máx</div></div>
+          <div class="mkpi"><div class="mkpi-val">${t.quality}%</div><div class="mkpi-lbl">Prom. ${t.qualityMode === 'funcional' ? 'Funcional' : 'MVP Técnico'}</div></div>
+          <div class="mkpi"><div class="mkpi-val" style="font-size:18px; line-height:28px;">${t.startTime}</div><div class="mkpi-lbl">Hora Calidad</div></div>
+          <div class="mkpi"><div class="mkpi-val" style="color:${statusColor}">${{ok:'OK',warn:'ADVERTENCIA',pending:'PENDIENTE',err:'ERROR'}[t.status]}</div><div class="mkpi-lbl">Estado Global</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div class="mkpi" style="text-align:left;"><div class="mkpi-lbl">Data Engineer</div><div style="margin-top:5px;font-weight:700;color:var(--navy);">${escapeHtml(t.dataEngineer || 'BAU')}</div></div>
+          <div class="mkpi" style="text-align:left;"><div class="mkpi-lbl">Data Scientist</div><div style="margin-top:5px;font-weight:700;color:var(--navy);">${escapeHtml(t.dataScientist || 'BAU')}</div></div>
+          <div class="mkpi" style="text-align:left;"><div class="mkpi-lbl">Responsable Funcional</div><div style="margin-top:5px;font-weight:700;color:var(--navy);">${escapeHtml(t.funcional || funcionalTablas[(t.name || '').toLowerCase().replace(/\\/g,'')] || 'BAU')}</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--gray-600);"><strong>Periodicidad:</strong> ${escapeHtml(t.periodicidad || '—')} &nbsp;·&nbsp; <strong>TTM:</strong> ${escapeHtml(t.ttm || '1')} día(s) hábil(es)</div>
+        <div>
+          <div class="section-sub">Reglas ${t.qualityMode === 'funcional' ? 'no críticas' : 'críticas'} · Corte filtrado: ${fechaCorteActiva}</div>
+          <div style="max-height: 340px; overflow-y: auto;">
+            <table class="log-table" style="margin-top:12px;">
+              <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+                <tr>
+                  <th>Corte Filtrado</th>
+                  <th>Regla #</th>
+                  <th>Nombre de la Regla</th>
+                  <th>Campo</th>
+                  <th>Numerador</th>
+                  <th>Denominador</th>
+                  <th>% Cumpl.</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>${ruleRows}</tbody>
+            </table>
+           </div>
+        </div>
+        <div>
+          <div class="section-sub" style="display:flex;align-items:center;gap:10px;">
+            Promedio de Calidad — ${String(t.periodicidad || '').toLowerCase() === 'mensual' ? 'Últimos 3 cortes de fin de mes' : 'Últimos 10 cortes diarios'}
+            <span id="chart-loading-msg" style="font-size:11px;font-weight:400;color:var(--gray-400);text-transform:none;letter-spacing:0;">Cargando datos históricos...</span>
+          </div>
+          <div id="modal-quality-chart" style="width:100%;height:200px;margin-top:12px;"></div>
+        </div>`;
+      
+      document.getElementById('modal-overlay').classList.add('open');
+
+      if (Array.isArray(t.historico)) {
+        const loadMsg = document.getElementById('chart-loading-msg');
+        if (loadMsg) loadMsg.style.display = 'none';
+        renderQualityChart(t.historico || [], t.quality);
+        return;
+      }
+
+      callServer('obtenerDetalleTablaCalidad', t.name, t.cutoffDate, t.qualityMode)
+        .then(function(detalle) {
+          const historico = detalle && detalle.historico ? detalle.historico : [];
+          t.historico = historico;
+          t.limiteHistorico = detalle && detalle.limiteHistorico ? detalle.limiteHistorico : t.limiteHistorico;
+          if (t.tablaBase) {
+            if (!t.tablaBase.detallesVista) t.tablaBase.detallesVista = {};
+            t.tablaBase.detallesVista[t.qualityMode] = {
+              reglas: t.reglas || [], historico: historico, limiteHistorico: t.limiteHistorico
+            };
+          }
+          const loadMsg = document.getElementById('chart-loading-msg');
+          if (loadMsg) loadMsg.style.display = 'none';
+          // Pasar el promedio real de la tabla para determinar color, NO el status de la tabla
+          renderQualityChart(historico, t.quality);
+        })
+        .catch(function() {
+          const loadMsg = document.getElementById('chart-loading-msg');
+          if (loadMsg) loadMsg.textContent = 'No se pudieron cargar los datos históricos.';
+        });
+    }
+
+    function renderQualityChart(historico, avgQuality) {
+      const container = document.getElementById('modal-quality-chart');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!historico || historico.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:30px;font-size:13px;">No hay datos históricos disponibles para este período.</p>';
+        return;
+      }
+
+      // Color basado en el promedio real de calidad, no en el status de la tabla
+      // ≥95% → verde, ≥80% → amarillo, <80% → rojo
+      const avgVal = typeof avgQuality === 'number' ? avgQuality : parseFloat(avgQuality) || 0;
+      let lineColor, areaColor;
+      if (avgVal >= 95) {
+        lineColor = '#10B981'; areaColor = 'rgba(16,185,129,0.08)';
+      } else if (avgVal >= 80) {
+        lineColor = '#F59E0B'; areaColor = 'rgba(245,158,11,0.08)';
+      } else {
+        lineColor = '#EF4444'; areaColor = 'rgba(239,68,68,0.08)';
+      }
+
+      const margin = { top: 16, right: 24, bottom: 36, left: 48 };
+      const totalW = container.clientWidth || 700;
+      const totalH = 200;
+      const W = totalW - margin.left - margin.right;
+      const H = totalH - margin.top - margin.bottom;
+
+      const svg = d3.select(container)
+        .append('svg')
+        .attr('width', totalW)
+        .attr('height', totalH);
+
+      const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+      const parseDate = d3.timeParse('%Y-%m-%d');
+      const data = historico.map(d => ({ date: parseDate(d.fecha), value: d.promedio }));
+
+      const xScale = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, W]);
+      const yScale = d3.scaleLinear().domain([Math.max(0, d3.min(data, d => d.value) - 5), 100]).range([H, 0]).nice();
+
+      // Grid lines
+      g.append('g')
+        .attr('class', 'grid')
+        .call(d3.axisLeft(yScale).ticks(4).tickSize(-W).tickFormat(''))
+        .selectAll('line').attr('stroke', '#E2E8F0').attr('stroke-dasharray', '3,3');
+      g.select('.grid .domain').remove();
+
+      // Area
+      const area = d3.area()
+        .x(d => xScale(d.date))
+        .y0(H)
+        .y1(d => yScale(d.value))
+        .curve(d3.curveCatmullRom);
+
+      g.append('path').datum(data).attr('fill', areaColor).attr('d', area);
+
+      // Line
+      const line = d3.line()
+        .x(d => xScale(d.date))
+        .y(d => yScale(d.value))
+        .curve(d3.curveCatmullRom);
+
+      g.append('path').datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', lineColor)
+        .attr('stroke-width', 2.5)
+        .attr('d', line);
+
+      // Con muchas fechas (vista de 30 días) se reduce el tamaño de los puntos
+      // y se ocultan las etiquetas por punto para evitar saturar la gráfica.
+      const denso = data.length > 12;
+
+      // Dots
+      g.selectAll('.dot')
+        .data(data)
+        .enter().append('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.date))
+        .attr('cy', d => yScale(d.value))
+        .attr('r', denso ? 2.5 : 4)
+        .attr('fill', lineColor)
+        .attr('stroke', 'white')
+        .attr('stroke-width', 1.5)
+        .append('title')
+        .text(d => `${d3.timeFormat('%d %b')(d.date)}: ${d.value}%`);
+
+      // Value labels on dots (solo cuando hay pocos puntos)
+      if (!denso) {
+        g.selectAll('.dot-label')
+          .data(data)
+          .enter().append('text')
+          .attr('class', 'dot-label')
+          .attr('x', d => xScale(d.date))
+          .attr('y', d => yScale(d.value) - 10)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '10px')
+          .attr('font-weight', '700')
+          .attr('fill', lineColor)
+          .text(d => d.value + '%');
+      }
+
+      // X Axis
+      const xTickCount = Math.min(data.length, 6);
+      g.append('g')
+        .attr('transform', `translate(0,${H})`)
+        .call(d3.axisBottom(xScale).ticks(xTickCount).tickFormat(d3.timeFormat('%d %b')))
+        .selectAll('text')
+        .attr('font-size', '11px')
+        .attr('fill', '#94A3B8');
+      g.select('.domain').attr('stroke', '#E2E8F0');
+      g.selectAll('.tick line').attr('stroke', '#E2E8F0');
+
+      // Y Axis
+      g.append('g')
+        .call(d3.axisLeft(yScale).ticks(4).tickFormat(d => d + '%'))
+        .selectAll('text')
+        .attr('font-size', '11px')
+        .attr('fill', '#94A3B8');
+    }
+
+    function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); }
+    function closeModalBtn() {
+      document.getElementById('modal-overlay').classList.remove('open');
+      document.getElementById('modal-content').classList.remove('stability-modal');
+    }
+
+    // ==========================================
+    // MÓDULO 3: TRAZABILIDAD
+    // ==========================================
+    function renderLista(tablasCatalogo) {
+      // Solo tablas que empiezan por t_ — del catálogo y de los planos de relaciones
+      const universo = new Set(
+        tablasCatalogo.map(t => t.trim()).filter(t => t.toLowerCase().startsWith('t_'))
+      );
+      datosRelaciones.forEach(relacion => {
+        if (relacion.includes('-->')) {
+          const partes = relacion.split('-->').map(s => s.trim().replace(/\\/g, ''));
+          if (partes[0] && partes[0].toLowerCase().startsWith('t_')) universo.add(partes[0]);
+          if (partes[1] && partes[1].toLowerCase().startsWith('t_')) universo.add(partes[1]);
+        }
+      });
+      const listaOrdenada = Array.from(universo).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+
+      const div = document.getElementById('listaTablas');
+      div.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      listaOrdenada.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'btn-tabla';
+        b.innerText = t;
+        b.onclick = () => armarGrafo(t, b);
+        frag.appendChild(b);
+      });
+      div.appendChild(frag);
+    }
+
+    function filtrarTablas() {
+      const f = document.getElementById('buscador-traz').value.toLowerCase();
+      document.querySelectorAll('.btn-tabla').forEach(b => b.style.display = b.innerText.toLowerCase().includes(f) ? "block" : "none");
+    }
+
+    function generarIndicadoresEntrada(tablas, archivosTxt) {
+      let total = tablas.length, prod = 0, dev = 0, unk = 0, huerfanas = 0;
+      arrHuerfanasGlobal = [];
+      const setArchivos = new Set(archivosTxt.map(a => a.toLowerCase()));
+      tablas.forEach(t => {
+        let clave = t.toLowerCase(); let est = estadosTablas[clave] || "desconocido";
+        if (est === "productiva") prod++; else if (est === "en desarrollo") dev++; else unk++;
+        if (!setArchivos.has(clave)) { huerfanas++; arrHuerfanasGlobal.push([t, est, dsTablas[clave] || "Sin Asignar", deTablas[clave] || "Sin Asignar"]); }
+      });
+      document.getElementById('kpi-total-traz').innerText = total;
+      document.getElementById('kpi-prod-val').innerText = prod + " (" + Math.round((prod/total)*100) + "%)";
+      document.getElementById('kpi-dev-val').innerText = dev + " (" + Math.round((dev/total)*100) + "%)";
+      document.getElementById('kpi-unk-val').innerText = unk + " (" + Math.round((unk/total)*100) + "%)";
+      // Widget sutil en sidebar
+      const widget = document.getElementById('sidebar-huerfanas-widget');
+      const spanVal = document.getElementById('kpi-huerfanas-val-sidebar');
+      if (spanVal) spanVal.innerText = huerfanas;
+      if (widget) widget.style.display = huerfanas > 0 ? 'flex' : 'none';
+      if (huerfanas === 0 && document.getElementById('btnHuerfanas')) 
+        document.getElementById('btnHuerfanas').style.display = 'none';
+    }
+
+    function descargarCsvTodasLasTablas() {
+      const universoTablas = new Set();
+      // Todas las tablas del catálogo (Guía + DataX Holding to Local)
+      listaTablasOficialGlobal.forEach(tabla => {
+        if (tabla) { const t = tabla.trim(); if (t) universoTablas.add(t); }
+      });
+      // Tablas mencionadas en las relaciones de trazabilidad
+      datosRelaciones.forEach(relacion => {
+        if (relacion.includes('-->')) {
+          const componentes = relacion.split('-->').map(s => s.trim().replace(/\\/g, ''));
+          if (componentes[0]) universoTablas.add(componentes[0]);
+          if (componentes[1]) universoTablas.add(componentes[1]);
+        }
+      });
+      const listaFinalUnica = Array.from(universoTablas).sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+      if (listaFinalUnica.length === 0) { showToast("No se encontraron tablas en el universo actual.", 'warning'); return; }
+
+      let contenidoCsv = "\uFEFFNombre de la Tabla,Estado de Gobierno,Periodicidad,TTM\n";
+      listaFinalUnica.forEach(tabla => {
+        const clave        = limpiarTablaRobusto(tabla).toLowerCase();
+        const estadoRaw    = estadosTablas[clave] || "Desconocido";
+        const estadoLimpio = estadoRaw.charAt(0).toUpperCase() + estadoRaw.slice(1);
+        const periodicidad = periodicidadTablas[clave] || "Diaria";
+        const ttm           = Object.prototype.hasOwnProperty.call(ttmTablas, clave) && String(ttmTablas[clave]).trim() !== ''
+                              ? ttmTablas[clave] : 1;
+        contenidoCsv += `"${tabla.replace(/"/g, '""')}","${estadoLimpio}","${periodicidad}","${String(ttm).replace(/"/g, '""')}"\n`;
+      });
+
+      const blob = new Blob([contenidoCsv], { type: 'text/csv;charset=utf-8;' });
+      const urlDescarga = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", urlDescarga);
+      link.setAttribute("download", "Universo_Tablas_Data_Factory.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function obtenerRelacionesCadena(objetivo, direccion) {
+      const targetLimpio = limpiarTablaRobusto(objetivo).toLowerCase();
+      const relFinales = new Set();
+      const buscador = [targetLimpio];
+      const procesadas = new Set();
+
+      while (buscador.length > 0) {
+        const actual = buscador.shift();
+        if (procesadas.has(actual)) continue;
+        procesadas.add(actual);
+        datosRelaciones.forEach(rel => {
+          const partes = rel.split('-->');
+          if (partes.length !== 2) return;
+          const origen = limpiarTablaRobusto(partes[0]).toLowerCase();
+          const destino = limpiarTablaRobusto(partes[1]).toLowerCase();
+          const coincide = direccion === 'salida' ? origen === actual : destino === actual;
+          if (coincide) {
+            relFinales.add(rel);
+            const siguiente = direccion === 'salida' ? destino : origen;
+            if (!procesadas.has(siguiente)) buscador.push(siguiente);
+          }
+        });
+      }
+      return Array.from(relFinales);
+    }
+
+    function cambiarDireccionTrazabilidad(direccion) {
+      direccionTrazabilidad = direccion === 'salida' ? 'salida' : 'entrada';
+      const tabEntrada = document.getElementById('tab-traz-entrada');
+      const tabSalida = document.getElementById('tab-traz-salida');
+      tabEntrada.classList.toggle('active', direccionTrazabilidad === 'entrada');
+      tabSalida.classList.toggle('active', direccionTrazabilidad === 'salida');
+      tabEntrada.setAttribute('aria-selected', direccionTrazabilidad === 'entrada' ? 'true' : 'false');
+      tabSalida.setAttribute('aria-selected', direccionTrazabilidad === 'salida' ? 'true' : 'false');
+      if (tablaTrazSeleccionada) armarGrafo(tablaTrazSeleccionada, null);
+    }
+
+    async function armarGrafo(objetivo, btn) {
+      const versionRender = ++versionRenderTrazabilidad;
+      if (btn) {
+        document.querySelectorAll('.btn-tabla').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      const targetLimpio = limpiarTablaRobusto(objetivo);
+      tablaTrazSeleccionada = targetLimpio;
+      document.getElementById('tituloTabla').innerText = "Trazabilidad: " + targetLimpio;
+      document.getElementById('titulo-reporte-traz').innerText = direccionTrazabilidad === 'salida'
+        ? 'Cadena completa de tablas de salida'
+        : 'Cadena completa de tablas de entrada';
+      relacionesActuales = obtenerRelacionesCadena(targetLimpio, direccionTrazabilidad);
+      
+      let h = `<table class="traz-table"><thead><tr><th>Origen</th><th style='width:180px; text-align:center;'>Estado Origen</th><th>Destino</th><th style='width:180px; text-align:center;'>Estado Destino</th></tr></thead><tbody>`;
+      relacionesActuales.forEach(r => {
+        const [o, d] = r.split('-->').map(s => s.trim());
+        const stO = estadosTablas[o.toLowerCase()] || "desconocido", stD = estadosTablas[d.toLowerCase()] || "desconocido";
+        const clO = (stO === "productiva") ? "prod" : ((stO === "en desarrollo") ? "dev" : "unk");
+        const clD = (stD === "productiva") ? "prod" : ((stD === "en desarrollo") ? "dev" : "unk");
+        h += `<tr><td><div class="cell-text">${o}</div></td><td><div class="status-cell ${clO}">${stO}</div></td><td><div class="cell-text">${d}</div></td><td><div class="status-cell ${clD}">${stD}</div></td></tr>`;
+      });
+      if (relacionesActuales.length === 0) {
+        const tipoVacio = direccionTrazabilidad === 'salida' ? 'salida' : 'entrada';
+        h += `<tr><td colspan="4"><div class="cell-text" style="text-align:center;color:#667085;padding:24px;">No se encontraron tablas de ${tipoVacio} para ${escapeHtml(targetLimpio)}.</div></td></tr>`;
+      }
+      document.getElementById('tabla-reporte').innerHTML = h + "</tbody></table>";
+      
+      const hayRelaciones = relacionesActuales.length > 0;
+      document.getElementById('btnMail').style.display = hayRelaciones && direccionTrazabilidad === 'entrada' ? 'inline-block' : 'none';
+      document.getElementById('btnMailAfectadas').style.display = hayRelaciones && direccionTrazabilidad === 'salida' ? 'inline-block' : 'none';
+      
+      let gd = "graph LR\n";
+      const cont = document.getElementById('contenedor-mermaid');
+      if (relacionesActuales.length === 0) {
+        const singleId = targetLimpio.replace(/[\.\-\\]/g,'_');
+        gd += `  ${singleId}[${targetLimpio}]\n  style ${singleId} fill:#f4f7f9,stroke:#f58220,stroke-width:4px\n`;
+      } else {
+        relacionesActuales.forEach(r => {
+          const [o, d] = r.split('-->').map(s => s.trim());
+          const oId = o.replace(/[\.\-\\]/g,'_'), dId = d.replace(/[\.\-\\]/g,'_');
+          gd += `  ${oId}[${o}] --> ${dId}[${d}]\n`;
+          const estO = estadosTablas[o.toLowerCase()] || "desconocido", estD = estadosTablas[d.toLowerCase()] || "desconocido";
+          if (o.toLowerCase() === targetLimpio.toLowerCase()) {
+            gd += `  style ${oId} fill:#f4f7f9,stroke:#f58220,stroke-width:4px\n`;
+          } else {
+            const strokeO = (estO === "productiva" ? "#2e7d32" : "#f58220");
+            gd += `  style ${oId} fill:#fff,stroke:${strokeO},stroke-width:2px\n`;
+          }
+          if (d.toLowerCase() === targetLimpio.toLowerCase()) {
+            gd += `  style ${dId} fill:#f4f7f9,stroke:#f58220,stroke-width:4px\n`;
+          } else {
+            const strokeD = (estD === "productiva" ? "#2e7d32" : "#f58220");
+            gd += `  style ${dId} fill:#fff,stroke:${strokeD},stroke-width:2px\n`;
+          }
+        });
+      }
+      cont.innerHTML = "";
+      
+      try {
+        const unqId = 'mermaid-' + Date.now() + '-' + versionRender;
+        const { svg } = await mermaid.render(unqId, gd);
+        if (versionRender !== versionRenderTrazabilidad) return;
+        cont.innerHTML = svg;
+        
+        const svgEl = cont.querySelector('svg');
+        const d3Svg = d3.select(svgEl);
+        const g = d3Svg.select('g');
+        
+        const viewBoxStr = svgEl.getAttribute("viewBox");
+        let vx = 0, vy = 0, vw = 800, vh = 600;
+        if (viewBoxStr) { [vx, vy, vw, vh] = viewBoxStr.split(" ").map(Number); } 
+        else { const bbox = g.node().getBBox(); vw = bbox.width || 800; vh = bbox.height || 600; }
+
+        svgEl.removeAttribute("viewBox"); svgEl.removeAttribute("max-width");
+        svgEl.setAttribute("width", "100%"); svgEl.setAttribute("height", "100%");
+        
+        const zoom = d3.zoom().scaleExtent([0.05, 10]).on("zoom", (e) => { g.attr("transform", e.transform); });
+        const wrapper = d3.select("#canvas-wrapper");
+        wrapper.call(zoom);
+
+        const wrapperNode = document.getElementById('canvas-wrapper');
+        const w = wrapperNode.clientWidth || 1000; const h = wrapperNode.clientHeight || 500;
+        
+        const scale = Math.min(w / vw, h / vh) * 0.85; const finalScale = Math.min(Math.max(scale, 0.1), 1);
+        const tx = (w - vw * finalScale) / 2 - vx * finalScale; const ty = (h - vh * finalScale) / 2 - vy * finalScale;
+        
+        wrapper.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(finalScale));
+      } catch(e) {
+        if (versionRender === versionRenderTrazabilidad) cont.innerHTML = "<p style='padding:20px; color:red;'>Error generando el flujo limpio.</p>";
+      }
+    }
+
+    function enviarMail() {
+      const btn = document.getElementById('btnMail'), nombre = tablaTrazSeleccionada;
+      btn.innerText = "Generando Sheet y accesos... ⌛"; btn.disabled = true;
+      let datos = relacionesActuales.map(r => {
+        const [o, d] = r.split('-->').map(s => s.trim());
+        return [o, (estadosTablas[o.toLowerCase()] || "desconocido"), d, (estadosTablas[d.toLowerCase()] || "desconocido")];
+      });
+      callServer('enviarPorCorreo', nombre, datos)
+        .then(res => showToast(res, 'success'))
+        .catch(err => showToast(mensajeError(err), 'error'))
+        .finally(() => { btn.innerText = "📧 Enviar Tablas Fuente"; btn.disabled = false; });
+    }
+
+    function enviarMailAfectadas() {
+      const btn = document.getElementById('btnMailAfectadas');
+      const targetLimpio = tablaTrazSeleccionada;
+      btn.innerText = "Calculando impacto... ⌛"; btn.disabled = true;
+
+      const arrayAfectadas = relacionesActuales.slice();
+      if (arrayAfectadas.length === 0) { showToast("No hay tablas registradas que utilicen como fuente a " + targetLimpio, 'warning'); btn.innerText = "📉 Sheet Tablas Afectadas"; btn.disabled = false; return; }
+
+      let datos = arrayAfectadas.map(r => {
+        const [o, d] = r.split('-->').map(s => s.trim());
+        return [o, (estadosTablas[o.toLowerCase()] || "desconocido"), d, (estadosTablas[d.toLowerCase()] || "desconocido")];
+      });
+      callServer('enviarReporteAfectadas', targetLimpio, datos)
+        .then(res => showToast(res, 'success'))
+        .catch(err => showToast(mensajeError(err), 'error'))
+        .finally(() => { btn.innerText = "📤 Enviar Tablas Destino"; btn.disabled = false; });
+    }
+
+    function alertarHuerfanas() {
+      const btn = document.getElementById('btnHuerfanas'); btn.innerText = "⌛ ..."; btn.disabled = true;
+      callServer('enviarReporteHuerfanas', arrHuerfanasGlobal)
+        .then(res => showToast(res, 'success'))
+        .catch(err => showToast(mensajeError(err), 'error'))
+        .finally(() => { btn.innerText = "📧 Reportar"; btn.disabled = false; });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const resizer = document.getElementById('resizer-traz'); const canvasWrapper = document.getElementById('canvas-wrapper'); let isResizing = false;
+      resizer.addEventListener('mousedown', (e) => { isResizing = true; document.body.style.cursor = 'row-resize'; resizer.classList.add('active'); e.preventDefault(); });
+      document.addEventListener('mousemove', (e) => {
+          if (!isResizing) return;
+          const canvasRect = canvasWrapper.getBoundingClientRect(); let newCanvasHeight = e.clientY - canvasRect.top;
+          if (newCanvasHeight < 200) newCanvasHeight = 200; 
+          canvasWrapper.style.flexGrow = '0'; canvasWrapper.style.flexShrink = '0'; canvasWrapper.style.height = `${newCanvasHeight}px`;
+      });
+      document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; resizer.classList.remove('active'); } });
+    });
+  </script>
+</body>
+</html>
