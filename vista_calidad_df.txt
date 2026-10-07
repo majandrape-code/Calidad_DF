@@ -1,0 +1,199 @@
+CREATE OR REPLACE VIEW "calidad_df_diaria" AS 
+WITH
+  calendario_laborable AS (
+   SELECT
+     CAST(year_month_day_date AS DATE) fecha_laborable
+   , ROW_NUMBER() OVER (ORDER BY CAST(year_month_day_date AS DATE) ASC) ordinal_habil
+   FROM
+     "uy_master"."t_gcog_fst028"
+   WHERE (calendar_working_type = 'S')
+) 
+, dias_laborables AS (
+   SELECT
+     fecha_laborable
+   , ordinal_habil
+   FROM
+     calendario_laborable
+   WHERE ((fecha_laborable >= (current_date - INTERVAL  '120' DAY)) AND (fecha_laborable < current_date))
+) 
+, estado_calendario_actual AS (
+   SELECT MAX(ordinal_habil) ordinal_hasta_hoy
+   FROM
+     calendario_laborable
+   WHERE (fecha_laborable <= current_date)
+) 
+, universo_tablas AS (
+   SELECT
+     nombre_tabla
+   , MAX(periodicidad) periodicidad
+   , MAX(GREATEST(COALESCE(TRY_CAST(ttmm AS BIGINT), CAST(1 AS BIGINT)), CAST(1 AS BIGINT))) ttmm
+   FROM
+     "sbx_finance"."universo_tablas_fisicas"
+   GROUP BY nombre_tabla
+) 
+, ultimos_dias_mes AS (
+   SELECT MAX(fecha_laborable) ultimo_dia_habil
+   FROM
+     calendario_laborable
+   GROUP BY EXTRACT(YEAR FROM fecha_laborable), EXTRACT(MONTH FROM fecha_laborable)
+) 
+, primeros_dias_habiles_enero AS (
+   SELECT MIN(fecha_laborable) primer_dia_habil_enero
+   FROM
+     calendario_laborable
+   WHERE (EXTRACT(MONTH FROM fecha_laborable) = 1)
+   GROUP BY EXTRACT(YEAR FROM fecha_laborable)
+) 
+, base_cruda AS (
+   SELECT
+     k.gf_qr_tg_object_physical_name tabla_auditada
+   , k.gf_cutoff_date
+   , concat(concat(CAST(k.g_quality_rule_principle_type AS VARCHAR), '-'), CAST(k.g_quality_rule_type AS VARCHAR)) principle_rule_type
+   , k.gf_uuaa_id
+   , k.gf_quality_rule_execution_date
+   , k.gf_quality_rule_compliance_per
+   , k.gf_field_physical_name
+   , k.gf_qr_cplc_numerator_number
+   , k.gf_qr_cplc_denominator_number
+   , COALESCE(u.periodicidad, 'diaria') g_qr_execution_frequency_type
+   , k.g_quality_rule_status_type
+   , u.ttmm
+   , ROW_NUMBER() OVER (PARTITION BY k.gf_qr_tg_object_physical_name, k.gf_cutoff_date, concat(concat(CAST(k.g_quality_rule_principle_type AS VARCHAR), '-'), CAST(k.g_quality_rule_type AS VARCHAR)) ORDER BY k.gf_quality_rule_execution_date DESC, (CASE WHEN (k.gf_quality_rule_compliance_per IS NULL) THEN 1 ELSE 0 END) ASC, k.gf_quality_rule_compliance_per ASC, k.gf_field_physical_name ASC) fila_num
+   FROM
+     ("uy_master"."t_kevo_stats" k
+   INNER JOIN universo_tablas u ON (k.gf_qr_tg_object_physical_name = u.nombre_tabla))
+   WHERE ((k.gf_cutoff_date IN (SELECT fecha_laborable
+FROM
+  dias_laborables
+)) AND (u.nombre_tabla LIKE 't\_%' ESCAPE '\') AND ((NOT (LOWER(COALESCE(u.periodicidad, '')) IN ('mensual', 'anual'))) OR ((LOWER(u.periodicidad) = 'mensual') AND (k.gf_cutoff_date IN (SELECT ultimo_dia_habil
+FROM
+  ultimos_dias_mes
+))) OR ((LOWER(u.periodicidad) = 'anual') AND (k.gf_cutoff_date IN (SELECT primer_dia_habil_enero
+FROM
+  primeros_dias_habiles_enero
+)))))
+) 
+, base_filtrada AS (
+   SELECT *
+   FROM
+     base_cruda
+   WHERE ((fila_num = 1) AND (principle_rule_type IN ('2-3', '3-1', '3-2', '4-2', '4-3', '3-5')))
+) 
+, fechas_periodo AS (
+   SELECT
+     fecha_laborable gf_cutoff_date
+   , ordinal_habil
+   FROM
+     dias_laborables
+) 
+, reglas_obligatorias AS (
+   SELECT
+     '3-1' principle_rule_type
+   , 'Null' nombre_regla
+
+UNION ALL    SELECT
+     '3-2'
+   , 'Formato'
+
+UNION ALL    SELECT
+     '4-2'
+   , 'Duplicados'
+
+) 
+, matriz_ideal AS (
+   SELECT
+     u.nombre_tabla tabla_auditada
+   , f.gf_cutoff_date
+   , r.principle_rule_type
+   , r.nombre_regla
+   , COALESCE(u.periodicidad, 'diaria') periodicidad
+   , u.ttmm
+   , GREATEST((e.ordinal_hasta_hoy - f.ordinal_habil), CAST(0 AS BIGINT)) dias_habiles_transcurridos
+   FROM
+     (((universo_tablas u
+   CROSS JOIN fechas_periodo f)
+   CROSS JOIN reglas_obligatorias r)
+   CROSS JOIN estado_calendario_actual e)
+   WHERE ((u.nombre_tabla LIKE 't\_%' ESCAPE '\') AND ((NOT (LOWER(COALESCE(u.periodicidad, '')) IN ('mensual', 'anual'))) OR ((LOWER(u.periodicidad) = 'mensual') AND (f.gf_cutoff_date IN (SELECT ultimo_dia_habil
+FROM
+  ultimos_dias_mes
+))) OR ((LOWER(u.periodicidad) = 'anual') AND (f.gf_cutoff_date IN (SELECT primer_dia_habil_enero
+FROM
+  primeros_dias_habiles_enero
+)))))
+) 
+, uuaa_por_tabla AS (
+   SELECT
+     tabla_auditada
+   , MAX(gf_uuaa_id) uuaa_id_referencia
+   FROM
+     base_cruda
+   GROUP BY tabla_auditada
+) 
+, reglas_faltantes AS (
+   SELECT
+     m.tabla_auditada
+   , m.gf_cutoff_date
+   , m.principle_rule_type
+   , m.nombre_regla
+   , (CASE WHEN (LOWER(trim(BOTH FROM COALESCE(m.periodicidad, ''))) = 'manual') THEN 'Pendiente' WHEN (m.dias_habiles_transcurridos >= m.ttmm) THEN 'Critico' ELSE 'Pendiente' END) estado_error
+   , COALESCE(u.uuaa_id_referencia, 'N/A') gf_uuaa_id
+   , m.gf_cutoff_date max_execution_date
+   , 0E0 gf_quality_rule_compliance_per
+   , 0 gf_qr_cplc_numerator_number
+   , 0 gf_qr_cplc_denominator_number
+   , m.periodicidad g_qr_execution_frequency_type
+   , (CASE WHEN (LOWER(trim(BOTH FROM COALESCE(m.periodicidad, ''))) = 'manual') THEN 'PENDIENTE ANS' WHEN (m.dias_habiles_transcurridos >= m.ttmm) THEN 'NO ENCONTRADO' ELSE 'PENDIENTE ANS' END) g_quality_rule_status_type
+   , CAST(null AS VARCHAR) gf_field_physical_name
+   , m.ttmm
+   FROM
+     ((matriz_ideal m
+   LEFT JOIN base_filtrada b ON ((m.tabla_auditada = b.tabla_auditada) AND (m.gf_cutoff_date = b.gf_cutoff_date) AND (m.principle_rule_type = b.principle_rule_type)))
+   LEFT JOIN uuaa_por_tabla u ON (m.tabla_auditada = u.tabla_auditada))
+   WHERE (b.principle_rule_type IS NULL)
+) 
+, datos_reales AS (
+   SELECT
+     tabla_auditada
+   , gf_cutoff_date
+   , principle_rule_type
+   , (CASE principle_rule_type WHEN '2-3' THEN 'Completitud' WHEN '3-1' THEN 'Null' WHEN '3-2' THEN 'Formato' WHEN '4-2' THEN 'Duplicados' WHEN '4-3' THEN 'Integridad' WHEN '3-5' THEN 'Catalogo' END) nombre_regla
+   , (CASE WHEN ((CASE WHEN (gf_qr_cplc_denominator_number = 0) THEN gf_quality_rule_compliance_per ELSE ((CAST(gf_qr_cplc_numerator_number AS DECIMAL(38, 10)) / CAST(gf_qr_cplc_denominator_number AS DECIMAL(38, 10))) * 100) END) >= 100) THEN 'Exitosa' WHEN (((CASE WHEN (gf_qr_cplc_denominator_number = 0) THEN gf_quality_rule_compliance_per ELSE ((CAST(gf_qr_cplc_numerator_number AS DECIMAL(38, 10)) / CAST(gf_qr_cplc_denominator_number AS DECIMAL(38, 10))) * 100) END) < 100) AND (principle_rule_type IN ('2-3', '3-1', '3-2', '4-2'))) THEN 'Critico' WHEN (((CASE WHEN (gf_qr_cplc_denominator_number = 0) THEN gf_quality_rule_compliance_per ELSE ((CAST(gf_qr_cplc_numerator_number AS DECIMAL(38, 10)) / CAST(gf_qr_cplc_denominator_number AS DECIMAL(38, 10))) * 100) END) < 100) AND (principle_rule_type IN ('4-3', '3-5'))) THEN 'Advertencia' ELSE 'Desconocido' END) estado_error
+   , gf_uuaa_id
+   , gf_quality_rule_execution_date max_execution_date
+   , gf_quality_rule_compliance_per
+   , gf_qr_cplc_numerator_number
+   , gf_qr_cplc_denominator_number
+   , g_qr_execution_frequency_type
+   , g_quality_rule_status_type
+   , gf_field_physical_name
+   , ttmm
+   FROM
+     base_filtrada
+) 
+, resultado_final AS (
+   SELECT *
+   FROM
+     datos_reales
+UNION ALL    SELECT *
+   FROM
+     reglas_faltantes
+) 
+SELECT
+  tabla_auditada
+, gf_cutoff_date
+, principle_rule_type
+, nombre_regla
+, estado_error
+, gf_uuaa_id
+, max_execution_date
+, gf_quality_rule_compliance_per
+, gf_qr_cplc_numerator_number
+, gf_qr_cplc_denominator_number
+, g_qr_execution_frequency_type
+, g_quality_rule_status_type
+, gf_field_physical_name
+, ttmm
+FROM
+  resultado_final
+ORDER BY gf_cutoff_date DESC, tabla_auditada ASC, principle_rule_type ASC
