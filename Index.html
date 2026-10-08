@@ -49,11 +49,11 @@
     .nav-view-btn:hover { color: white; background: rgba(255,255,255,.1); }
     .nav-view-btn.active { color: white; background: var(--bbva-naranja); }
     .nav-view-btn svg { width: 15px; height: 15px; }
-    .nav-quality-group { height: 38px; display: flex; align-items: stretch; border-radius: 7px; overflow: hidden; background: rgba(255,255,255,.04); }
-    .nav-quality-group.active { background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-    .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.12); padding: 0 10px; background: transparent; color: rgba(255,255,255,.75); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
-    .nav-quality-main:hover { color: white; background: rgba(255,255,255,.08); }
-    .nav-quality-main svg { width: 15px; height: 15px; }
+    .nav-quality-group { height: 42px; display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.07); border: 1.5px solid rgba(245,130,32,.55); }
+    .nav-quality-group.active { background: rgba(255,255,255,.14); border-color: var(--bbva-naranja); box-shadow: 0 0 0 2px rgba(245,130,32,.25); }
+    .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.18); padding: 0 14px; background: transparent; color: white; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
+    .nav-quality-main:hover { background: rgba(255,255,255,.1); }
+    .nav-quality-main svg { width: 17px; height: 17px; color: var(--bbva-naranja); }
     .nav-quality-submodules { display: flex; align-items: center; gap: 2px; padding: 3px; }
     .nav-submodule-btn { height: 30px; border: none; border-radius: 5px; padding: 0 10px; background: transparent; color: rgba(255,255,255,.62); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; white-space: nowrap; }
     .nav-submodule-btn:hover { color: white; background: rgba(255,255,255,.1); }
@@ -122,6 +122,79 @@
       .flow-column + .flow-column { border-left: none; border-top: 1px solid var(--gray-200); padding-top: 16px; }
       .admin-shell { padding: 20px 16px 40px; }
     }
+
+    /* INFORMES DE CALIDAD */
+    #view-informes { display: none; height: calc(100vh - 64px); overflow-y: auto; background: var(--gray-100); }
+    .inf-shell { max-width: 1560px; margin: 0 auto; padding: 22px 30px 50px; }
+    .inf-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+    .inf-heading h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; color: var(--navy); }
+    .inf-heading p { margin-top: 3px; color: var(--gray-600); font-size: 13px; max-width: 760px; }
+    .inf-tabs { display: flex; gap: 6px; }
+    .inf-tab { height: 34px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 14px; background: white; color: var(--bbva-azul-lateral); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+    .inf-tab.active { background: var(--bbva-azul-oscuro); border-color: var(--bbva-azul-oscuro); color: white; }
+    .inf-tab:disabled { cursor: not-allowed; opacity: .55; }
+    .inf-filters { display: flex; align-items: flex-end; gap: 10px 12px; flex-wrap: wrap; background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .inf-field label { display: block; margin-bottom: 4px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-field select, .inf-field input { height: 34px; min-width: 130px; max-width: 220px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 9px; background: white; color: var(--navy); font-family: 'Barlow', sans-serif; font-size: 12px; outline: none; }
+    .inf-field select:focus, .inf-field input:focus { border-color: var(--blue-acc); box-shadow: 0 0 0 2px var(--blue-pale); }
+    .inf-meta { margin-left: auto; color: var(--gray-400); font-size: 11px; align-self: center; }
+    .inf-status { padding: 38px; text-align: center; color: var(--gray-600); font-size: 14px; }
+    .inf-status.error { color: #991B1B; }
+    .inf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .inf-kpi { text-align: left; border: 1.5px solid var(--gray-200); border-top: 4px solid var(--gray-400); border-radius: 12px; padding: 13px 15px; background: white; box-shadow: var(--shadow-sm); font-family: inherit; }
+    button.inf-kpi { cursor: pointer; }
+    button.inf-kpi:hover { border-color: var(--blue-acc); }
+    .inf-kpi.active { box-shadow: 0 0 0 2px var(--blue-acc); }
+    .inf-kpi.ok { border-top-color: var(--green); }
+    .inf-kpi.err { border-top-color: var(--red); }
+    .inf-kpi.warn { border-top-color: var(--yellow); }
+    .inf-kpi-lbl { color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-kpi-val { margin-top: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 800; color: var(--navy); line-height: 1.05; }
+    .inf-kpi-val small { font-size: 14px; font-weight: 600; color: var(--gray-600); margin-left: 4px; }
+    .inf-kpi-sub { margin-top: 3px; color: var(--gray-400); font-size: 11px; line-height: 1.3; }
+    .inf-grid2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; margin-bottom: 16px; }
+    .inf-card { background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; box-shadow: var(--shadow-sm); margin-bottom: 16px; overflow: hidden; }
+    .inf-grid2 .inf-card { margin-bottom: 0; }
+    .inf-card-head { padding: 13px 16px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .inf-card-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: var(--navy); }
+    .inf-card-head p { color: var(--gray-400); font-size: 11px; margin-top: 2px; }
+    .inf-card-body { padding: 14px 16px; }
+    .inf-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--gray-600); }
+    .inf-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+    .inf-bars { display: grid; gap: 7px; }
+    .inf-bar-row { display: grid; grid-template-columns: minmax(110px, 190px) 1fr 54px; gap: 10px; align-items: center; font-size: 12px; color: var(--navy); }
+    .inf-bar-row span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .inf-bar-track { height: 12px; background: var(--gray-100); border-radius: 3px; }
+    .inf-bar-fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--blue-mid); min-width: 2px; }
+    .inf-bar-row b { text-align: right; font-weight: 700; }
+    .inf-sub { margin: 14px 0 8px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-sub:first-child { margin-top: 0; }
+    .inf-table-wrap { overflow: auto; max-height: 520px; }
+    .inf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .inf-table th { position: sticky; top: 0; z-index: 1; background: var(--bbva-azul-oscuro); color: rgba(255,255,255,.78); padding: 9px 10px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
+    .inf-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); color: var(--gray-600); vertical-align: middle; }
+    .inf-table td strong { color: var(--navy); }
+    .inf-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .inf-badge { display: inline-block; border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+    .inf-badge.estable { background: #D1FAE5; color: #065F46; }
+    .inf-badge.ocasional { background: #FEF3C7; color: #92400E; }
+    .inf-badge.recurrente { background: #FEE2E2; color: #991B1B; }
+    .inf-badge.cronica { background: #991B1B; color: white; }
+    .inf-badge.sindatos { background: var(--gray-100); color: var(--gray-600); }
+    .inf-heat-wrap { overflow: auto; padding: 4px 0 2px; }
+    .inf-heat { border-collapse: separate; border-spacing: 2px; font-size: 11px; }
+    .inf-heat th { font-weight: 600; color: var(--gray-600); text-align: left; padding-right: 10px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; position: sticky; left: 0; background: white; }
+    .inf-heat td { width: 14px; min-width: 14px; height: 18px; border-radius: 3px; text-align: center; font-size: 10px; line-height: 18px; color: white; font-weight: 800; }
+    .inf-heat td.f { background: var(--red); }
+    .inf-heat td.o { background: #A7F3D0; }
+    .inf-heat td.p { background: #CBD5E1; }
+    .inf-heat td.n { background: var(--gray-100); }
+    .inf-heat-axis td { height: 14px; background: none; color: var(--gray-400); font-size: 9px; font-weight: 600; }
+    .inf-tip { position: fixed; z-index: 6000; pointer-events: none; max-width: 280px; background: var(--navy); color: white; border-radius: 7px; padding: 8px 10px; font-size: 11px; line-height: 1.4; box-shadow: var(--shadow-lg); display: none; }
+    .inf-tip strong { display: block; font-size: 14px; }
+    .inf-tip span { opacity: .75; }
+    .inf-empty { padding: 26px; text-align: center; color: var(--gray-400); font-size: 13px; }
+    @media (max-width: 1000px) { .inf-grid2 { grid-template-columns: 1fr; } .inf-shell { padding: 16px 14px 40px; } }
 
     /* DASHBOARD STYLES */
     .date-strip {
@@ -709,6 +782,7 @@
           <div class="nav-quality-submodules" role="tablist" aria-label="Submódulos de Calidad">
             <button id="quality-mode-tecnico" class="nav-submodule-btn active" role="tab" aria-selected="true" onclick="mostrarCalidad('tecnico')">MVP Técnico</button>
             <button id="quality-mode-funcional" class="nav-submodule-btn" role="tab" aria-selected="false" onclick="mostrarCalidad('funcional')">Funcional</button>
+            <button id="quality-mode-informes" class="nav-submodule-btn" role="tab" aria-selected="false" onclick="mostrarCalidad('informes')">Informes</button>
           </div>
         </div>
         <button id="nav-traceability" class="nav-view-btn" onclick="mostrarVista('traceability')">
@@ -991,6 +1065,72 @@
         </button>
       </div>
       <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="view-informes">
+    <div class="inf-shell">
+      <div class="inf-heading">
+        <div>
+          <h1>Informes de calidad</h1>
+          <p>Análisis del histórico de ejecuciones para priorizar la corrección de raíz: qué tablas fallan de forma recurrente, cuáles son estables y quién es responsable de cada una.</p>
+        </div>
+        <div class="inf-tabs" role="tablist" aria-label="Informes disponibles">
+          <button id="inf-tab-recurrentes" class="inf-tab active" role="tab" aria-selected="true">Fallos recurrentes</button>
+          <button id="inf-tab-elipses" class="inf-tab" role="tab" aria-selected="false" disabled title="Requiere primero etiquetar cada alerta como Real / Falso positivo / Pendiente">Acierto de Elipses · próximamente</button>
+        </div>
+      </div>
+
+      <div class="inf-filters" aria-label="Filtros del informe">
+        <div class="inf-field"><label for="inf-ventana">Ventana</label>
+          <select id="inf-ventana"><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select></div>
+        <div class="inf-field"><label for="inf-alcance">Alcance de reglas</label>
+          <select id="inf-alcance"><option value="tecnico">MVP Técnico (críticas)</option><option value="funcional">Funcional (no críticas)</option><option value="ambos">Ambos</option></select></div>
+        <div class="inf-field"><label for="inf-periodicidad">Periodicidad</label>
+          <select id="inf-periodicidad"><option value="">Todas</option><option value="diaria">Diarias</option><option value="mensual">Mensuales</option></select></div>
+        <div class="inf-field"><label for="inf-de">Responsable técnico</label><select id="inf-de"><option value="">Todos</option></select></div>
+        <div class="inf-field"><label for="inf-ds">Data Scientist</label><select id="inf-ds"><option value="">Todos</option></select></div>
+        <div class="inf-field"><label for="inf-dir">Dirección</label><select id="inf-dir"><option value="">Todas</option></select></div>
+        <div class="inf-field"><label for="inf-umbral">Recurrente desde</label>
+          <select id="inf-umbral"><option value="2">2 días con fallo</option><option value="3" selected>3 días con fallo</option><option value="5">5 días con fallo</option></select></div>
+        <div class="inf-field"><label for="inf-buscar">Tabla</label><input id="inf-buscar" type="search" placeholder="Buscar tabla…" autocomplete="off"></div>
+        <button id="inf-refrescar" class="admin-btn" type="button">Actualizar datos</button>
+        <span class="inf-meta" id="inf-meta"></span>
+      </div>
+
+      <div id="inf-estado" class="inf-status" role="status">⌛ Calculando el informe…</div>
+      <div id="inf-contenido" style="display:none;">
+        <div class="inf-kpis" id="inf-kpis"></div>
+        <div class="inf-grid2">
+          <section class="inf-card">
+            <div class="inf-card-head"><div><h2>Pareto de incidencias por tabla</h2><p id="inf-pareto-sub"></p></div>
+              <div class="inf-legend"><span><i style="background:var(--blue-mid)"></i>% de incidencias de la tabla</span><span><i style="background:var(--orange-d)"></i>% acumulado</span></div></div>
+            <div class="inf-card-body" id="inf-pareto"></div>
+          </section>
+          <section class="inf-card">
+            <div class="inf-card-head"><div><h2>Fallos por dimensión y regla</h2><p>Reglas con fallo (tabla × corte) en la ventana</p></div></div>
+            <div class="inf-card-body" id="inf-reglas"></div>
+          </section>
+        </div>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Ranking de reincidencia</h2><p id="inf-ranking-sub"></p></div>
+            <div class="inf-field"><label for="inf-topn">Mostrar</label>
+              <select id="inf-topn"><option value="10">Top 10</option><option value="25">Top 25</option><option value="50">Top 50</option><option value="100000">Todas</option></select></div></div>
+          <div class="inf-table-wrap" id="inf-ranking"></div>
+        </section>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Mapa de calor tabla × corte</h2><p id="inf-heat-sub"></p></div>
+            <div class="inf-legend"><span><i style="background:var(--red)"></i>✕ Fallo</span><span><i style="background:#A7F3D0"></i>Correcto</span><span><i style="background:#CBD5E1"></i>Pendiente</span><span><i style="background:var(--gray-100);border:1px solid var(--gray-200)"></i>Sin corte</span></div></div>
+          <div class="inf-card-body inf-heat-wrap" id="inf-heat"></div>
+        </section>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Fallos por responsable</h2><p>Agrupado con el mapa de gobierno para asignar y escalar</p></div>
+            <div class="inf-field"><label for="inf-grupo">Agrupar por</label>
+              <select id="inf-grupo"><option value="de">Responsable técnico (Data Engineer)</option><option value="ds">Data Scientist</option><option value="dir">Dirección</option><option value="fn">Responsable funcional</option></select></div></div>
+          <div class="inf-table-wrap" id="inf-owners"></div>
+        </section>
+      </div>
+      <div id="inf-tip" class="inf-tip" role="tooltip"></div>
     </div>
   </div>
 
@@ -1421,12 +1561,450 @@
       mostrarVista(currentView === 'dashboard' ? 'traceability' : 'dashboard');
     }
 
+    // ==========================================
+    // INFORMES DE CALIDAD · cálculo (sin DOM)
+    // ==========================================
+    const INFORME_RACHA_CRONICA = 5;      // cortes consecutivos fallando
+    const INFORME_DIAS_REAPERTURA = 7;    // días tras la resolución para considerar reapertura
+    const INFORME_TOP_PARETO = 15;
+
+    function informeDias(desde, hasta) {
+      const t = s => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+      return Math.round((t(hasta) - t(desde)) / 86400000);
+    }
+
+    // Estados por corte: 0 sin dato · 1 correcto · 2 pendiente · 3 fallo
+    function informeEstadoCorte(tabla, i, alcance) {
+      if (alcance === 'tecnico') return tabla.t[i];
+      if (alcance === 'funcional') return tabla.f[i];
+      return tabla.t[i] > tabla.f[i] ? tabla.t[i] : tabla.f[i];
+    }
+
+    function calcularInformeFallos(data, f) {
+      const fechas = data.fechas || [];
+      const resultado = { ultima: fechas[fechas.length - 1] || '', fechasVentana: [], tablas: [], kpis: null };
+      if (!fechas.length) return resultado;
+      const ultima = resultado.ultima;
+      const reglaPorId = {};
+      (data.reglas || []).forEach(r => { reglaPorId[r.id] = r; });
+      const enAlcance = id => f.alcance === 'ambos' || (reglaPorId[id] || {}).modo === f.alcance;
+      const indicesUltimos = dias => fechas.reduce((lista, fecha, i) => {
+        if (informeDias(fecha, ultima) < dias) lista.push(i);
+        return lista;
+      }, []);
+      const idx30 = indicesUltimos(30);
+      const idx90 = indicesUltimos(90);
+      const idxVentana = f.ventana === 90 ? idx90 : idx30;
+      const inicioVentana = idxVentana.length ? idxVentana[0] : fechas.length;
+      resultado.fechasVentana = idxVentana;
+      const busqueda = String(f.buscar || '').trim().toLowerCase();
+
+      data.tablas.forEach(t => {
+        const esMensual = String(t.per).toLowerCase() === 'mensual';
+        if (f.periodicidad === 'mensual' && !esMensual) return;
+        if (f.periodicidad === 'diaria' && esMensual) return;
+        if (f.de && t.de !== f.de) return;
+        if (f.ds && t.ds !== f.ds) return;
+        if (f.dir && t.dir !== f.dir) return;
+        if (busqueda && t.n.toLowerCase().indexOf(busqueda) === -1) return;
+
+        const estados = fechas.map((_, i) => informeEstadoCorte(t, i, f.alcance));
+        const contar = (lista, estado) => lista.reduce((n, i) => n + (estados[i] === estado ? 1 : 0), 0);
+        const fallos30 = contar(idx30, '3');
+        const fallos90 = contar(idx90, '3');
+        const fallosVentana = f.ventana === 90 ? fallos90 : fallos30;
+        const medidos = idxVentana.filter(i => estados[i] !== '0').length;
+
+        // Racha: cortes consecutivos fallando hasta el último; un pendiente no la corta.
+        let racha = 0;
+        for (let i = fechas.length - 1; i >= 0; i--) {
+          const e = estados[i];
+          if (e === '0' || e === '2') continue;
+          if (e === '3') racha++; else break;
+        }
+
+        // Incidencias: desde el primer fallo hasta el primer corte correcto posterior.
+        const cerradas = [];
+        let abierta = null, cierre = -1, reaperturas = 0;
+        for (let i = 0; i < fechas.length; i++) {
+          const e = estados[i];
+          if (e === '3') {
+            if (abierta === null) {
+              abierta = i;
+              if (cierre >= 0 && i >= inicioVentana &&
+                  informeDias(fechas[cierre], fechas[i]) <= INFORME_DIAS_REAPERTURA) reaperturas++;
+            }
+          } else if (e === '1' && abierta !== null) {
+            cerradas.push({ ini: abierta, dias: informeDias(fechas[abierta], fechas[i]) });
+            cierre = i;
+            abierta = null;
+          }
+        }
+        const cerradasVentana = cerradas.filter(c => c.ini >= inicioVentana);
+        const sumaResolucion = cerradasVentana.reduce((s, c) => s + c.dias, 0);
+
+        const reglasFallo = {}, dimensionFallo = {};
+        const fechasFallo = [];
+        t.x.forEach(par => {
+          if (par[0] < inicioVentana) return;
+          par[1].forEach(marca => {
+            const id = marca.replace('*', '');
+            if (!enAlcance(id)) return;
+            reglasFallo[id] = (reglasFallo[id] || 0) + 1;
+            const dimension = marca.indexOf('*') > -1 ? 'Puntualidad' : ((reglaPorId[id] || {}).dimension || 'Otras');
+            dimensionFallo[dimension] = (dimensionFallo[dimension] || 0) + 1;
+          });
+        });
+
+        let categoria;
+        if (fallosVentana === 0 && medidos === 0) categoria = 'sindatos';
+        else if (racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
+        else if (fallosVentana >= f.umbral) categoria = 'recurrente';
+        else if (fallosVentana > 0) categoria = 'ocasional';
+        else categoria = 'estable';
+
+        resultado.tablas.push({
+          t, estados, fallos30, fallos90, fallosVentana, racha, categoria,
+          esRecurrente: categoria === 'cronica' || categoria === 'recurrente',
+          cerradas: cerradasVentana.length, sumaResolucion,
+          mttr: cerradasVentana.length ? sumaResolucion / cerradasVentana.length : null,
+          reaperturas, reglasFallo, dimensionFallo
+        });
+      });
+
+      const orden = (a, b) => b.fallosVentana - a.fallosVentana || b.racha - a.racha ||
+        b.fallos90 - a.fallos90 || a.t.n.localeCompare(b.t.n);
+      resultado.tablas.sort(orden);
+
+      const evaluadas = resultado.tablas.filter(x => x.categoria !== 'sindatos');
+      const conFallo = evaluadas.filter(x => x.fallosVentana > 0);
+      const incidencias = conFallo.reduce((s, x) => s + x.fallosVentana, 0);
+      const topTreinta = conFallo.slice(0, Math.ceil(conFallo.length * 0.3));
+      const resueltas = evaluadas.reduce((s, x) => s + x.cerradas, 0);
+      resultado.kpis = {
+        evaluadas: evaluadas.length,
+        estables: evaluadas.filter(x => x.categoria === 'estable').length,
+        recurrentes: evaluadas.filter(x => x.esRecurrente).length,
+        cronicas: evaluadas.filter(x => x.categoria === 'cronica').length,
+        reabiertas: evaluadas.filter(x => x.reaperturas > 0).length,
+        reaperturas: evaluadas.reduce((s, x) => s + x.reaperturas, 0),
+        mttr: resueltas ? evaluadas.reduce((s, x) => s + x.sumaResolucion, 0) / resueltas : null,
+        resueltas, incidencias, conFallo: conFallo.length,
+        topTreintaN: topTreinta.length,
+        concentracion: incidencias ? topTreinta.reduce((s, x) => s + x.fallosVentana, 0) / incidencias : 0
+      };
+      return resultado;
+    }
+
+    function informeFiltrarCategoria(tablas, categoria) {
+      if (categoria === 'estable') return tablas.filter(x => x.categoria === 'estable');
+      if (categoria === 'recurrente') return tablas.filter(x => x.esRecurrente);
+      if (categoria === 'cronica') return tablas.filter(x => x.categoria === 'cronica');
+      if (categoria === 'reabierta') return tablas.filter(x => x.reaperturas > 0);
+      return tablas;
+    }
+
+    // ==========================================
+    // INFORMES DE CALIDAD · pantalla
+    // ==========================================
+    let informeData = null;
+    let informeCargando = false;
+    const informeFiltros = {
+      ventana: 30, alcance: 'tecnico', periodicidad: '', de: '', ds: '', dir: '',
+      umbral: 3, buscar: '', categoria: '', topN: 10, grupo: 'de'
+    };
+    const INFORME_ESTADOS = {
+      estable: 'Estable', ocasional: 'Ocasional', recurrente: 'Recurrente', cronica: 'Crónica', sindatos: 'Sin datos'
+    };
+
+    function informeEl(id) { return document.getElementById(id); }
+    function informeNum(valor) { return Number(valor || 0).toLocaleString('es-ES'); }
+    function informePct(valor) { return (valor * 100).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + '%'; }
+    function informeDec(valor) { return valor === null ? '—' : valor.toLocaleString('es-ES', { maximumFractionDigits: 1 }); }
+
+    function cargarInformeFallos(forzar) {
+      if (informeCargando) return;
+      informeCargando = true;
+      const estado = informeEl('inf-estado');
+      estado.className = 'inf-status';
+      estado.textContent = '⌛ Calculando el informe…';
+      estado.style.display = 'block';
+      if (!informeData) informeEl('inf-contenido').style.display = 'none';
+      informeEl('inf-refrescar').disabled = true;
+      callServer('obtenerInformeFallosRecurrentes', !!forzar)
+        .then(function(data) {
+          informeData = data || { fechas: [], reglas: [], tablas: [] };
+          poblarFiltrosInforme();
+          renderInforme();
+        })
+        .catch(function(err) {
+          estado.className = 'inf-status error';
+          estado.textContent = 'No se pudo calcular el informe: ' + mensajeError(err);
+          showToast('No se pudo calcular el informe: ' + mensajeError(err), 'error');
+        })
+        .then(function() {
+          informeCargando = false;
+          informeEl('inf-refrescar').disabled = false;
+        });
+    }
+
+    function poblarFiltrosInforme() {
+      const llenar = (id, campo, etiquetaTodos) => {
+        const select = informeEl(id);
+        const actual = select.value;
+        const valores = Array.from(new Set(informeData.tablas.map(t => t[campo]))).sort((a, b) => a.localeCompare(b));
+        select.innerHTML = '';
+        const todos = document.createElement('option');
+        todos.value = ''; todos.textContent = etiquetaTodos;
+        select.appendChild(todos);
+        valores.forEach(v => {
+          const op = document.createElement('option');
+          op.value = v; op.textContent = v;
+          select.appendChild(op);
+        });
+        select.value = valores.indexOf(actual) > -1 ? actual : '';
+        informeFiltros[campo] = select.value;
+      };
+      llenar('inf-de', 'de', 'Todos');
+      llenar('inf-ds', 'ds', 'Todos');
+      llenar('inf-dir', 'dir', 'Todas');
+    }
+
+    function renderInforme() {
+      if (!informeData) return;
+      const estado = informeEl('inf-estado');
+      if (!informeData.tablas.length) {
+        estado.className = 'inf-status';
+        estado.textContent = 'La hoja de calidad no tiene ejecuciones para construir el informe.';
+        estado.style.display = 'block';
+        informeEl('inf-contenido').style.display = 'none';
+        return;
+      }
+      estado.style.display = 'none';
+      informeEl('inf-contenido').style.display = 'block';
+
+      const calculo = calcularInformeFallos(informeData, informeFiltros);
+      const visibles = informeFiltrarCategoria(calculo.tablas, informeFiltros.categoria);
+      const generado = informeData.generado ? ' · generado ' + formatoFechaHora(informeData.generado) : '';
+      informeEl('inf-meta').textContent = `Datos hasta ${calculo.ultima} · ${informeNum(informeData.tablas.length)} tablas${generado}`;
+      renderInformeKpis(calculo.kpis);
+      renderInformePareto(visibles, calculo);
+      renderInformeReglas(visibles);
+      renderInformeRanking(visibles, calculo);
+      renderInformeMapaCalor(visibles, calculo);
+      renderInformeOwners(visibles);
+    }
+
+    function renderInformeKpis(k) {
+      const v = informeFiltros.ventana;
+      const tiles = [
+        { cat: '', clase: '', lbl: 'Tablas evaluadas', val: informeNum(k.evaluadas), sub: `Con ejecuciones en los últimos ${v} días` },
+        { cat: 'estable', clase: 'ok', lbl: 'Tablas estables', val: informeNum(k.estables), pct: k.evaluadas ? k.estables / k.evaluadas : 0, sub: 'Sin ningún fallo en la ventana' },
+        { cat: 'recurrente', clase: 'err', lbl: 'Fallos recurrentes', val: informeNum(k.recurrentes), pct: k.evaluadas ? k.recurrentes / k.evaluadas : 0, sub: `≥ ${informeFiltros.umbral} días con fallo o racha crónica` },
+        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `${INFORME_RACHA_CRONICA}+ cortes consecutivos fallando` },
+        { cat: 'reabierta', clase: 'warn', lbl: 'Reaperturas', val: informeNum(k.reabiertas), sub: `Tablas que vuelven a fallar en ≤ ${INFORME_DIAS_REAPERTURA} días (${informeNum(k.reaperturas)} eventos)` },
+        { cat: '', clase: '', lbl: 'Tiempo medio de resolución', val: informeDec(k.mttr), unidad: k.mttr === null ? '' : 'días', sub: `MTTR sobre ${informeNum(k.resueltas)} incidencias cerradas` },
+        { cat: '', clase: 'warn', lbl: 'Concentración', val: informePct(k.concentracion), sub: `El 30% de las tablas con fallo (${informeNum(k.topTreintaN)} de ${informeNum(k.conFallo)}) genera ese % de las ${informeNum(k.incidencias)} incidencias` }
+      ];
+      informeEl('inf-kpis').innerHTML = tiles.map(t => {
+        const activo = t.cat && informeFiltros.categoria === t.cat ? ' active' : '';
+        const cuerpo = `<div class="inf-kpi-lbl">${escapeHtml(t.lbl)}</div>
+          <div class="inf-kpi-val">${escapeHtml(t.val)}${t.unidad ? `<small>${escapeHtml(t.unidad)}</small>` : ''}${t.pct !== undefined ? `<small>${informePct(t.pct)}</small>` : ''}</div>
+          <div class="inf-kpi-sub">${escapeHtml(t.sub)}</div>`;
+        return t.cat
+          ? `<button type="button" class="inf-kpi ${t.clase}${activo}" data-cat="${t.cat}" aria-pressed="${activo ? 'true' : 'false'}" title="Pulsa para filtrar el informe por este grupo">${cuerpo}</button>`
+          : `<div class="inf-kpi ${t.clase}">${cuerpo}</div>`;
+      }).join('');
+    }
+
+    function renderInformePareto(visibles, calculo) {
+      const contenedor = informeEl('inf-pareto');
+      const conFallo = visibles.filter(x => x.fallosVentana > 0);
+      const total = conFallo.reduce((s, x) => s + x.fallosVentana, 0);
+      informeEl('inf-pareto-sub').textContent = `Días con fallo en los últimos ${informeFiltros.ventana} días · ${informeNum(total)} incidencias en ${informeNum(conFallo.length)} tablas`;
+      if (!total) { contenedor.innerHTML = '<div class="inf-empty">No hay incidencias en la ventana con los filtros actuales.</div>'; return; }
+
+      const top = conFallo.slice(0, INFORME_TOP_PARETO);
+      let acumulado = 0;
+      const puntos = top.map(x => { acumulado += x.fallosVentana; return { x, share: x.fallosVentana / total, acum: acumulado / total }; });
+      const W = Math.max(contenedor.clientWidth || 640, 360), H = 290;
+      const m = { t: 14, r: 40, b: 92, l: 40 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const banda = iw / puntos.length, ancho = Math.min(34, banda * 0.62);
+      const y = p => m.t + ih * (1 - p);
+      let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Pareto de incidencias por tabla">`;
+      [0, .25, .5, .75, 1].forEach(g => {
+        svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(g)}" y2="${y(g)}" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="${m.l - 6}" y="${y(g) + 3}" text-anchor="end" font-size="10" fill="#475569">${g * 100}%</text>`;
+      });
+      puntos.forEach((p, i) => {
+        const cx = m.l + banda * i + banda / 2, h = Math.max(2, ih * p.share);
+        const nombre = p.x.t.n.length > 24 ? p.x.t.n.slice(0, 23) + '…' : p.x.t.n;
+        svg += `<rect x="${cx - ancho / 2}" y="${y(0) - h}" width="${ancho}" height="${h}" rx="3" fill="var(--blue-mid)"/>
+          <text transform="translate(${cx + 3},${y(0) + 10}) rotate(-45)" text-anchor="end" font-size="10" fill="#475569">${escapeHtml(nombre)}</text>`;
+      });
+      svg += `<polyline fill="none" stroke="var(--orange-d)" stroke-width="2" points="${puntos.map((p, i) => `${m.l + banda * i + banda / 2},${y(p.acum)}`).join(' ')}"/>`;
+      puntos.forEach((p, i) => {
+        svg += `<circle cx="${m.l + banda * i + banda / 2}" cy="${y(p.acum)}" r="4" fill="var(--orange-d)" stroke="#fff" stroke-width="2"/>`;
+      });
+      const ultimo = puntos[puntos.length - 1];
+      svg += `<text x="${m.l + banda * (puntos.length - 1) + banda / 2}" y="${y(ultimo.acum) - 9}" text-anchor="end" font-size="11" font-weight="700" fill="#0A1628">${informePct(ultimo.acum)}</text>`;
+      puntos.forEach((p, i) => {
+        const detalle = `${informeNum(p.x.fallosVentana)} días con fallo · ${informePct(p.share)} de las incidencias · acumulado ${informePct(p.acum)} · ${p.x.t.de}`;
+        svg += `<rect x="${m.l + banda * i}" y="${m.t}" width="${banda}" height="${ih + 40}" fill="transparent" data-tip-t="${escapeHtml(p.x.t.n)}" data-tip-d="${escapeHtml(detalle)}"/>`;
+      });
+      contenedor.innerHTML = svg + '</svg>';
+    }
+
+    function renderInformeReglas(visibles) {
+      const dimensiones = {}, reglas = {};
+      visibles.forEach(x => {
+        Object.keys(x.dimensionFallo).forEach(d => { dimensiones[d] = (dimensiones[d] || 0) + x.dimensionFallo[d]; });
+        Object.keys(x.reglasFallo).forEach(r => { reglas[r] = (reglas[r] || 0) + x.reglasFallo[r]; });
+      });
+      const nombreRegla = {};
+      informeData.reglas.forEach(r => { nombreRegla[r.id] = `${r.id} · ${r.nombre}`; });
+      const barras = (mapa, etiqueta) => {
+        const filas = Object.keys(mapa).map(k => ({ k, n: mapa[k] })).sort((a, b) => b.n - a.n || a.k.localeCompare(b.k));
+        if (!filas.length) return '<div class="inf-empty">Sin fallos en la ventana.</div>';
+        const max = filas[0].n;
+        return '<div class="inf-bars">' + filas.map(f => `<div class="inf-bar-row"><span title="${escapeHtml(etiqueta(f.k))}">${escapeHtml(etiqueta(f.k))}</span>
+          <div class="inf-bar-track"><div class="inf-bar-fill" style="width:${(f.n / max * 100).toFixed(1)}%"></div></div><b>${informeNum(f.n)}</b></div>`).join('') + '</div>';
+      };
+      informeEl('inf-reglas').innerHTML = '<div class="inf-sub">Por dimensión</div>' + barras(dimensiones, k => k) +
+        '<div class="inf-sub">Por regla</div>' + barras(reglas, k => nombreRegla[k] || k);
+    }
+
+    function renderInformeRanking(visibles, calculo) {
+      const contenedor = informeEl('inf-ranking');
+      const lista = visibles.slice(0, informeFiltros.topN);
+      informeEl('inf-ranking-sub').textContent = `${informeNum(Math.min(lista.length, visibles.length))} de ${informeNum(visibles.length)} tablas · ordenadas por días con fallo en ${informeFiltros.ventana} días`;
+      if (!lista.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas con los filtros actuales.</div>'; return; }
+      const filas = lista.map((x, i) => {
+        const reglas = Object.keys(x.reglasFallo).sort((a, b) => x.reglasFallo[b] - x.reglasFallo[a]).slice(0, 3)
+          .map(r => `${r} (${x.reglasFallo[r]})`).join(', ') || '—';
+        return `<tr>
+          <td class="num">${i + 1}</td>
+          <td><strong>${escapeHtml(x.t.n)}</strong></td>
+          <td><span class="inf-badge ${x.categoria}">${INFORME_ESTADOS[x.categoria]}</span></td>
+          <td class="num"><strong>${informeNum(x.fallos30)}</strong></td>
+          <td class="num"><strong>${informeNum(x.fallos90)}</strong></td>
+          <td class="num">${x.racha ? informeNum(x.racha) : '—'}</td>
+          <td class="num">${informeDec(x.mttr)}</td>
+          <td class="num">${x.reaperturas ? informeNum(x.reaperturas) : '—'}</td>
+          <td>${escapeHtml(x.t.de)}</td>
+          <td>${escapeHtml(x.t.ds)}</td>
+          <td>${escapeHtml(x.t.dir)}</td>
+          <td>${escapeHtml(reglas)}</td>
+        </tr>`;
+      }).join('');
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>#</th><th>Tabla</th><th>Estado</th>
+        <th class="num">Días con fallo 30 d</th><th class="num">Días con fallo 90 d</th><th class="num">Racha actual</th>
+        <th class="num">MTTR (días)</th><th class="num">Reaperturas</th><th>Resp. técnico</th><th>Data Scientist</th><th>Dirección</th><th>Reglas con fallo</th>
+        </tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    function renderInformeMapaCalor(visibles, calculo) {
+      const contenedor = informeEl('inf-heat');
+      const lista = visibles.filter(x => x.fallosVentana > 0).slice(0, INFORME_TOP_PARETO);
+      informeEl('inf-heat-sub').textContent = `Top ${INFORME_TOP_PARETO} tablas con más días de fallo · ${calculo.fechasVentana.length} cortes en la ventana`;
+      if (!lista.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas con fallos en la ventana.</div>'; return; }
+      const nombres = { '0': ['n', 'Sin corte'], '1': ['o', 'Correcto'], '2': ['p', 'Pendiente'], '3': ['f', 'Fallo'] };
+      const eje = calculo.fechasVentana.map(i => `<td title="${informeData.fechas[i]}">${informeData.fechas[i].slice(8)}</td>`).join('');
+      const filas = lista.map(x => {
+        const fallos = {};
+        x.t.x.forEach(par => { fallos[par[0]] = par[1].join(', '); });
+        const celdas = calculo.fechasVentana.map(i => {
+          const e = x.estados[i];
+          const detalle = `${informeData.fechas[i]} · ${nombres[e][1]}${e === '3' && fallos[i] ? ' · reglas: ' + fallos[i] : ''}`;
+          return `<td class="${nombres[e][0]}" data-tip-t="${escapeHtml(x.t.n)}" data-tip-d="${escapeHtml(detalle)}">${e === '3' ? '✕' : ''}</td>`;
+        }).join('');
+        return `<tr><th title="${escapeHtml(x.t.n)}">${escapeHtml(x.t.n)}</th>${celdas}</tr>`;
+      }).join('');
+      contenedor.innerHTML = `<table class="inf-heat"><tr class="inf-heat-axis"><td></td>${eje}</tr>${filas}</table>`;
+    }
+
+    function renderInformeOwners(visibles) {
+      const contenedor = informeEl('inf-owners');
+      const campo = informeFiltros.grupo;
+      const grupos = {};
+      visibles.forEach(x => {
+        const clave = x.t[campo] || 'Sin asignar';
+        const g = grupos[clave] || (grupos[clave] = { owner: clave, tablas: 0, conFallo: 0, recurrentes: 0, cronicas: 0, dias: 0, reaperturas: 0, cerradas: 0, sumaRes: 0, lista: [] });
+        g.tablas++;
+        if (x.fallosVentana > 0) { g.conFallo++; g.lista.push(x); }
+        if (x.esRecurrente) g.recurrentes++;
+        if (x.categoria === 'cronica') g.cronicas++;
+        g.dias += x.fallosVentana; g.reaperturas += x.reaperturas; g.cerradas += x.cerradas; g.sumaRes += x.sumaResolucion;
+      });
+      const filas = Object.keys(grupos).map(k => grupos[k]).sort((a, b) => b.dias - a.dias || a.owner.localeCompare(b.owner));
+      if (!filas.length) { contenedor.innerHTML = '<div class="inf-empty">Sin datos para agrupar.</div>'; return; }
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>Responsable</th><th class="num">Tablas</th><th class="num">Con fallo</th>
+        <th class="num">Recurrentes</th><th class="num">Crónicas</th><th class="num">Días con fallo</th><th class="num">Reaperturas</th><th class="num">MTTR (días)</th>
+        <th>Prioridad</th><th>Tablas con más fallos</th></tr></thead><tbody>` + filas.map(g => {
+        const prioridad = g.cronicas ? ['cronica', 'Alta'] : (g.recurrentes ? ['recurrente', 'Media'] : (g.conFallo ? ['ocasional', 'Baja'] : ['estable', 'Sin fallos']));
+        const top = g.lista.slice(0, 3).map(x => `${x.t.n} (${x.fallosVentana})`).join(', ') || '—';
+        return `<tr><td><strong>${escapeHtml(g.owner)}</strong></td><td class="num">${informeNum(g.tablas)}</td><td class="num">${informeNum(g.conFallo)}</td>
+          <td class="num">${informeNum(g.recurrentes)}</td><td class="num">${informeNum(g.cronicas)}</td><td class="num"><strong>${informeNum(g.dias)}</strong></td>
+          <td class="num">${g.reaperturas ? informeNum(g.reaperturas) : '—'}</td><td class="num">${informeDec(g.cerradas ? g.sumaRes / g.cerradas : null)}</td>
+          <td><span class="inf-badge ${prioridad[0]}">${prioridad[1]}</span></td><td>${escapeHtml(top)}</td></tr>`;
+      }).join('') + '</tbody></table>';
+    }
+
+    function inicializarInformes() {
+      const leer = (id, clave, convertir) => informeEl(id).addEventListener('change', e => {
+        informeFiltros[clave] = convertir ? convertir(e.target.value) : e.target.value;
+        renderInforme();
+      });
+      leer('inf-ventana', 'ventana', Number);
+      leer('inf-alcance', 'alcance');
+      leer('inf-periodicidad', 'periodicidad');
+      leer('inf-de', 'de'); leer('inf-ds', 'ds'); leer('inf-dir', 'dir');
+      leer('inf-umbral', 'umbral', Number);
+      leer('inf-topn', 'topN', Number);
+      leer('inf-grupo', 'grupo');
+      let temporizador = null;
+      informeEl('inf-buscar').addEventListener('input', e => {
+        window.clearTimeout(temporizador);
+        temporizador = window.setTimeout(() => { informeFiltros.buscar = e.target.value; renderInforme(); }, 200);
+      });
+      informeEl('inf-refrescar').addEventListener('click', () => cargarInformeFallos(true));
+      informeEl('inf-kpis').addEventListener('click', e => {
+        const boton = e.target.closest('[data-cat]');
+        if (!boton) return;
+        informeFiltros.categoria = informeFiltros.categoria === boton.dataset.cat ? '' : boton.dataset.cat;
+        renderInforme();
+      });
+      // Tooltip único para barras y celdas; el contenido se inserta con textContent.
+      const tip = informeEl('inf-tip');
+      const vista = informeEl('view-informes');
+      vista.addEventListener('pointermove', e => {
+        const marca = e.target.closest('[data-tip-t]');
+        if (!marca) { tip.style.display = 'none'; return; }
+        tip.textContent = '';
+        const titulo = document.createElement('strong');
+        titulo.textContent = marca.getAttribute('data-tip-t');
+        const detalle = document.createElement('span');
+        detalle.textContent = marca.getAttribute('data-tip-d');
+        tip.appendChild(titulo); tip.appendChild(detalle);
+        tip.style.display = 'block';
+        tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 300) + 'px';
+        tip.style.top = (e.clientY + 14) + 'px';
+      });
+      vista.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+    }
+    document.addEventListener('DOMContentLoaded', inicializarInformes);
+
     function mostrarVista(vista) {
       const esCalidadFuncional = currentQualityMode === 'funcional';
       const configuracion = {
         dashboard: {
           display:'block', titulo:esCalidadFuncional ? 'Fallos Funcionales' : 'MVP Técnico',
           subtitulo:esCalidadFuncional ? 'Control de advertencias y reglas no críticas' : 'Control de reglas críticas de calidad'
+        },
+        informes: {
+          display:'block', titulo:'Informes de Calidad',
+          subtitulo:'Reincidencia, estabilidad y responsables por tabla'
         },
         traceability: {
           display:'flex', titulo:'Trazabilidad Técnica',
@@ -1438,16 +2016,32 @@
         }
       };
       if (!configuracion[vista]) return;
-      ['dashboard', 'traceability', 'admin'].forEach(nombre => {
+      ['dashboard', 'informes', 'traceability', 'admin'].forEach(nombre => {
         const elemento = document.getElementById(`view-${nombre}`);
         if (elemento) elemento.style.display = nombre === vista ? configuracion[nombre].display : 'none';
+        // Informes pertenece al grupo Calidad: ambas vistas resaltan el mismo botón.
+        if (nombre === 'informes') return;
         const boton = document.getElementById(`nav-${nombre}`);
-        if (boton) boton.classList.toggle('active', nombre === vista);
+        const activo = nombre === 'dashboard' ? (vista === 'dashboard' || vista === 'informes') : nombre === vista;
+        if (boton) boton.classList.toggle('active', activo);
       });
+      actualizarSubmodulosCalidad(vista);
       currentView = vista;
       document.getElementById('topbar-view-title').textContent = configuracion[vista].titulo;
       document.getElementById('topbar-view-subtitle').textContent = configuracion[vista].subtitulo;
       if (vista === 'admin' && !adminCargada) cargarAdministracion(false);
+      if (vista === 'informes' && !informeData) cargarInformeFallos(false);
+    }
+
+    // Marca como activo solo el submódulo de Calidad que se está mostrando.
+    function actualizarSubmodulosCalidad(vista) {
+      const activo = vista === 'informes' ? 'informes' : (vista === 'dashboard' ? currentQualityMode : '');
+      ['tecnico', 'funcional', 'informes'].forEach(modo => {
+        const boton = document.getElementById(`quality-mode-${modo}`);
+        if (!boton) return;
+        boton.classList.toggle('active', modo === activo);
+        boton.setAttribute('aria-selected', String(modo === activo));
+      });
     }
 
     function setAdminBusy(ocupado) {
@@ -1655,6 +2249,10 @@
     }
 
     function mostrarCalidad(modo) {
+      if (modo === 'informes') {
+        mostrarVista('informes');
+        return;
+      }
       setQualityMode(modo);
       mostrarVista('dashboard');
     }

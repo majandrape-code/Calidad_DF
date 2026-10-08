@@ -104,10 +104,53 @@ para no mezclar reglas técnicas y funcionales. El gráfico muestra los últimos
 10 cortes disponibles para tablas diarias y los últimos 3 cortes de fin de mes
 para tablas mensuales.
 
-Durante la carga del monitor se cachean únicamente las reglas del corte visible,
-sin recorrer ni serializar todos los históricos. Al abrir una tabla, el modal
-muestra primero esas reglas y solicita el histórico en segundo plano. Si la
-caché no está disponible, el servidor reconstruye solo la respuesta solicitada.
+Durante la carga del monitor se cachean únicamente las reglas del corte visible.
+Al abrir una tabla, el modal pide a la vez las reglas y el histórico. El histórico
+de **todas** las tablas se calcula en una sola lectura de la hoja y se guarda en
+la caché en fragmentos pequeños (`obtenerHistoricoTablaCalidad`); la carga inicial
+lo precalienta en segundo plano (`precalentarHistoricoCalidad`). Así, la primera
+apertura de cualquier tabla deja de leer la hoja completa. Si la caché no está
+disponible, el servidor reconstruye el índice en una única lectura.
+
+## Informes de Calidad
+
+El submódulo **Informes** (Calidad → Informes) analiza el histórico de la hoja
+`calidad`. Hoy incluye el informe **Fallos recurrentes**:
+
+- **KPIs principales**: tablas evaluadas, estables, con fallos recurrentes,
+  crónicas, reaperturas, tiempo medio de resolución y concentración. Los KPIs
+  de grupo son botones: al pulsarlos filtran el resto de la pantalla.
+- **Ranking de reincidencia**: días con fallo en 30 y 90 días, racha actual,
+  MTTR y reaperturas, siempre con **responsable técnico (Data Engineer)**,
+  **Data Scientist** y dirección de cada tabla.
+- **Pareto** de incidencias por tabla y **mapa de calor** tabla × corte.
+- **Fallos por dimensión y regla**, y **fallos por responsable** (agrupable por
+  Data Engineer, Data Scientist, dirección o responsable funcional).
+- Filtros dinámicos: ventana (30/90 días), alcance (MVP Técnico, Funcional o
+  ambos), periodicidad, responsables, dirección, umbral de recurrencia y búsqueda.
+
+Definiciones (todas sobre los cortes disponibles en la hoja):
+
+| Métrica | Cálculo |
+| --- | --- |
+| Día con fallo | Corte en el que al menos una regla del alcance no está `Exitosa` ni `Pendiente` |
+| Racha actual | Cortes consecutivos fallando hasta el último; un pendiente no la corta |
+| Recurrente | Tabla con al menos N días con fallo en la ventana (N configurable) |
+| Crónica | Racha actual de 5 cortes o más |
+| Estable | Con ejecuciones en la ventana y sin ningún fallo |
+| MTTR | Días entre el primer fallo y el primer corte correcto posterior (incidencias cerradas) |
+| Reapertura | Nuevo fallo en ≤ 7 días desde que se resolvió una incidencia |
+| Concentración | % de incidencias que generan el 30% de las tablas con más fallos |
+
+La dimensión de cada regla sale de `DIMENSIONES_REGLA` en `Codigo.gs`
+(Completitud, Validez, Unicidad, Integridad). Los fallos de reglas que no llegaron
+a ejecutarse (`g_quality_rule_status_type = NO ENCONTRADO`, si la columna existe)
+se cuentan como **Puntualidad**. El informe usa la caché de calidad y se puede
+refrescar con **Actualizar datos**.
+
+**Pendiente:** el informe de *Acierto de Elipses* necesita primero etiquetar cada
+alerta como Real / Falso positivo / Pendiente; sin esa columna no se puede
+calcular la precisión.
 
 ## Despliegue
 

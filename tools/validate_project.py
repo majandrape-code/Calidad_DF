@@ -51,6 +51,8 @@ def main() -> int:
         "admin-operations-body", "toast-stack", "quality-mode-tecnico",
         "quality-mode-funcional", "select-periodicidad",
         "status-filter-warn", "status-filter-err",
+        "quality-mode-informes", "view-informes", "inf-kpis", "inf-pareto",
+        "inf-reglas", "inf-ranking", "inf-heat", "inf-owners",
     }
     missing_ids = sorted(required_ids - parser.ids)
     require(not missing_ids, "Faltan IDs de Administración: " + ", ".join(missing_ids), errors)
@@ -67,6 +69,8 @@ def main() -> int:
         "obtenerPanelAdministracion", "probarConexionesAdministracion",
         "guardarConfiguracionAdministracion", "invalidarCachesAdministracion",
         "registrarConexionUsuario", "registrarOperacion_", "claveCache_",
+        "obtenerInformeFallosRecurrentes", "construirInformeFallos_",
+        "obtenerHistoricoTablaCalidad", "precalentarHistoricoCalidad",
     }
     missing_symbols = sorted(required_server_symbols - server_functions)
     require(not missing_symbols, "Faltan funciones administrativas: " + ", ".join(missing_symbols), errors)
@@ -127,6 +131,23 @@ def main() -> int:
     require(
         "t.name, t.cutoffDate, t.qualityMode" in client,
         "El detalle debe solicitarse con la vista técnica o funcional activa.",
+        errors,
+    )
+
+    require(
+        "mostrarVista('informes')" in client and "cargarInformeFallos" in client
+        and "calcularInformeFallos" in client,
+        "El submódulo Informes debe abrir su vista y cargar el informe de fallos recurrentes.",
+        errors,
+    )
+    require(
+        "Informes" in client and "quality-mode-informes" in client,
+        "La navegación de Calidad debe incluir el submódulo Informes.",
+        errors,
+    )
+    require(
+        "obtenerHistoricoTablaCalidad" in client,
+        "El modal debe pedir el histórico a la función con índice en caché.",
         errors,
     )
 
