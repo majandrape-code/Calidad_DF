@@ -1032,28 +1032,32 @@ function obtenerDetalleReglasCalidad(nombreTabla, fechaCorte, modoCalidad) {
   return obtenerDetalleTablaCalidad(nombreTabla, fechaCorte, modoCalidad).reglas;
 }
 
-// Devuelve reglas e histórico en una sola lectura de Sheets. Esto evita que la
-// apertura del modal lea la hoja completa dos veces.
-function obtenerDetalleTablaCalidad(nombreTabla, fechaCorte, modoCalidad) {
-  var nombreClave = (nombreTabla || '').toString().trim().replace(/\\/g, '').toLowerCase();
-  var fechaClave = formatearFechaSQL(fechaCorte);
-  var modo = normalizarModoCalidad_(modoCalidad);
-  if (!nombreClave || !fechaClave) return { reglas: [], historico: [] };
+// ------------------------------------------------------------------
+// Índice de histórico de calidad
+// ------------------------------------------------------------------
+// El histórico de una tabla (10 cortes diarios o 3 mensuales) obliga a recorrer
+// la hoja completa. Para no repetir esa lectura por cada tabla y vista, se
+// calcula una sola vez el histórico de TODAS las tablas y se reparte en
+// fragmentos de caché pequeños. Cada clic posterior (o cada tabla distinta)
+// se resuelve leyendo un único fragmento, sin tocar Sheets.
+var HISTORICO_FRAGMENTO_OBJETIVO = 40000;
+var HISTORICO_FRAGMENTO_MAXIMO = 90000;
 
-  var config = obtenerConfiguracion_();
-  var cache = CacheService.getScriptCache();
-  var cacheKey = claveDetalleCalidad_(config, nombreClave, fechaClave, modo);
-  try {
-    var hit = cache.get(cacheKey);
-    if (hit) return JSON.parse(hit);
-  } catch (eCache) {}
+function nombreTablaClave_(valor) {
+  return valor ? valor.toString().trim().replace(/\\/g, '').toLowerCase() : '';
+}
 
-  var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
-  var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
-  var datos = leerDatosCalidad_(hoja);
-  if (datos.length < 2) return { reglas: [], historico: [] };
+function hashTablaCalidad_(texto) {
+  var h = 0;
+  for (var i = 0; i < texto.length; i++) h = (h * 31 + texto.charCodeAt(i)) >>> 0;
+  return h;
+}
 
-  var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
+function claveIndiceHistorico_(config, parte) {
+  return ['hist_idx_v1', 'v' + config.cacheVersion, config.calidadSheetId, parte].join('_');
+}
+
+function indicesColumnasCalidad_(headers) {
   var idx = {
     fecha:      headers.indexOf('gf_cutoff_date'),
     tabla:      headers.indexOf('tabla_auditada'),
@@ -1072,47 +1076,177 @@ function obtenerDetalleTablaCalidad(nombreTabla, fechaCorte, modoCalidad) {
     calidadPct: 'gf_quality_rule_compliance_per', numerador: 'gf_qr_cplc_numerator_number',
     volumen: 'gf_qr_cplc_denominator_number', regla: 'nombre_regla', idRegla: 'principle_rule_type'
   }, 'la hoja calidad');
+  return idx;
+}
 
-  var reglas = [];
-  var historicoPorFecha = {};
-  var periodicidadTabla = '';
+function leerHistoricoIndiceCalidad_(config, cache, nombreClave, modo) {
+  try {
+    var meta = cache.get(claveIndiceHistorico_(config, 'meta'));
+    var fragmentos = parseInt(meta, 10);
+    if (!fragmentos) return null;
+    var texto = cache.get(claveIndiceHistorico_(config, 'f' + (hashTablaCalidad_(nombreClave) % fragmentos)));
+    if (!texto) return null;
+    var entrada = JSON.parse(texto)[nombreClave];
+    if (!entrada) return { historico: [], periodicidad: '' };
+    return { historico: modo === 'funcional' ? entrada.f : entrada.t, periodicidad: entrada.p || '' };
+  } catch (e) {
+    return null;
+  }
+}
+
+function guardarIndiceHistoricoCalidad_(config, cache, indice) {
+  var tablas = Object.keys(indice);
+  var total = JSON.stringify(indice).length;
+  var fragmentos = Math.max(1, Math.ceil(total / HISTORICO_FRAGMENTO_OBJETIVO));
+  for (var intento = 0; intento < 4; intento++) {
+    var partes = [];
+    for (var n = 0; n < fragmentos; n++) partes.push({});
+    tablas.forEach(function(tabla) { partes[hashTablaCalidad_(tabla) % fragmentos][tabla] = indice[tabla]; });
+    var textos = partes.map(function(parte) { return JSON.stringify(parte); });
+    var maximo = textos.reduce(function(m, t) { return Math.max(m, t.length); }, 0);
+    if (maximo > HISTORICO_FRAGMENTO_MAXIMO) { fragmentos *= 2; continue; }
+    var paraCache = {};
+    textos.forEach(function(texto, n) { paraCache[claveIndiceHistorico_(config, 'f' + n)] = texto; });
+    paraCache[claveIndiceHistorico_(config, 'meta')] = String(fragmentos);
+    try { cache.putAll(paraCache, config.cacheCalidadSegundos); }
+    catch (e) { console.warn('No se pudo guardar el índice de histórico: ' + e.message); }
+    return;
+  }
+}
+
+// Una única pasada sobre la hoja: calcula el histórico de todas las tablas y,
+// si se pide, recoge las reglas de una tabla y fecha concretas.
+function construirIndiceHistoricoCalidad_(datos, idx, nombreObjetivo, fechaObjetivo) {
+  var acumulado = {};
+  var periodicidades = {};
+  var reglasObjetivo = { tecnico: [], funcional: [] };
   for (var i = 1; i < datos.length; i++) {
     var fila = datos[i];
-    var tablaFila = fila[idx.tabla] ? fila[idx.tabla].toString().trim().replace(/\\/g, '').toLowerCase() : '';
-    if (tablaFila !== nombreClave) continue;
-
-    var fechaFila = formatearFechaSQL(fila[idx.fecha]);
-    if (!fechaFila) continue;
-    var idRegla = idx.idRegla > -1 ? normalizarIdReglaCalidad_(fila[idx.idRegla]) : '';
+    var tabla = nombreTablaClave_(fila[idx.tabla]);
+    if (!tabla) continue;
+    var fecha = formatearFechaSQL(fila[idx.fecha]);
+    if (!fecha) continue;
+    var idRegla = normalizarIdReglaCalidad_(fila[idx.idRegla]);
     if (!idRegla) continue;
-    if (!reglaPerteneceModo_(idRegla, modo)) continue;
-    if (!periodicidadTabla && idx.periodicidad > -1 && fila[idx.periodicidad] !== '') {
-      periodicidadTabla = String(fila[idx.periodicidad]).trim();
+    var modo = esReglaMvpTecnico_(idRegla) ? 'tecnico' : 'funcional';
+    if (!periodicidades[tabla] && idx.periodicidad > -1 && fila[idx.periodicidad] !== '') {
+      periodicidades[tabla] = String(fila[idx.periodicidad]).trim();
     }
     var estado = fila[idx.estado] ? fila[idx.estado].toString().trim() : '';
     var calidad = parseFloat(fila[idx.calidadPct]);
 
     // Un pendiente aún no tiene una medición de calidad y no debe bajar el histórico.
     if (estado.toUpperCase() !== 'PENDIENTE' && !isNaN(calidad)) {
-      if (!historicoPorFecha[fechaFila]) historicoPorFecha[fechaFila] = { suma: 0, conteo: 0 };
-      historicoPorFecha[fechaFila].suma += calidad;
-      historicoPorFecha[fechaFila].conteo++;
+      var porTabla = acumulado[tabla] || (acumulado[tabla] = { tecnico: {}, funcional: {} });
+      var celda = porTabla[modo][fecha] || (porTabla[modo][fecha] = { suma: 0, conteo: 0 });
+      celda.suma += calidad;
+      celda.conteo++;
     }
+    if (nombreObjetivo && tabla === nombreObjetivo && fecha === fechaObjetivo) {
+      reglasObjetivo[modo].push(construirReglaDetalle_(fila, idx, fecha, idRegla));
+    }
+  }
+  var indice = {};
+  Object.keys(acumulado).forEach(function(tabla) {
+    var periodicidad = periodicidades[tabla] || '';
+    indice[tabla] = {
+      p: periodicidad,
+      t: recortarHistoricoCalidad_(acumulado[tabla].tecnico, periodicidad),
+      f: recortarHistoricoCalidad_(acumulado[tabla].funcional, periodicidad)
+    };
+  });
+  return { indice: indice, reglas: reglasObjetivo, periodicidades: periodicidades };
+}
 
-    if (fechaFila === fechaClave) {
-      reglas.push(construirReglaDetalle_(fila, idx, fechaFila, idRegla));
+// Lee la hoja una vez, deja el índice en caché y devuelve lo calculado.
+function reconstruirIndiceHistoricoCalidad_(config, cache, nombreObjetivo, fechaObjetivo) {
+  var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
+  var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
+  var datos = leerDatosCalidad_(hoja);
+  if (datos.length < 2) return { indice: {}, reglas: { tecnico: [], funcional: [] }, periodicidades: {} };
+  var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
+  var resultado = construirIndiceHistoricoCalidad_(datos, indicesColumnasCalidad_(headers), nombreObjetivo, fechaObjetivo);
+  guardarIndiceHistoricoCalidad_(config, cache, resultado.indice);
+  return resultado;
+}
+
+function respuestaHistoricoCalidad_(historico, periodicidad, modo) {
+  return {
+    historico: historico,
+    modo: modo,
+    periodicidad: periodicidad,
+    limiteHistorico: String(periodicidad).toLowerCase() === 'mensual' ? 3 : 10
+  };
+}
+
+// Histórico de una tabla para el gráfico del modal. Con el índice en caché no
+// lee Sheets; si falta, lo reconstruye para todas las tablas de una vez.
+function obtenerHistoricoTablaCalidad(nombreTabla, modoCalidad) {
+  var nombreClave = nombreTablaClave_(nombreTabla);
+  var modo = normalizarModoCalidad_(modoCalidad);
+  if (!nombreClave) return respuestaHistoricoCalidad_([], '', modo);
+  var config = obtenerConfiguracion_();
+  var cache = CacheService.getScriptCache();
+
+  var enCache = leerHistoricoIndiceCalidad_(config, cache, nombreClave, modo);
+  if (enCache) return respuestaHistoricoCalidad_(enCache.historico, enCache.periodicidad, modo);
+
+  var resultado = reconstruirIndiceHistoricoCalidad_(config, cache, '', '');
+  var entrada = resultado.indice[nombreClave];
+  return respuestaHistoricoCalidad_(
+    entrada ? (modo === 'funcional' ? entrada.f : entrada.t) : [],
+    entrada ? entrada.p : (resultado.periodicidades[nombreClave] || ''), modo);
+}
+
+// Calienta el índice en segundo plano justo después de la carga inicial para
+// que el primer clic en una tabla ya lo encuentre listo.
+function precalentarHistoricoCalidad() {
+  var config = obtenerConfiguracion_();
+  var cache = CacheService.getScriptCache();
+  try {
+    if (parseInt(cache.get(claveIndiceHistorico_(config, 'meta')), 10)) return { estado: 'listo' };
+  } catch (e) {}
+  var resultado = reconstruirIndiceHistoricoCalidad_(config, cache, '', '');
+  return { estado: 'calculado', tablas: Object.keys(resultado.indice).length };
+}
+
+// Devuelve reglas e histórico de una tabla y fecha. Si ambos están en caché no
+// se lee Sheets; si falta alguno, una sola lectura completa recompone todo.
+function obtenerDetalleTablaCalidad(nombreTabla, fechaCorte, modoCalidad) {
+  var nombreClave = nombreTablaClave_(nombreTabla);
+  var fechaClave = formatearFechaSQL(fechaCorte);
+  var modo = normalizarModoCalidad_(modoCalidad);
+  if (!nombreClave || !fechaClave) return { reglas: [], historico: [] };
+
+  var config = obtenerConfiguracion_();
+  var cache = CacheService.getScriptCache();
+  var cacheKey = claveDetalleCalidad_(config, nombreClave, fechaClave, modo);
+  try {
+    var hit = cache.get(cacheKey);
+    if (hit) return JSON.parse(hit);
+  } catch (eCache) {}
+
+  var reglas = null;
+  try {
+    var reglasEnCache = cache.get(claveReglasCalidad_(config, nombreClave, fechaClave, modo));
+    if (reglasEnCache) reglas = JSON.parse(reglasEnCache);
+  } catch (eReglas) {}
+  var historico = leerHistoricoIndiceCalidad_(config, cache, nombreClave, modo);
+
+  if (!reglas || !historico) {
+    var resultado = reconstruirIndiceHistoricoCalidad_(config, cache, nombreClave, fechaClave);
+    var entrada = resultado.indice[nombreClave];
+    if (!reglas) reglas = resultado.reglas[modo];
+    if (!historico) {
+      historico = {
+        historico: entrada ? (modo === 'funcional' ? entrada.f : entrada.t) : [],
+        periodicidad: entrada ? entrada.p : (resultado.periodicidades[nombreClave] || '')
+      };
     }
   }
 
-  var historico = recortarHistoricoCalidad_(historicoPorFecha, periodicidadTabla);
-
-  var respuesta = {
-    reglas: reglas,
-    historico: historico,
-    modo: modo,
-    periodicidad: periodicidadTabla,
-    limiteHistorico: String(periodicidadTabla).toLowerCase() === 'mensual' ? 3 : 10
-  };
+  var respuesta = respuestaHistoricoCalidad_(historico.historico, historico.periodicidad, modo);
+  respuesta.reglas = reglas;
   try { cache.put(cacheKey, JSON.stringify(respuesta), config.cacheCalidadSegundos); } catch (ePut) {}
   return respuesta;
 }

@@ -1290,6 +1290,9 @@
           fechaReferenciaEstabilidad = carga.ultimaFecha;
           aplicarDatosMonitor(carga.datos, carga.ultimaFecha);
           restaurarBoton();
+          // Calienta en segundo plano el histórico de todas las tablas para que
+          // el primer clic en una tabla no espere a la hoja de calidad.
+          callServer('precalentarHistoricoCalidad').catch(function() {});
         })
         .catch(function(err) {
           emptyState.style.display = 'flex';
@@ -2081,6 +2084,10 @@
         document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de reglas…</div>';
         document.getElementById('modal-overlay').classList.add('open');
         t.detallePendiente = false;
+        // El histórico se pide a la vez que las reglas (no después): ambas
+        // consultas salen de caché y se resuelven en paralelo.
+        t.historicoPromesa = callServer('obtenerHistoricoTablaCalidad', t.name, t.qualityMode);
+        t.historicoPromesa.catch(function() {});
         callServer('obtenerDetalleReglasCalidad', t.name, t.cutoffDate, t.qualityMode)
           .then(function(reglas) {
             t.reglas = Array.isArray(reglas) ? reglas : [];
@@ -2178,8 +2185,9 @@
         return;
       }
 
-      callServer('obtenerDetalleTablaCalidad', t.name, t.cutoffDate, t.qualityMode)
+      (t.historicoPromesa || callServer('obtenerHistoricoTablaCalidad', t.name, t.qualityMode))
         .then(function(detalle) {
+          t.historicoPromesa = null;
           const historico = detalle && detalle.historico ? detalle.historico : [];
           t.historico = historico;
           t.limiteHistorico = detalle && detalle.limiteHistorico ? detalle.limiteHistorico : t.limiteHistorico;
@@ -2195,6 +2203,7 @@
           renderQualityChart(historico, t.quality);
         })
         .catch(function() {
+          t.historicoPromesa = null;
           const loadMsg = document.getElementById('chart-loading-msg');
           if (loadMsg) loadMsg.textContent = 'No se pudieron cargar los datos históricos.';
         });
