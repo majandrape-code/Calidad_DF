@@ -142,11 +142,15 @@ Definiciones (todas sobre los cortes disponibles en la hoja):
 | Reapertura | Nuevo fallo en ≤ 7 días desde que se resolvió una incidencia |
 | Concentración | % de incidencias que generan el 30% de las tablas con más fallos |
 
-La dimensión de cada regla sale de `DIMENSIONES_REGLA` en `Codigo.gs`
-(Completitud, Validez, Unicidad, Integridad). Los fallos de reglas que no llegaron
-a ejecutarse (`g_quality_rule_status_type = NO ENCONTRADO`, si la columna existe)
-se cuentan como **Puntualidad**. El informe usa la caché de calidad y se puede
-refrescar con **Actualizar datos**.
+La dimensión y el nombre de cada regla salen de `CATALOGO_REGLAS` en `Codigo.gs`,
+que replica el catálogo oficial: **Disponibilidad** (1-1, 1-2), **Completitud**
+(2-1 a 2-4), **Validez** (3-1 a 3-5) y **Consistencia** (4-1, 4-2, 4-3).
+
+**Puntualidad**: los fallos de reglas que no llegaron a ejecutarse dentro del ANS
+(`g_quality_rule_status_type = NO ENCONTRADO`, si la columna existe) se cuentan como
+Puntualidad. El ANS es el plazo en días hábiles (`ttmm` de la hoja o columna de
+gobierno); si una tabla no lo informa se asume **1**. El informe usa la caché de
+calidad y se puede refrescar con **Actualizar datos**.
 
 **Pendiente:** el informe de *Acierto de Elipses* necesita primero etiquetar cada
 alerta como Real / Falso positivo / Pendiente; sin esa columna no se puede

@@ -1895,12 +1895,13 @@
           <td>${escapeHtml(x.t.de)}</td>
           <td>${escapeHtml(x.t.ds)}</td>
           <td>${escapeHtml(x.t.dir)}</td>
+          <td class="num">${escapeHtml(x.t.ans || '1')}</td>
           <td>${escapeHtml(reglas)}</td>
         </tr>`;
       }).join('');
       contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>#</th><th>Tabla</th><th>Estado</th>
         <th class="num">Días con fallo 30 d</th><th class="num">Días con fallo 90 d</th><th class="num">Racha actual</th>
-        <th class="num">MTTR (días)</th><th class="num">Reaperturas</th><th>Resp. técnico</th><th>Data Scientist</th><th>Dirección</th><th>Reglas con fallo</th>
+        <th class="num">MTTR (días)</th><th class="num">Reaperturas</th><th>Resp. técnico</th><th>Data Scientist</th><th>Dirección</th><th class="num">ANS (días háb.)</th><th>Reglas con fallo</th>
         </tr></thead><tbody>${filas}</tbody></table>`;
     }
 

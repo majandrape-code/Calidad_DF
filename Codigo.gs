@@ -1770,12 +1770,25 @@ function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle) {
 var INFORME_MAX_CORTES = 120;
 var CACHE_FRAGMENTO_MAX = 90000;
 
-// Dimensión de calidad de cada regla (ajustable si cambia el catálogo de reglas).
-var DIMENSIONES_REGLA = {
-  '2-1': 'Completitud', '2-2': 'Completitud', '2-3': 'Completitud', '3-1': 'Completitud',
-  '3-2': 'Validez', '3-5': 'Validez',
-  '4-2': 'Unicidad', '4-3': 'Integridad'
+// Catálogo oficial de reglas: principio (dimensión) y nombre de cada regla.
+var CATALOGO_REGLAS = {
+  '1-1': { dimension: 'Disponibilidad', nombre: 'Recepción del fichero en fecha y hora' },
+  '1-2': { dimension: 'Disponibilidad', nombre: 'Actualización del dato a la fecha requerida' },
+  '2-1': { dimension: 'Completitud', nombre: 'Completitud de registros' },
+  '2-2': { dimension: 'Completitud', nombre: 'Completitud de perímetro requerido' },
+  '2-3': { dimension: 'Completitud', nombre: 'Completitud entre RAW y MASTER' },
+  '2-4': { dimension: 'Completitud', nombre: 'Completitud entre origen y staging' },
+  '3-1': { dimension: 'Validez', nombre: 'Valor de dato nulo o vacío' },
+  '3-2': { dimension: 'Validez', nombre: 'Formato del campo' },
+  '3-3': { dimension: 'Validez', nombre: 'Valores no permitidos' },
+  '3-4': { dimension: 'Validez', nombre: 'Valor dentro del rango esperado' },
+  '3-5': { dimension: 'Validez', nombre: 'Valor en catálogo' },
+  '4-1': { dimension: 'Consistencia', nombre: 'Transferencia de datos origen-destino' },
+  '4-2': { dimension: 'Consistencia', nombre: 'Duplicidad de registros' },
+  '4-3': { dimension: 'Consistencia', nombre: 'Conciliación entre tablas o repositorios' }
 };
+// ANS (acuerdo de nivel de servicio, en días hábiles): si la tabla no lo informa se asume 1.
+var ANS_POR_DEFECTO = '1';
 var ESTADO_SIN_DATO = '0', ESTADO_OK = '1', ESTADO_PENDIENTE = '2', ESTADO_FALLO = '3';
 
 function guardarCacheFragmentado_(cache, clave, texto, segundos) {
@@ -1820,6 +1833,7 @@ function construirInformeFallos_(datos, gobierno) {
     regla:   headers.indexOf('nombre_regla'),
     periodicidad: headers.indexOf('g_qr_execution_frequency_type'),
     estadoRegla:  headers.indexOf('g_quality_rule_status_type'),
+    ans:     headers.indexOf('ttmm'),
     idRegla: buscarIndiceIdReglaCalidad_(headers)
   };
   validarCabeceras_(idx, {
@@ -1852,8 +1866,9 @@ function construirInformeFallos_(datos, gobierno) {
     var t = tablas[clave];
     if (!t) {
       var ceros = fechas.map(function() { return ESTADO_SIN_DATO; });
-      t = tablas[clave] = { nombre: nombre, periodicidad: '', tec: ceros.slice(), fun: ceros.slice(), fallos: {} };
+      t = tablas[clave] = { nombre: nombre, periodicidad: '', ans: '', tec: ceros.slice(), fun: ceros.slice(), fallos: {} };
     }
+    if (!t.ans && idx.ans > -1 && String(fila[idx.ans]).trim() !== '') t.ans = String(fila[idx.ans]).trim();
     if (!t.periodicidad && idx.periodicidad > -1 && fila[idx.periodicidad] !== '') {
       t.periodicidad = String(fila[idx.periodicidad]).trim();
     }
@@ -1865,10 +1880,11 @@ function construirInformeFallos_(datos, gobierno) {
     if (codigo > serie[pos]) serie[pos] = codigo;   // fallo > pendiente > ok > sin dato
 
     if (!reglas[idRegla]) {
+      var catalogo = CATALOGO_REGLAS[idRegla];
       reglas[idRegla] = {
         id: idRegla, modo: esReglaMvpTecnico_(idRegla) ? 'tecnico' : 'funcional',
-        nombre: fila[idx.regla] ? fila[idx.regla].toString().trim() : 'Regla ' + idRegla,
-        dimension: DIMENSIONES_REGLA[idRegla] || 'Otras'
+        nombre: catalogo ? catalogo.nombre : (fila[idx.regla] ? fila[idx.regla].toString().trim() : 'Regla ' + idRegla),
+        dimension: catalogo ? catalogo.dimension : 'Otras'
       };
     }
     if (codigo === ESTADO_FALLO) {
@@ -1890,6 +1906,7 @@ function construirInformeFallos_(datos, gobierno) {
       ds: (gobierno.mapeoDS && gobierno.mapeoDS[clave]) || 'BAU',
       fn: (gobierno.mapeoFuncional && gobierno.mapeoFuncional[clave]) || 'BAU',
       dir: (gobierno.mapeoDir && gobierno.mapeoDir[clave]) || 'Local',
+      ans: t.ans || (gobierno.mapeoTTM && gobierno.mapeoTTM[clave]) || ANS_POR_DEFECTO,
       t: t.tec.join(''),
       f: t.fun.join(''),
       x: Object.keys(t.fallos).map(function(p) { return [Number(p), t.fallos[p]]; })
