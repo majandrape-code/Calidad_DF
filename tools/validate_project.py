@@ -30,8 +30,8 @@ def require(condition: bool, message: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
-    server = (ROOT / "codigo.js").read_text(encoding="utf-8")
-    client = (ROOT / "index.html").read_text(encoding="utf-8")
+    server = (ROOT / "Codigo.gs").read_text(encoding="utf-8")
+    client = (ROOT / "Index.html").read_text(encoding="utf-8")
 
     try:
         manifest = json.loads((ROOT / "appsscript.json").read_text(encoding="utf-8"))
@@ -51,6 +51,11 @@ def main() -> int:
         "admin-operations-body", "toast-stack", "quality-mode-tecnico",
         "quality-mode-funcional", "select-periodicidad",
         "status-filter-warn", "status-filter-err",
+        "quality-mode-informes", "view-informes", "inf-kpis", "inf-pareto",
+        "inf-reglas", "inf-ranking", "inf-heat", "inf-owners", "inf-tab-estabilidad",
+        "inf-panel-estabilidad", "est-kpis", "est-dist", "est-owners", "est-tabla",
+        "est-fecha", "est-nota", "est-ventana", "est-estadotabla", "est-alcance",
+        "inf-estadotabla",
     }
     missing_ids = sorted(required_ids - parser.ids)
     require(not missing_ids, "Faltan IDs de Administración: " + ", ".join(missing_ids), errors)
@@ -67,6 +72,9 @@ def main() -> int:
         "obtenerPanelAdministracion", "probarConexionesAdministracion",
         "guardarConfiguracionAdministracion", "invalidarCachesAdministracion",
         "registrarConexionUsuario", "registrarOperacion_", "claveCache_",
+        "obtenerInformeFallosRecurrentes", "construirInformeFallos_",
+        "obtenerHistoricoTablaCalidad", "precalentarHistoricoCalidad",
+        "obtenerDetalleEstabilidadTabla", "reconstruirBaseInformes_",
     }
     missing_symbols = sorted(required_server_symbols - server_functions)
     require(not missing_symbols, "Faltan funciones administrativas: " + ", ".join(missing_symbols), errors)
@@ -127,6 +135,49 @@ def main() -> int:
     require(
         "t.name, t.cutoffDate, t.qualityMode" in client,
         "El detalle debe solicitarse con la vista técnica o funcional activa.",
+        errors,
+    )
+
+    require(
+        "mostrarVista('informes')" in client and "cargarInformeFallos" in client
+        and "calcularInformeFallos" in client,
+        "El submódulo Informes debe abrir su vista y cargar el informe de fallos recurrentes.",
+        errors,
+    )
+    require(
+        "Informes" in client and "quality-mode-informes" in client,
+        "La navegación de Calidad debe incluir el submódulo Informes.",
+        errors,
+    )
+    require(
+        "openStabilityMonitor" not in client and "stability-launch" not in client,
+        "El monitor de estabilidad vive en Informes; no debe quedar su botón en el dashboard.",
+        errors,
+    )
+    require(
+        "abrirDetalleEstabilidad" in client and "obtenerDetalleEstabilidadTabla" in client
+        and "calcularEstabilidad" in client,
+        "La pestaña Estabilidad debe calcular en el navegador y pedir el detalle a la caché.",
+        errors,
+    )
+    require(
+        "obtenerMonitoreoEstabilidad" not in server and "obtenerMonitoreoEstabilidad" not in client,
+        "El monitor antiguo, que releía la hoja completa en cada clic, no debe volver.",
+        errors,
+    )
+    require(
+        "estadoTabla: 'productiva'" in client and 'id="est-estadotabla"' in client,
+        "Los informes deben cargar por defecto las tablas productivas.",
+        errors,
+    )
+    require(
+        "id=\"est-ds\"" not in client,
+        "La pestaña Estabilidad ya no debe tener filtro de Data Scientist.",
+        errors,
+    )
+    require(
+        "obtenerHistoricoTablaCalidad" in client,
+        "El modal debe pedir el histórico a la función con índice en caché.",
         errors,
     )
 

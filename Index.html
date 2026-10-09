@@ -49,11 +49,11 @@
     .nav-view-btn:hover { color: white; background: rgba(255,255,255,.1); }
     .nav-view-btn.active { color: white; background: var(--bbva-naranja); }
     .nav-view-btn svg { width: 15px; height: 15px; }
-    .nav-quality-group { height: 38px; display: flex; align-items: stretch; border-radius: 7px; overflow: hidden; background: rgba(255,255,255,.04); }
-    .nav-quality-group.active { background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-    .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.12); padding: 0 10px; background: transparent; color: rgba(255,255,255,.75); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
-    .nav-quality-main:hover { color: white; background: rgba(255,255,255,.08); }
-    .nav-quality-main svg { width: 15px; height: 15px; }
+    .nav-quality-group { height: 42px; display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.07); border: 1.5px solid rgba(245,130,32,.55); }
+    .nav-quality-group.active { background: rgba(255,255,255,.14); border-color: var(--bbva-naranja); box-shadow: 0 0 0 2px rgba(245,130,32,.25); }
+    .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.18); padding: 0 14px; background: transparent; color: white; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
+    .nav-quality-main:hover { background: rgba(255,255,255,.1); }
+    .nav-quality-main svg { width: 17px; height: 17px; color: var(--bbva-naranja); }
     .nav-quality-submodules { display: flex; align-items: center; gap: 2px; padding: 3px; }
     .nav-submodule-btn { height: 30px; border: none; border-radius: 5px; padding: 0 10px; background: transparent; color: rgba(255,255,255,.62); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; white-space: nowrap; }
     .nav-submodule-btn:hover { color: white; background: rgba(255,255,255,.1); }
@@ -122,6 +122,82 @@
       .flow-column + .flow-column { border-left: none; border-top: 1px solid var(--gray-200); padding-top: 16px; }
       .admin-shell { padding: 20px 16px 40px; }
     }
+
+    /* INFORMES DE CALIDAD */
+    #view-informes { display: none; height: calc(100vh - 64px); overflow-y: auto; background: var(--gray-100); }
+    .inf-shell { max-width: 1560px; margin: 0 auto; padding: 22px 30px 50px; }
+    .inf-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+    .inf-heading h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; color: var(--navy); }
+    .inf-heading p { margin-top: 3px; color: var(--gray-600); font-size: 13px; max-width: 760px; }
+    .inf-tabs { display: flex; gap: 6px; }
+    .inf-tab { height: 34px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 14px; background: white; color: var(--bbva-azul-lateral); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+    .inf-tab.active { background: var(--bbva-azul-oscuro); border-color: var(--bbva-azul-oscuro); color: white; }
+    .inf-tab:disabled { cursor: not-allowed; opacity: .55; }
+    .inf-filters { display: flex; align-items: flex-end; gap: 10px 12px; flex-wrap: wrap; background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .inf-field label { display: block; margin-bottom: 4px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-field select, .inf-field input { height: 34px; min-width: 130px; max-width: 220px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 9px; background: white; color: var(--navy); font-family: 'Barlow', sans-serif; font-size: 12px; outline: none; }
+    .inf-field select:focus, .inf-field input:focus { border-color: var(--blue-acc); box-shadow: 0 0 0 2px var(--blue-pale); }
+    .inf-meta { margin-left: auto; color: var(--gray-400); font-size: 11px; align-self: center; }
+    .inf-status { padding: 38px; text-align: center; color: var(--gray-600); font-size: 14px; }
+    .inf-status.error { color: #991B1B; }
+    .inf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .inf-kpi { text-align: left; border: 1.5px solid var(--gray-200); border-top: 4px solid var(--gray-400); border-radius: 12px; padding: 13px 15px; background: white; box-shadow: var(--shadow-sm); font-family: inherit; }
+    button.inf-kpi { cursor: pointer; }
+    button.inf-kpi:hover { border-color: var(--blue-acc); }
+    .inf-kpi.active { box-shadow: 0 0 0 2px var(--blue-acc); }
+    .inf-kpi.ok { border-top-color: var(--green); }
+    .inf-kpi.err { border-top-color: var(--red); }
+    .inf-kpi.warn { border-top-color: var(--yellow); }
+    .inf-kpi-lbl { color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-kpi-val { margin-top: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 800; color: var(--navy); line-height: 1.05; }
+    .inf-kpi-val small { font-size: 14px; font-weight: 600; color: var(--gray-600); margin-left: 4px; }
+    .inf-kpi-sub { margin-top: 3px; color: var(--gray-400); font-size: 11px; line-height: 1.3; }
+    .inf-grid2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; margin-bottom: 16px; }
+    .inf-card { background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; box-shadow: var(--shadow-sm); margin-bottom: 16px; overflow: hidden; }
+    .inf-grid2 .inf-card { margin-bottom: 0; }
+    .inf-card-head { padding: 13px 16px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .inf-card-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: var(--navy); }
+    .inf-card-head p { color: var(--gray-400); font-size: 11px; margin-top: 2px; }
+    .inf-card-body { padding: 14px 16px; }
+    .inf-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--gray-600); }
+    .inf-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+    .inf-bars { display: grid; gap: 7px; }
+    .inf-bar-row { display: grid; grid-template-columns: minmax(110px, 190px) 1fr 54px; gap: 10px; align-items: center; font-size: 12px; color: var(--navy); }
+    .inf-bar-row span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .inf-bar-track { height: 12px; background: var(--gray-100); border-radius: 3px; }
+    .inf-bar-fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--blue-mid); min-width: 2px; }
+    .inf-bar-row b { text-align: right; font-weight: 700; }
+    .inf-sub { margin: 14px 0 8px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .inf-sub:first-child { margin-top: 0; }
+    .inf-table-wrap { overflow: auto; max-height: 520px; }
+    .inf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .inf-table th { position: sticky; top: 0; z-index: 1; background: var(--bbva-azul-oscuro); color: rgba(255,255,255,.78); padding: 9px 10px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
+    .inf-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); color: var(--gray-600); vertical-align: middle; }
+    .inf-table td strong { color: var(--navy); }
+    .inf-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .inf-badge { display: inline-block; border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+    .inf-badge.estable { background: #D1FAE5; color: #065F46; }
+    .inf-badge.ocasional { background: #FEF3C7; color: #92400E; }
+    .inf-badge.recurrente { background: #FEE2E2; color: #991B1B; }
+    .inf-badge.cronica { background: #991B1B; color: white; }
+    .inf-badge.sindatos { background: var(--gray-100); color: var(--gray-600); }
+    .inf-heat-wrap { overflow: auto; padding: 4px 0 2px; }
+    .inf-heat { border-collapse: separate; border-spacing: 2px; font-size: 11px; }
+    .inf-heat th { font-weight: 600; color: var(--gray-600); text-align: left; padding-right: 10px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; position: sticky; left: 0; background: white; }
+    .inf-heat td { width: 14px; min-width: 14px; height: 18px; border-radius: 3px; text-align: center; font-size: 10px; line-height: 18px; color: white; font-weight: 800; }
+    .inf-heat td.f { background: var(--red); }
+    .inf-heat td.o { background: #A7F3D0; }
+    .inf-heat td.p { background: #CBD5E1; }
+    .inf-heat td.n { background: var(--gray-100); }
+    .inf-heat-axis td { height: 14px; background: none; color: var(--gray-400); font-size: 9px; font-weight: 600; }
+    .inf-tip { position: fixed; z-index: 6000; pointer-events: none; max-width: 280px; background: var(--navy); color: white; border-radius: 7px; padding: 8px 10px; font-size: 11px; line-height: 1.4; box-shadow: var(--shadow-lg); display: none; }
+    .inf-tip strong { display: block; font-size: 14px; }
+    .inf-tip span { opacity: .75; }
+    .inf-hint { display: block; margin-top: 3px; max-width: 190px; color: var(--gray-400); font-size: 10px; line-height: 1.3; }
+    .inf-clic { cursor: pointer; }
+    .inf-clic:hover td { background: #F0F7FF; }
+    .inf-empty { padding: 26px; text-align: center; color: var(--gray-400); font-size: 13px; }
+    @media (max-width: 1000px) { .inf-grid2 { grid-template-columns: 1fr; } .inf-shell { padding: 16px 14px 40px; } }
 
     /* DASHBOARD STYLES */
     .date-strip {
@@ -597,12 +673,6 @@
     .log-table th { text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--gray-400); border-bottom: 1.5px solid var(--gray-200); font-weight: 600; }
     .log-table td { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); }
 
-    .stability-launch { width: 100%; margin-top: 14px; border: none; border-radius: 12px; padding: 13px 14px; background: linear-gradient(135deg,var(--blue-dark),var(--blue-acc)); color: white; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: 'Barlow Condensed',sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .3px; box-shadow: 0 6px 16px rgba(0,74,141,.2); transition: transform .15s,box-shadow .15s; }
-    .stability-launch:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,74,141,.28); }
-    .stability-launch small { display: block; font-family: 'Barlow',sans-serif; font-size: 10px; font-weight: 400; opacity: .7; margin-top: 2px; }
-    .stability-filters { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1.2fr; gap: 10px; padding: 14px; border: 1px solid var(--gray-200); background: var(--gray-50); border-radius: 12px; }
-    .stability-filter label { display: block; font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px; }
-    .stability-filter select,.stability-filter input { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--gray-200); border-radius: 7px; background: white; color: var(--navy); font-family: 'Barlow',sans-serif; outline: none; }
     .stability-table-wrap { border: 1px solid var(--gray-200); border-radius: 12px; overflow: auto; max-height: 430px; }
     .stability-table { width: 100%; border-collapse: collapse; font-size: 12px; }
     .stability-table th { position: sticky; top: 0; z-index: 1; background: var(--blue-dark); color: white; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
@@ -709,6 +779,7 @@
           <div class="nav-quality-submodules" role="tablist" aria-label="Submódulos de Calidad">
             <button id="quality-mode-tecnico" class="nav-submodule-btn active" role="tab" aria-selected="true" onclick="mostrarCalidad('tecnico')">MVP Técnico</button>
             <button id="quality-mode-funcional" class="nav-submodule-btn" role="tab" aria-selected="false" onclick="mostrarCalidad('funcional')">Funcional</button>
+            <button id="quality-mode-informes" class="nav-submodule-btn" role="tab" aria-selected="false" onclick="mostrarCalidad('informes')">Informes</button>
           </div>
         </div>
         <button id="nav-traceability" class="nav-view-btn" onclick="mostrarVista('traceability')">
@@ -853,10 +924,6 @@
             </div>
           </div>
           <div id="alert-messages"></div>
-          <button class="stability-launch" onclick="openStabilityMonitor()">
-            <span>📈 Monitoreo de estabilidad<small>Calidad de los últimos 45 días corridos</small></span>
-            <span>›</span>
-          </button>
         </aside>
 
         <main class="right-panel">
@@ -991,6 +1058,117 @@
         </button>
       </div>
       <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="view-informes">
+    <div class="inf-shell">
+      <div class="inf-heading">
+        <div>
+          <h1>Informes de calidad</h1>
+          <p>Análisis del histórico de ejecuciones para priorizar la corrección de raíz: qué tablas fallan de forma recurrente, cuáles son estables y quién es responsable de cada una.</p>
+        </div>
+        <div class="inf-tabs" role="tablist" aria-label="Informes disponibles">
+          <button id="inf-tab-recurrentes" class="inf-tab active" role="tab" aria-selected="true">Fallos recurrentes</button>
+          <button id="inf-tab-estabilidad" class="inf-tab" role="tab" aria-selected="false">Estabilidad</button>
+          <button id="inf-tab-elipses" class="inf-tab" role="tab" aria-selected="false" disabled title="Requiere primero etiquetar cada alerta como Real / Falso positivo / Pendiente">Acierto de Elipses · próximamente</button>
+        </div>
+      </div>
+
+      <div id="inf-panel-recurrentes">
+      <div class="inf-filters" aria-label="Filtros del informe">
+        <div class="inf-field"><label for="inf-ventana">Ventana</label>
+          <select id="inf-ventana"><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select></div>
+        <div class="inf-field"><label for="inf-alcance">Alcance de reglas</label>
+          <select id="inf-alcance"><option value="tecnico">MVP Técnico (críticas)</option><option value="funcional">Funcional (no críticas)</option><option value="ambos">Ambos</option></select></div>
+        <div class="inf-field"><label for="inf-estadotabla">Estado de la tabla</label>
+          <select id="inf-estadotabla"><option value="productiva" selected>Productivas</option><option value="en desarrollo">En desarrollo</option><option value="">Todas</option></select></div>
+        <div class="inf-field"><label for="inf-periodicidad">Periodicidad</label>
+          <select id="inf-periodicidad"><option value="">Todas</option><option value="diaria">Diarias</option><option value="mensual">Mensuales</option></select></div>
+        <div class="inf-field"><label for="inf-de">Responsable técnico</label><select id="inf-de"><option value="">Todos</option></select></div>
+        <div class="inf-field"><label for="inf-ds">Data Scientist</label><select id="inf-ds"><option value="">Todos</option></select></div>
+        <div class="inf-field"><label for="inf-dir">Dirección</label><select id="inf-dir"><option value="">Todas</option></select></div>
+        <div class="inf-field"><label for="inf-umbral">Recurrente desde</label>
+          <select id="inf-umbral"><option value="2">2 días con fallo</option><option value="3" selected>3 días con fallo</option><option value="5">5 días con fallo</option></select></div>
+        <div class="inf-field"><label for="inf-buscar">Tabla</label><input id="inf-buscar" type="search" placeholder="Buscar tabla…" autocomplete="off"></div>
+        <button id="inf-refrescar" class="admin-btn" type="button">Actualizar datos</button>
+        <span class="inf-meta" id="inf-meta"></span>
+      </div>
+
+      <div id="inf-estado" class="inf-status" role="status">⌛ Calculando el informe…</div>
+      <div id="inf-contenido" style="display:none;">
+        <div class="inf-kpis" id="inf-kpis"></div>
+        <div class="inf-grid2">
+          <section class="inf-card">
+            <div class="inf-card-head"><div><h2>Pareto de incidencias por tabla</h2><p id="inf-pareto-sub"></p></div>
+              <div class="inf-legend"><span><i style="background:var(--blue-mid)"></i>% de incidencias de la tabla</span><span><i style="background:var(--orange-d)"></i>% acumulado</span></div></div>
+            <div class="inf-card-body" id="inf-pareto"></div>
+          </section>
+          <section class="inf-card">
+            <div class="inf-card-head"><div><h2>Fallos por dimensión y regla</h2><p>Reglas con fallo (tabla × corte) en la ventana</p></div></div>
+            <div class="inf-card-body" id="inf-reglas"></div>
+          </section>
+        </div>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Ranking de reincidencia · tablas con más fallos</h2><p id="inf-ranking-sub"></p></div>
+            <div class="inf-field"><label for="inf-topn">Mostrar</label>
+              <select id="inf-topn"><option value="10">Top 10</option><option value="25">Top 25</option><option value="50">Top 50</option><option value="100000">Todas</option></select></div></div>
+          <div class="inf-table-wrap" id="inf-ranking"></div>
+        </section>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Mapa de calor tabla × corte</h2><p id="inf-heat-sub"></p></div>
+            <div class="inf-legend"><span><i style="background:var(--red)"></i>✕ Fallo</span><span><i style="background:#A7F3D0"></i>Correcto</span><span><i style="background:#CBD5E1"></i>Pendiente</span><span><i style="background:var(--gray-100);border:1px solid var(--gray-200)"></i>Sin corte</span></div></div>
+          <div class="inf-card-body inf-heat-wrap" id="inf-heat"></div>
+        </section>
+        <section class="inf-card">
+          <div class="inf-card-head"><div><h2>Fallos por responsable</h2><p>Agrupado con el mapa de gobierno para asignar y escalar</p></div>
+            <div class="inf-field"><label for="inf-grupo">Agrupar por</label>
+              <select id="inf-grupo"><option value="de">Responsable técnico (Data Engineer)</option><option value="ds">Data Scientist</option><option value="dir">Dirección</option><option value="fn">Responsable funcional</option></select></div></div>
+          <div class="inf-table-wrap" id="inf-owners"></div>
+        </section>
+      </div>
+      </div>
+
+      <div id="inf-panel-estabilidad" style="display:none;">
+        <div class="inf-filters" aria-label="Filtros de estabilidad">
+          <div class="inf-field"><label for="est-fecha">Fecha de referencia</label><input id="est-fecha" type="date">
+            <small class="inf-hint" id="est-nota"></small></div>
+          <div class="inf-field"><label for="est-ventana">Ventana</label>
+            <select id="est-ventana"><option value="30">Últimos 30 días</option><option value="45" selected>Últimos 45 días</option><option value="90">Últimos 90 días</option></select></div>
+          <div class="inf-field"><label for="est-estadotabla">Estado de la tabla</label>
+            <select id="est-estadotabla"><option value="productiva" selected>Productivas</option><option value="en desarrollo">En desarrollo</option><option value="">Todas</option></select></div>
+          <div class="inf-field"><label for="est-alcance">Reglas</label>
+            <select id="est-alcance"><option value="tecnico" selected>Solo MVP Técnico</option><option value="ambos">Todas las reglas</option></select></div>
+          <div class="inf-field"><label for="est-proceso">Proceso</label><select id="est-proceso"><option value="">Todos</option></select></div>
+          <div class="inf-field"><label for="est-de">Data Engineer</label><select id="est-de"><option value="">Todos</option></select></div>
+          <div class="inf-field"><label for="est-dir">Dirección</label><select id="est-dir"><option value="">Todas</option></select></div>
+          <div class="inf-field"><label for="est-buscar">Tabla</label><input id="est-buscar" type="search" placeholder="Buscar tabla…" autocomplete="off"></div>
+          <button id="est-refrescar" class="admin-btn" type="button">Actualizar datos</button>
+          <span class="inf-meta" id="est-meta"></span>
+        </div>
+        <div id="est-estado" class="inf-status" role="status">⌛ Analizando estabilidad…</div>
+        <div id="est-contenido" style="display:none;">
+          <div class="inf-kpis" id="est-kpis"></div>
+          <div class="inf-grid2">
+            <section class="inf-card">
+              <div class="inf-card-head"><div><h2>Distribución del promedio de calidad</h2><p>Número de tablas por rango de promedio en la ventana seleccionada</p></div></div>
+              <div class="inf-card-body" id="est-dist"></div>
+            </section>
+            <section class="inf-card">
+              <div class="inf-card-head"><div><h2>Estabilidad por responsable</h2><p>Quién tiene a cargo las tablas con más incidencias</p></div>
+                <div class="inf-field"><label for="est-grupo">Agrupar por</label>
+                  <select id="est-grupo"><option value="de">Data Engineer</option><option value="ds">Data Scientist</option><option value="dir">Dirección</option></select></div></div>
+              <div class="inf-table-wrap" id="est-owners"></div>
+            </section>
+          </div>
+          <section class="inf-card">
+            <div class="inf-card-head"><div><h2>Estabilidad por tabla</h2><p>Ordenadas de menos a más estable · pulsa una fila para ver el detalle por regla y por día</p></div></div>
+            <div class="inf-table-wrap" id="est-tabla"></div>
+          </section>
+        </div>
+      </div>
+
+      <div id="inf-tip" class="inf-tip" role="tooltip"></div>
     </div>
   </div>
 
@@ -1137,8 +1315,6 @@
     let periodicidadTablas   = {};
     let direccionTablas      = {};
     let ttmTablas            = {};
-    let stabilityReport      = null;
-    let stabilityFilterState = { proceso:'all', de:'all', direccion:'all', search:'' };
     let adminData            = null;
     let adminCargada         = false;
     const PROCESS_LABELS = { contable:'Cubo Contable', operacional:'Cubo Operacional', flow:'Flow Actividad', ficod:'FICOD', ifrs9:'IFRS9' };
@@ -1290,6 +1466,9 @@
           fechaReferenciaEstabilidad = carga.ultimaFecha;
           aplicarDatosMonitor(carga.datos, carga.ultimaFecha);
           restaurarBoton();
+          // Calienta en segundo plano el histórico de todas las tablas para que
+          // el primer clic en una tabla no espere a la hoja de calidad.
+          callServer('precalentarHistoricoCalidad').catch(function() {});
         })
         .catch(function(err) {
           emptyState.style.display = 'flex';
@@ -1418,12 +1597,771 @@
       mostrarVista(currentView === 'dashboard' ? 'traceability' : 'dashboard');
     }
 
+    // ==========================================
+    // INFORMES DE CALIDAD · cálculo (sin DOM)
+    // ==========================================
+    const INFORME_RACHA_CRONICA = 5;      // cortes consecutivos fallando
+    const INFORME_DIAS_REAPERTURA = 7;    // días tras la resolución para considerar reapertura
+    const INFORME_TOP_PARETO = 15;
+
+    function informeDias(desde, hasta) {
+      const t = s => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+      return Math.round((t(hasta) - t(desde)) / 86400000);
+    }
+
+    // Estados por corte: 0 sin dato · 1 correcto · 2 pendiente · 3 fallo
+    function informeEstadoCorte(tabla, i, alcance) {
+      if (alcance === 'tecnico') return tabla.t[i];
+      if (alcance === 'funcional') return tabla.f[i];
+      return tabla.t[i] > tabla.f[i] ? tabla.t[i] : tabla.f[i];
+    }
+
+    function calcularInformeFallos(data, f) {
+      const fechas = data.fechas || [];
+      const resultado = { ultima: fechas[fechas.length - 1] || '', fechasVentana: [], tablas: [], kpis: null };
+      if (!fechas.length) return resultado;
+      const ultima = resultado.ultima;
+      const reglaPorId = {};
+      (data.reglas || []).forEach(r => { reglaPorId[r.id] = r; });
+      const enAlcance = id => f.alcance === 'ambos' || (reglaPorId[id] || {}).modo === f.alcance;
+      const indicesUltimos = dias => fechas.reduce((lista, fecha, i) => {
+        if (informeDias(fecha, ultima) < dias) lista.push(i);
+        return lista;
+      }, []);
+      const idx30 = indicesUltimos(30);
+      const idx90 = indicesUltimos(90);
+      const idxVentana = f.ventana === 90 ? idx90 : idx30;
+      const inicioVentana = idxVentana.length ? idxVentana[0] : fechas.length;
+      resultado.fechasVentana = idxVentana;
+      const busqueda = String(f.buscar || '').trim().toLowerCase();
+
+      data.tablas.forEach(t => {
+        const esMensual = String(t.per).toLowerCase() === 'mensual';
+        if (f.estadoTabla && (t.es || 'desconocido') !== f.estadoTabla) return;
+        if (f.periodicidad === 'mensual' && !esMensual) return;
+        if (f.periodicidad === 'diaria' && esMensual) return;
+        if (f.de && t.de !== f.de) return;
+        if (f.ds && t.ds !== f.ds) return;
+        if (f.dir && t.dir !== f.dir) return;
+        if (busqueda && t.n.toLowerCase().indexOf(busqueda) === -1) return;
+
+        const estados = fechas.map((_, i) => informeEstadoCorte(t, i, f.alcance));
+        const contar = (lista, estado) => lista.reduce((n, i) => n + (estados[i] === estado ? 1 : 0), 0);
+        const fallos30 = contar(idx30, '3');
+        const fallos90 = contar(idx90, '3');
+        const fallosVentana = f.ventana === 90 ? fallos90 : fallos30;
+        const medidos = idxVentana.filter(i => estados[i] !== '0').length;
+
+        // Racha: cortes consecutivos fallando hasta el último; un pendiente no la corta.
+        let racha = 0;
+        for (let i = fechas.length - 1; i >= 0; i--) {
+          const e = estados[i];
+          if (e === '0' || e === '2') continue;
+          if (e === '3') racha++; else break;
+        }
+
+        // Incidencias: desde el primer fallo hasta el primer corte correcto posterior.
+        const cerradas = [];
+        let abierta = null, cierre = -1, reaperturas = 0;
+        for (let i = 0; i < fechas.length; i++) {
+          const e = estados[i];
+          if (e === '3') {
+            if (abierta === null) {
+              abierta = i;
+              if (cierre >= 0 && i >= inicioVentana &&
+                  informeDias(fechas[cierre], fechas[i]) <= INFORME_DIAS_REAPERTURA) reaperturas++;
+            }
+          } else if (e === '1' && abierta !== null) {
+            cerradas.push({ ini: abierta, dias: informeDias(fechas[abierta], fechas[i]) });
+            cierre = i;
+            abierta = null;
+          }
+        }
+        const cerradasVentana = cerradas.filter(c => c.ini >= inicioVentana);
+        const sumaResolucion = cerradasVentana.reduce((s, c) => s + c.dias, 0);
+
+        const reglasFallo = {}, dimensionFallo = {};
+        const fechasFallo = [];
+        t.x.forEach(par => {
+          if (par[0] < inicioVentana) return;
+          par[1].forEach(marca => {
+            const id = marca.replace('*', '');
+            if (!enAlcance(id)) return;
+            reglasFallo[id] = (reglasFallo[id] || 0) + 1;
+            const dimension = marca.indexOf('*') > -1 ? 'Puntualidad' : ((reglaPorId[id] || {}).dimension || 'Otras');
+            dimensionFallo[dimension] = (dimensionFallo[dimension] || 0) + 1;
+          });
+        });
+
+        let categoria;
+        if (fallosVentana === 0 && medidos === 0) categoria = 'sindatos';
+        else if (racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
+        else if (fallosVentana >= f.umbral) categoria = 'recurrente';
+        else if (fallosVentana > 0) categoria = 'ocasional';
+        else categoria = 'estable';
+
+        resultado.tablas.push({
+          t, estados, fallos30, fallos90, fallosVentana, racha, categoria,
+          esRecurrente: categoria === 'cronica' || categoria === 'recurrente',
+          cerradas: cerradasVentana.length, sumaResolucion,
+          mttr: cerradasVentana.length ? sumaResolucion / cerradasVentana.length : null,
+          reaperturas, reglasFallo, dimensionFallo
+        });
+      });
+
+      const orden = (a, b) => b.fallosVentana - a.fallosVentana || b.racha - a.racha ||
+        b.fallos90 - a.fallos90 || a.t.n.localeCompare(b.t.n);
+      resultado.tablas.sort(orden);
+
+      const evaluadas = resultado.tablas.filter(x => x.categoria !== 'sindatos');
+      const conFallo = evaluadas.filter(x => x.fallosVentana > 0);
+      const incidencias = conFallo.reduce((s, x) => s + x.fallosVentana, 0);
+      const topTreinta = conFallo.slice(0, Math.ceil(conFallo.length * 0.3));
+      const resueltas = evaluadas.reduce((s, x) => s + x.cerradas, 0);
+      resultado.kpis = {
+        evaluadas: evaluadas.length,
+        estables: evaluadas.filter(x => x.categoria === 'estable').length,
+        cronicas: evaluadas.filter(x => x.categoria === 'cronica').length,
+        reabiertas: evaluadas.filter(x => x.reaperturas > 0).length,
+        reaperturas: evaluadas.reduce((s, x) => s + x.reaperturas, 0),
+        mttr: resueltas ? evaluadas.reduce((s, x) => s + x.sumaResolucion, 0) / resueltas : null,
+        resueltas, incidencias, conFallo: conFallo.length,
+        topTreintaN: topTreinta.length,
+        concentracion: incidencias ? topTreinta.reduce((s, x) => s + x.fallosVentana, 0) / incidencias : 0,
+        topTabla: conFallo.length ? conFallo[0] : null
+      };
+      return resultado;
+    }
+
+    function informeFiltrarCategoria(tablas, categoria) {
+      if (categoria === 'estable') return tablas.filter(x => x.categoria === 'estable');
+      if (categoria === 'recurrente') return tablas.filter(x => x.esRecurrente);
+      if (categoria === 'cronica') return tablas.filter(x => x.categoria === 'cronica');
+      if (categoria === 'reabierta') return tablas.filter(x => x.reaperturas > 0);
+      return tablas;
+    }
+
+    // ==========================================
+    // INFORMES DE CALIDAD · pantalla
+    // ==========================================
+    let informeData = null;
+    let informeCargando = false;
+    const informeFiltros = {
+      ventana: 30, alcance: 'tecnico', estadoTabla: 'productiva', periodicidad: '', de: '', ds: '', dir: '',
+      umbral: 3, buscar: '', categoria: '', topN: 10, grupo: 'de'
+    };
+    const INFORME_ESTADOS = {
+      estable: 'Estable', ocasional: 'Ocasional', recurrente: 'Recurrente', cronica: 'Crónica', sindatos: 'Sin datos'
+    };
+
+    function informeEl(id) { return document.getElementById(id); }
+    function informeNum(valor) { return Number(valor || 0).toLocaleString('es-ES'); }
+    function informePct(valor) { return (valor * 100).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + '%'; }
+    function informeDec(valor) { return valor === null ? '—' : valor.toLocaleString('es-ES', { maximumFractionDigits: 1 }); }
+
+    // Un único mensaje de estado para las dos pestañas, que comparten los datos.
+    function informeMensaje(texto, esError) {
+      ['inf-estado', 'est-estado'].forEach(id => {
+        const el = informeEl(id);
+        el.className = 'inf-status' + (esError ? ' error' : '');
+        el.textContent = texto;
+        el.style.display = 'block';
+      });
+    }
+
+    function cargarInformeFallos(forzar) {
+      if (informeCargando) return;
+      informeCargando = true;
+      informeMensaje('⌛ Calculando los informes…', false);
+      if (!informeData) { informeEl('inf-contenido').style.display = 'none'; informeEl('est-contenido').style.display = 'none'; }
+      informeEl('inf-refrescar').disabled = true;
+      informeEl('est-refrescar').disabled = true;
+      callServer('obtenerInformeFallosRecurrentes', !!forzar)
+        .then(function(data) {
+          informeData = data || { fechas: [], reglas: [], tablas: [] };
+          poblarFiltrosInforme();
+          poblarFiltrosEstabilidad();
+          renderInforme();
+          renderEstabilidad();
+          if (informeData.tablas.length) {
+            informeEl('est-contenido').style.display = 'block';
+          }
+        })
+        .catch(function(err) {
+          informeMensaje('No se pudo calcular el informe: ' + mensajeError(err), true);
+          showToast('No se pudo calcular el informe: ' + mensajeError(err), 'error');
+        })
+        .then(function() {
+          informeCargando = false;
+          informeEl('inf-refrescar').disabled = false;
+          informeEl('est-refrescar').disabled = false;
+        });
+    }
+
+    function poblarFiltrosInforme() {
+      const llenar = (id, campo, etiquetaTodos) => {
+        const select = informeEl(id);
+        const actual = select.value;
+        const valores = Array.from(new Set(informeData.tablas.map(t => t[campo]))).sort((a, b) => a.localeCompare(b));
+        select.innerHTML = '';
+        const todos = document.createElement('option');
+        todos.value = ''; todos.textContent = etiquetaTodos;
+        select.appendChild(todos);
+        valores.forEach(v => {
+          const op = document.createElement('option');
+          op.value = v; op.textContent = v;
+          select.appendChild(op);
+        });
+        select.value = valores.indexOf(actual) > -1 ? actual : '';
+        informeFiltros[campo] = select.value;
+      };
+      llenar('inf-de', 'de', 'Todos');
+      llenar('inf-ds', 'ds', 'Todos');
+      llenar('inf-dir', 'dir', 'Todas');
+    }
+
+    function renderInforme() {
+      if (!informeData) return;
+      if (!informeData.tablas.length) {
+        informeMensaje('La hoja de calidad no tiene ejecuciones para construir los informes.', false);
+        informeEl('inf-contenido').style.display = 'none';
+        informeEl('est-contenido').style.display = 'none';
+        return;
+      }
+      informeEl('inf-estado').style.display = 'none';
+      informeEl('est-estado').style.display = 'none';
+      informeEl('inf-contenido').style.display = 'block';
+
+      const calculo = calcularInformeFallos(informeData, informeFiltros);
+      const visibles = informeFiltrarCategoria(calculo.tablas, informeFiltros.categoria);
+      const generado = informeData.generado ? ' · generado ' + formatoFechaHora(informeData.generado) : '';
+      informeEl('inf-meta').textContent = `Datos hasta ${calculo.ultima} · ${informeNum(informeData.tablas.length)} tablas${generado}`;
+      renderInformeKpis(calculo.kpis);
+      renderInformePareto(visibles, calculo);
+      renderInformeReglas(visibles);
+      renderInformeRanking(visibles, calculo);
+      renderInformeMapaCalor(visibles, calculo);
+      renderInformeOwners(visibles);
+    }
+
+    function renderInformeKpis(k) {
+      const v = informeFiltros.ventana;
+      const tiles = [
+        { cat: '', clase: '', lbl: 'Tablas evaluadas', val: informeNum(k.evaluadas), sub: `Con ejecuciones en los últimos ${v} días` },
+        { cat: 'estable', clase: 'ok', lbl: 'Tablas estables', val: informeNum(k.estables), pct: k.evaluadas ? k.estables / k.evaluadas : 0, sub: 'Sin ningún fallo en la ventana' },
+        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `${INFORME_RACHA_CRONICA}+ cortes consecutivos fallando` },
+        { cat: 'reabierta', clase: 'warn', lbl: 'Reaperturas', val: informeNum(k.reabiertas), sub: `Tablas que vuelven a fallar en ≤ ${INFORME_DIAS_REAPERTURA} días (${informeNum(k.reaperturas)} eventos)` },
+        { cat: '', clase: '', lbl: 'Tiempo medio de resolución', val: informeDec(k.mttr), unidad: k.mttr === null ? '' : 'días', sub: `MTTR sobre ${informeNum(k.resueltas)} incidencias cerradas` },
+        { cat: '', clase: 'warn', lbl: 'Concentración', val: informePct(k.concentracion), sub: `El 30% de las tablas con fallo (${informeNum(k.topTreintaN)} de ${informeNum(k.conFallo)}) genera ese % de las ${informeNum(k.incidencias)} incidencias` },
+        { cat: '', clase: 'err', lbl: 'Tabla con más fallos', val: k.topTabla ? informeNum(k.topTabla.fallosVentana) : '—', unidad: k.topTabla ? 'días' : '',
+          sub: k.topTabla ? `${k.topTabla.t.n} · DE: ${k.topTabla.t.de} · DS: ${k.topTabla.t.ds}` : 'Sin fallos en la ventana' }
+      ];
+      informeEl('inf-kpis').innerHTML = tiles.map(t => {
+        const activo = t.cat && informeFiltros.categoria === t.cat ? ' active' : '';
+        const cuerpo = `<div class="inf-kpi-lbl">${escapeHtml(t.lbl)}</div>
+          <div class="inf-kpi-val">${escapeHtml(t.val)}${t.unidad ? `<small>${escapeHtml(t.unidad)}</small>` : ''}${t.pct !== undefined ? `<small>${informePct(t.pct)}</small>` : ''}</div>
+          <div class="inf-kpi-sub">${escapeHtml(t.sub)}</div>`;
+        return t.cat
+          ? `<button type="button" class="inf-kpi ${t.clase}${activo}" data-cat="${t.cat}" aria-pressed="${activo ? 'true' : 'false'}" title="Pulsa para filtrar el informe por este grupo">${cuerpo}</button>`
+          : `<div class="inf-kpi ${t.clase}">${cuerpo}</div>`;
+      }).join('');
+    }
+
+    function renderInformePareto(visibles, calculo) {
+      const contenedor = informeEl('inf-pareto');
+      const conFallo = visibles.filter(x => x.fallosVentana > 0);
+      const total = conFallo.reduce((s, x) => s + x.fallosVentana, 0);
+      informeEl('inf-pareto-sub').textContent = `Días con fallo en los últimos ${informeFiltros.ventana} días · ${informeNum(total)} incidencias en ${informeNum(conFallo.length)} tablas`;
+      if (!total) { contenedor.innerHTML = '<div class="inf-empty">No hay incidencias en la ventana con los filtros actuales.</div>'; return; }
+
+      const top = conFallo.slice(0, INFORME_TOP_PARETO);
+      let acumulado = 0;
+      const puntos = top.map(x => { acumulado += x.fallosVentana; return { x, share: x.fallosVentana / total, acum: acumulado / total }; });
+      const W = Math.max(contenedor.clientWidth || 640, 360), H = 290;
+      const m = { t: 14, r: 40, b: 92, l: 40 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const banda = iw / puntos.length, ancho = Math.min(34, banda * 0.62);
+      const y = p => m.t + ih * (1 - p);
+      let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Pareto de incidencias por tabla">`;
+      [0, .25, .5, .75, 1].forEach(g => {
+        svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(g)}" y2="${y(g)}" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="${m.l - 6}" y="${y(g) + 3}" text-anchor="end" font-size="10" fill="#475569">${g * 100}%</text>`;
+      });
+      puntos.forEach((p, i) => {
+        const cx = m.l + banda * i + banda / 2, h = Math.max(2, ih * p.share);
+        const nombre = p.x.t.n.length > 24 ? p.x.t.n.slice(0, 23) + '…' : p.x.t.n;
+        svg += `<rect x="${cx - ancho / 2}" y="${y(0) - h}" width="${ancho}" height="${h}" rx="3" fill="var(--blue-mid)"/>
+          <text transform="translate(${cx + 3},${y(0) + 10}) rotate(-45)" text-anchor="end" font-size="10" fill="#475569">${escapeHtml(nombre)}</text>`;
+      });
+      svg += `<polyline fill="none" stroke="var(--orange-d)" stroke-width="2" points="${puntos.map((p, i) => `${m.l + banda * i + banda / 2},${y(p.acum)}`).join(' ')}"/>`;
+      puntos.forEach((p, i) => {
+        svg += `<circle cx="${m.l + banda * i + banda / 2}" cy="${y(p.acum)}" r="4" fill="var(--orange-d)" stroke="#fff" stroke-width="2"/>`;
+      });
+      const ultimo = puntos[puntos.length - 1];
+      svg += `<text x="${m.l + banda * (puntos.length - 1) + banda / 2}" y="${y(ultimo.acum) - 9}" text-anchor="end" font-size="11" font-weight="700" fill="#0A1628">${informePct(ultimo.acum)}</text>`;
+      puntos.forEach((p, i) => {
+        const detalle = `${informeNum(p.x.fallosVentana)} días con fallo · ${informePct(p.share)} de las incidencias · acumulado ${informePct(p.acum)} · ${p.x.t.de}`;
+        svg += `<rect x="${m.l + banda * i}" y="${m.t}" width="${banda}" height="${ih + 40}" fill="transparent" data-tip-t="${escapeHtml(p.x.t.n)}" data-tip-d="${escapeHtml(detalle)}"/>`;
+      });
+      contenedor.innerHTML = svg + '</svg>';
+    }
+
+    function renderInformeReglas(visibles) {
+      const dimensiones = {}, reglas = {};
+      visibles.forEach(x => {
+        Object.keys(x.dimensionFallo).forEach(d => { dimensiones[d] = (dimensiones[d] || 0) + x.dimensionFallo[d]; });
+        Object.keys(x.reglasFallo).forEach(r => { reglas[r] = (reglas[r] || 0) + x.reglasFallo[r]; });
+      });
+      const nombreRegla = {};
+      informeData.reglas.forEach(r => { nombreRegla[r.id] = `${r.id} · ${r.nombre}`; });
+      const barras = (mapa, etiqueta) => {
+        const filas = Object.keys(mapa).map(k => ({ k, n: mapa[k] })).sort((a, b) => b.n - a.n || a.k.localeCompare(b.k));
+        if (!filas.length) return '<div class="inf-empty">Sin fallos en la ventana.</div>';
+        const max = filas[0].n;
+        return '<div class="inf-bars">' + filas.map(f => `<div class="inf-bar-row"><span title="${escapeHtml(etiqueta(f.k))}">${escapeHtml(etiqueta(f.k))}</span>
+          <div class="inf-bar-track"><div class="inf-bar-fill" style="width:${(f.n / max * 100).toFixed(1)}%"></div></div><b>${informeNum(f.n)}</b></div>`).join('') + '</div>';
+      };
+      informeEl('inf-reglas').innerHTML = '<div class="inf-sub">Por dimensión</div>' + barras(dimensiones, k => k) +
+        '<div class="inf-sub">Por regla</div>' + barras(reglas, k => nombreRegla[k] || k);
+    }
+
+    function renderInformeRanking(visibles, calculo) {
+      const contenedor = informeEl('inf-ranking');
+      const lista = visibles.slice(0, informeFiltros.topN);
+      informeEl('inf-ranking-sub').textContent = `${informeNum(Math.min(lista.length, visibles.length))} de ${informeNum(visibles.length)} tablas · ordenadas por días con fallo en ${informeFiltros.ventana} días`;
+      if (!lista.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas con los filtros actuales.</div>'; return; }
+      const filas = lista.map((x, i) => {
+        const reglas = Object.keys(x.reglasFallo).sort((a, b) => x.reglasFallo[b] - x.reglasFallo[a]).slice(0, 3)
+          .map(r => `${r} (${x.reglasFallo[r]})`).join(', ') || '—';
+        return `<tr>
+          <td class="num">${i + 1}</td>
+          <td><strong>${escapeHtml(x.t.n)}</strong></td>
+          <td><span class="inf-badge ${x.categoria}">${INFORME_ESTADOS[x.categoria]}</span></td>
+          <td class="num"><strong>${informeNum(x.fallos30)}</strong></td>
+          <td class="num"><strong>${informeNum(x.fallos90)}</strong></td>
+          <td class="num">${x.racha ? informeNum(x.racha) : '—'}</td>
+          <td class="num">${informeDec(x.mttr)}</td>
+          <td class="num">${x.reaperturas ? informeNum(x.reaperturas) : '—'}</td>
+          <td>${escapeHtml(x.t.de)}</td>
+          <td>${escapeHtml(x.t.ds)}</td>
+          <td>${escapeHtml(x.t.dir)}</td>
+          <td class="num">${escapeHtml(x.t.ans || '1')}</td>
+          <td>${escapeHtml(reglas)}</td>
+        </tr>`;
+      }).join('');
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>#</th><th>Tabla</th><th>Estado</th>
+        <th class="num">Días con fallo 30 d</th><th class="num">Días con fallo 90 d</th><th class="num">Racha actual</th>
+        <th class="num">MTTR (días)</th><th class="num">Reaperturas</th><th>Resp. técnico</th><th>Data Scientist</th><th>Dirección</th><th class="num">ANS (días háb.)</th><th>Reglas con fallo</th>
+        </tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    function renderInformeMapaCalor(visibles, calculo) {
+      const contenedor = informeEl('inf-heat');
+      const lista = visibles.filter(x => x.fallosVentana > 0).slice(0, INFORME_TOP_PARETO);
+      informeEl('inf-heat-sub').textContent = `Top ${INFORME_TOP_PARETO} tablas con más días de fallo · ${calculo.fechasVentana.length} cortes en la ventana`;
+      if (!lista.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas con fallos en la ventana.</div>'; return; }
+      const nombres = { '0': ['n', 'Sin corte'], '1': ['o', 'Correcto'], '2': ['p', 'Pendiente'], '3': ['f', 'Fallo'] };
+      const eje = calculo.fechasVentana.map(i => `<td title="${informeData.fechas[i]}">${informeData.fechas[i].slice(8)}</td>`).join('');
+      const filas = lista.map(x => {
+        const fallos = {};
+        x.t.x.forEach(par => { fallos[par[0]] = par[1].join(', '); });
+        const celdas = calculo.fechasVentana.map(i => {
+          const e = x.estados[i];
+          const detalle = `${informeData.fechas[i]} · ${nombres[e][1]}${e === '3' && fallos[i] ? ' · reglas: ' + fallos[i] : ''}`;
+          return `<td class="${nombres[e][0]}" data-tip-t="${escapeHtml(x.t.n)}" data-tip-d="${escapeHtml(detalle)}">${e === '3' ? '✕' : ''}</td>`;
+        }).join('');
+        return `<tr><th title="${escapeHtml(x.t.n)}">${escapeHtml(x.t.n)}</th>${celdas}</tr>`;
+      }).join('');
+      contenedor.innerHTML = `<table class="inf-heat"><tr class="inf-heat-axis"><td></td>${eje}</tr>${filas}</table>`;
+    }
+
+    function renderInformeOwners(visibles) {
+      const contenedor = informeEl('inf-owners');
+      const campo = informeFiltros.grupo;
+      const grupos = {};
+      visibles.forEach(x => {
+        const clave = x.t[campo] || 'Sin asignar';
+        const g = grupos[clave] || (grupos[clave] = { owner: clave, tablas: 0, conFallo: 0, recurrentes: 0, cronicas: 0, dias: 0, reaperturas: 0, cerradas: 0, sumaRes: 0, lista: [] });
+        g.tablas++;
+        if (x.fallosVentana > 0) { g.conFallo++; g.lista.push(x); }
+        if (x.esRecurrente) g.recurrentes++;
+        if (x.categoria === 'cronica') g.cronicas++;
+        g.dias += x.fallosVentana; g.reaperturas += x.reaperturas; g.cerradas += x.cerradas; g.sumaRes += x.sumaResolucion;
+      });
+      const filas = Object.keys(grupos).map(k => grupos[k]).sort((a, b) => b.dias - a.dias || a.owner.localeCompare(b.owner));
+      if (!filas.length) { contenedor.innerHTML = '<div class="inf-empty">Sin datos para agrupar.</div>'; return; }
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>Responsable</th><th class="num">Tablas</th><th class="num">Con fallo</th>
+        <th class="num">Recurrentes</th><th class="num">Crónicas</th><th class="num">Días con fallo</th><th class="num">Reaperturas</th><th class="num">MTTR (días)</th>
+        <th>Prioridad</th><th>Tablas con más fallos</th></tr></thead><tbody>` + filas.map(g => {
+        const prioridad = g.cronicas ? ['cronica', 'Alta'] : (g.recurrentes ? ['recurrente', 'Media'] : (g.conFallo ? ['ocasional', 'Baja'] : ['estable', 'Sin fallos']));
+        const top = g.lista.slice(0, 3).map(x => `${x.t.n} (${x.fallosVentana})`).join(', ') || '—';
+        return `<tr><td><strong>${escapeHtml(g.owner)}</strong></td><td class="num">${informeNum(g.tablas)}</td><td class="num">${informeNum(g.conFallo)}</td>
+          <td class="num">${informeNum(g.recurrentes)}</td><td class="num">${informeNum(g.cronicas)}</td><td class="num"><strong>${informeNum(g.dias)}</strong></td>
+          <td class="num">${g.reaperturas ? informeNum(g.reaperturas) : '—'}</td><td class="num">${informeDec(g.cerradas ? g.sumaRes / g.cerradas : null)}</td>
+          <td><span class="inf-badge ${prioridad[0]}">${prioridad[1]}</span></td><td>${escapeHtml(top)}</td></tr>`;
+      }).join('') + '</tbody></table>';
+    }
+
+    function inicializarInformes() {
+      const leer = (id, clave, convertir) => informeEl(id).addEventListener('change', e => {
+        informeFiltros[clave] = convertir ? convertir(e.target.value) : e.target.value;
+        renderInforme();
+      });
+      leer('inf-ventana', 'ventana', Number);
+      leer('inf-alcance', 'alcance');
+      leer('inf-periodicidad', 'periodicidad');
+      leer('inf-estadotabla', 'estadoTabla');
+      leer('inf-de', 'de'); leer('inf-ds', 'ds'); leer('inf-dir', 'dir');
+      leer('inf-umbral', 'umbral', Number);
+      leer('inf-topn', 'topN', Number);
+      leer('inf-grupo', 'grupo');
+      let temporizador = null;
+      informeEl('inf-buscar').addEventListener('input', e => {
+        window.clearTimeout(temporizador);
+        temporizador = window.setTimeout(() => { informeFiltros.buscar = e.target.value; renderInforme(); }, 200);
+      });
+      informeEl('inf-refrescar').addEventListener('click', () => cargarInformeFallos(true));
+      informeEl('inf-kpis').addEventListener('click', e => {
+        const boton = e.target.closest('[data-cat]');
+        if (!boton) return;
+        informeFiltros.categoria = informeFiltros.categoria === boton.dataset.cat ? '' : boton.dataset.cat;
+        renderInforme();
+      });
+      // Tooltip único para barras y celdas; el contenido se inserta con textContent.
+      const tip = informeEl('inf-tip');
+      const vista = informeEl('view-informes');
+      vista.addEventListener('pointermove', e => {
+        const marca = e.target.closest('[data-tip-t]');
+        if (!marca) { tip.style.display = 'none'; return; }
+        tip.textContent = '';
+        const titulo = document.createElement('strong');
+        titulo.textContent = marca.getAttribute('data-tip-t');
+        const detalle = document.createElement('span');
+        detalle.textContent = marca.getAttribute('data-tip-d');
+        tip.appendChild(titulo); tip.appendChild(detalle);
+        tip.style.display = 'block';
+        tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 300) + 'px';
+        tip.style.top = (e.clientY + 14) + 'px';
+      });
+      vista.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+    }
+    document.addEventListener('DOMContentLoaded', inicializarInformes);
+
+    // ==========================================
+    // INFORMES DE CALIDAD · estabilidad (antes "Monitoreo de estabilidad")
+    // ==========================================
+    const EST_DIAS_BAJO_100 = 4;   // "más de 4 días" con calidad inferior a 100%
+
+    function estIndicesVentana(fechas, referencia, ventana) {
+      const lista = [];
+      for (let i = 0; i < fechas.length; i++) {
+        if (fechas[i] <= referencia && informeDias(fechas[i], referencia) < ventana) lista.push(i);
+      }
+      return lista;
+    }
+
+    // Promedio de calidad de una tabla en un corte: null si no hubo medición.
+    // Los cortes medidos sin entrada en la serie valen 100 (la serie solo guarda los < 100).
+    function estPromedioCorte(t, i, todas) {
+      if (!(t.mt[i] === '1' || (todas && t.mf[i] === '1'))) return null;
+      const entrada = (todas ? t._mapa.aa : t._mapa.at)[i];
+      return entrada === undefined ? 100 : entrada;
+    }
+
+    function calcularEstabilidad(data, f) {
+      const fechas = data.fechas || [];
+      const referencia = f.fecha || fechas[fechas.length - 1] || '';
+      const indices = estIndicesVentana(fechas, referencia, f.ventana);
+      const conjunto = new Set(indices);
+      const todas = f.alcance === 'ambos';
+      const reglaTecnica = {};
+      (data.reglas || []).forEach(r => { reglaTecnica[r.id] = r.modo === 'tecnico'; });
+      const enAlcance = id => todas || reglaTecnica[id] === true;
+      const busqueda = String(f.buscar || '').trim().toLowerCase();
+      const tablas = [];
+
+      (data.tablas || []).forEach(t => {
+        if (f.estadoTabla && (t.es || 'desconocido') !== f.estadoTabla) return;
+        if (f.proceso && (t.pr || []).indexOf(f.proceso) === -1) return;
+        if (f.de && t.de !== f.de) return;
+        if (f.dir && t.dir !== f.dir) return;
+        if (busqueda && t.n.toLowerCase().indexOf(busqueda) === -1) return;
+        if (!t._mapa) {
+          const aMapa = pares => { const m = {}; pares.forEach(p => { m[p[0]] = p[1]; }); return m; };
+          t._mapa = { at: aMapa(t.at), aa: aMapa(t.aa), vt: new Set(t.vt), vf: new Set(t.vf) };
+        }
+
+        let medidos = 0, suma = 0, bajo100 = 0, diasVolumenCero = 0, reglasConFallo = 0;
+        let hayFallo = false, hayDato = false;
+        indices.forEach(i => {
+          const prom = estPromedioCorte(t, i, todas);
+          if (prom !== null) { medidos++; suma += prom; if (prom < 100) bajo100++; }
+          const e = informeEstadoCorte(t, i, todas ? 'ambos' : 'tecnico');
+          if (e !== '0') hayDato = true;
+          if (e === '3') hayFallo = true;
+          if (t._mapa.vt.has(i) || (todas && t._mapa.vf.has(i))) diasVolumenCero++;
+        });
+        t.x.forEach(par => {
+          if (conjunto.has(par[0])) par[1].forEach(m => { if (enAlcance(m.replace('*', ''))) reglasConFallo++; });
+        });
+
+        const promedio = medidos ? parseFloat((suma / medidos).toFixed(2)) : 0;
+        const status = (hayFallo || diasVolumenCero > 0) ? 'err' : (medidos > 0 ? 'ok' : (hayDato ? 'pending' : 'sindatos'));
+        tablas.push({
+          t, promedio, diasConDatos: medidos, diasBajo100: bajo100, diasVolumenCero,
+          fallos: reglasConFallo, incidencias: reglasConFallo + diasVolumenCero, status,
+          estable100: status === 'ok' && promedio === 100,
+          manual: String(t.per).toLowerCase() === 'manual'
+        });
+      });
+      return { referencia, indices, tablas };
+    }
+
+    function kpisEstabilidad(tablas) {
+      const analizadas = tablas.filter(x => x.status !== 'sindatos');
+      const medidas = analizadas.filter(x => x.diasConDatos > 0);
+      const noManuales = analizadas.filter(x => !x.manual);
+      const conVolumenCero = noManuales.filter(x => x.diasVolumenCero > 0).length;
+      const bajo100 = analizadas.filter(x => x.diasBajo100 > EST_DIAS_BAJO_100).length;
+      return {
+        analizadas: analizadas.length,
+        promedio: medidas.length ? medidas.reduce((s, x) => s + x.promedio, 0) / medidas.length : 0,
+        estables: analizadas.filter(x => x.estable100).length,
+        conIncidencias: analizadas.filter(x => x.incidencias > 0).length,
+        evaluadasVolumen: noManuales.length, conVolumenCero,
+        pctVolumenCero: noManuales.length ? conVolumenCero / noManuales.length : 0,
+        bajo100, pctBajo100: analizadas.length ? bajo100 / analizadas.length : 0
+      };
+    }
+
+    let informeActivo = 'recurrentes';
+    const estFiltros = {
+      fecha: '', ventana: 45, estadoTabla: 'productiva', alcance: 'tecnico',
+      proceso: '', de: '', dir: '', buscar: '', grupo: 'de'
+    };
+    let estCalculo = null;
+    const estDetalles = {};
+    const EST_ESTADOS_TABLA = { productiva: 'Productiva', 'en desarrollo': 'En desarrollo', desconocido: 'Desconocido' };
+    const EST_CALIDAD = { ok: ['estable', 'Estable'], err: ['recurrente', 'Con fallos'], pending: ['ocasional', 'Pendiente'], sindatos: ['sindatos', 'Sin datos'] };
+    const EST_ESTADO_REGLA = { E: ['estable', 'Exitosa'], A: ['ocasional', 'Advertencia'], C: ['recurrente', 'Crítico'], P: ['sindatos', 'Pendiente'] };
+
+    function mostrarInforme(nombre) {
+      informeActivo = nombre;
+      ['recurrentes', 'estabilidad'].forEach(n => {
+        informeEl('inf-panel-' + n).style.display = n === nombre ? 'block' : 'none';
+        const tab = informeEl('inf-tab-' + n);
+        tab.classList.toggle('active', n === nombre);
+        tab.setAttribute('aria-selected', String(n === nombre));
+      });
+      if (!informeData && !informeCargando) cargarInformeFallos(false);
+    }
+
+    function poblarFiltrosEstabilidad() {
+      const llenar = (id, clave, valores, etiquetas) => {
+        const select = informeEl(id);
+        const actual = estFiltros[clave];
+        select.innerHTML = '';
+        const todos = document.createElement('option');
+        todos.value = ''; todos.textContent = clave === 'dir' ? 'Todas' : 'Todos';
+        select.appendChild(todos);
+        valores.forEach(v => {
+          const op = document.createElement('option');
+          op.value = v; op.textContent = etiquetas && etiquetas[v] ? etiquetas[v] : v;
+          select.appendChild(op);
+        });
+        select.value = valores.indexOf(actual) > -1 ? actual : '';
+        estFiltros[clave] = select.value;
+      };
+      const unicos = lista => Array.from(new Set(lista)).sort((a, b) => a.localeCompare(b));
+      llenar('est-proceso', 'proceso', unicos(informeData.tablas.flatMap(t => t.pr || [])), PROCESS_LABELS);
+      llenar('est-de', 'de', unicos(informeData.tablas.map(t => t.de || 'BAU')));
+      llenar('est-dir', 'dir', unicos(informeData.tablas.map(t => t.dir || 'Local')));
+      const fechas = informeData.fechas;
+      const campoFecha = informeEl('est-fecha');
+      if (fechas.length) {
+        campoFecha.min = fechas[0];
+        campoFecha.max = fechas[fechas.length - 1];
+        if (!estFiltros.fecha || estFiltros.fecha > fechas[fechas.length - 1]) estFiltros.fecha = fechas[fechas.length - 1];
+        campoFecha.value = estFiltros.fecha;
+      }
+      actualizarNotaEstabilidad();
+    }
+
+    function actualizarNotaEstabilidad() {
+      informeEl('est-nota').textContent = `A partir de este día siempre se toman los últimos ${estFiltros.ventana} días.`;
+    }
+
+    function renderEstabilidad() {
+      if (!informeData || !informeData.tablas.length) return;
+      estCalculo = calcularEstabilidad(informeData, estFiltros);
+      const tablas = estCalculo.tablas.slice().sort((a, b) =>
+        (a.status === 'err' ? 0 : a.status === 'pending' ? 1 : a.status === 'ok' ? 2 : 3) - (b.status === 'err' ? 0 : b.status === 'pending' ? 1 : b.status === 'ok' ? 2 : 3) ||
+        a.promedio - b.promedio || b.incidencias - a.incidencias || a.t.n.localeCompare(b.t.n));
+      const inicio = new Date(estCalculo.referencia + 'T00:00:00Z');
+      inicio.setUTCDate(inicio.getUTCDate() - (estFiltros.ventana - 1));
+      const desde = inicio.toISOString().slice(0, 10);
+      informeEl('est-meta').textContent = `${desde} → ${estCalculo.referencia} · ${estFiltros.ventana} días · ${informeNum(tablas.length)} tablas`;
+      renderEstKpis(tablas);
+      renderEstDistribucion(tablas);
+      renderEstOwners(tablas);
+      renderEstTabla(tablas);
+    }
+
+    function renderEstKpis(tablas) {
+      const k = kpisEstabilidad(tablas);
+      const tiles = [
+        { clase: '', lbl: 'Tablas analizadas', val: informeNum(k.analizadas), sub: `Con ejecuciones en los últimos ${estFiltros.ventana} días` },
+        { clase: k.promedio >= 95 ? 'ok' : (k.promedio >= 80 ? 'warn' : 'err'), lbl: 'Promedio de calidad', val: k.promedio.toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%', sub: 'Promedio de los promedios diarios de cada tabla' },
+        { clase: 'ok', lbl: 'Estables al 100%', val: informeNum(k.estables), pct: k.analizadas ? k.estables / k.analizadas : 0, sub: 'Calidad perfecta y sin incidencias' },
+        { clase: 'err', lbl: 'Con incidencias', val: informeNum(k.conIncidencias), pct: k.analizadas ? k.conIncidencias / k.analizadas : 0, sub: 'Fallos de reglas o volumen 0' },
+        { clase: 'warn', lbl: 'Tablas con volumen 0', val: informePct(k.pctVolumenCero), sub: `${informeNum(k.conVolumenCero)} de ${informeNum(k.evaluadasVolumen)} tablas con algún día sin registros (no cuenta las tablas manuales)` },
+        { clase: 'err', lbl: `Calidad < 100% por más de ${EST_DIAS_BAJO_100} días`, val: informePct(k.pctBajo100), sub: `${informeNum(k.bajo100)} de ${informeNum(k.analizadas)} tablas en el rango seleccionado` }
+      ];
+      informeEl('est-kpis').innerHTML = tiles.map(t => `<div class="inf-kpi ${t.clase}"><div class="inf-kpi-lbl">${escapeHtml(t.lbl)}</div>
+        <div class="inf-kpi-val">${escapeHtml(t.val)}${t.pct !== undefined ? `<small>${informePct(t.pct)}</small>` : ''}</div>
+        <div class="inf-kpi-sub">${escapeHtml(t.sub)}</div></div>`).join('');
+    }
+
+    function renderEstDistribucion(tablas) {
+      const medidas = tablas.filter(x => x.diasConDatos > 0);
+      const cubos = [
+        { lbl: '100%', n: medidas.filter(x => x.promedio >= 100).length },
+        { lbl: '95% a menos de 100%', n: medidas.filter(x => x.promedio >= 95 && x.promedio < 100).length },
+        { lbl: '80% a menos de 95%', n: medidas.filter(x => x.promedio >= 80 && x.promedio < 95).length },
+        { lbl: 'Menos de 80%', n: medidas.filter(x => x.promedio < 80).length },
+        { lbl: 'Sin mediciones', n: tablas.filter(x => x.diasConDatos === 0).length }
+      ];
+      const max = Math.max.apply(null, cubos.map(c => c.n).concat([1]));
+      informeEl('est-dist').innerHTML = '<div class="inf-bars">' + cubos.map(c => `<div class="inf-bar-row"><span>${escapeHtml(c.lbl)}</span>
+        <div class="inf-bar-track"><div class="inf-bar-fill" style="width:${(c.n / max * 100).toFixed(1)}%"></div></div><b>${informeNum(c.n)}</b></div>`).join('') + '</div>';
+    }
+
+    function renderEstOwners(tablas) {
+      const campo = { de: 'de', ds: 'ds', dir: 'dir' }[estFiltros.grupo];
+      const grupos = {};
+      tablas.forEach(x => {
+        const clave = x.t[campo] || 'Sin asignar';
+        const g = grupos[clave] || (grupos[clave] = { owner: clave, tablas: 0, suma: 0, medidas: 0, estables: 0, incidencias: 0, peor: null });
+        g.tablas++;
+        if (x.diasConDatos > 0) { g.suma += x.promedio; g.medidas++; if (!g.peor || x.promedio < g.peor.promedio) g.peor = x; }
+        if (x.estable100) g.estables++;
+        g.incidencias += x.incidencias;
+      });
+      const filas = Object.keys(grupos).map(k => grupos[k]).sort((a, b) => b.incidencias - a.incidencias || a.owner.localeCompare(b.owner));
+      informeEl('est-owners').innerHTML = !filas.length ? '<div class="inf-empty">Sin datos para agrupar.</div>' :
+        `<table class="inf-table"><thead><tr><th>Responsable</th><th class="num">Tablas</th><th class="num">Promedio</th><th class="num">Estables</th><th class="num">Incidencias</th><th>Tabla menos estable</th></tr></thead><tbody>` +
+        filas.map(g => `<tr><td><strong>${escapeHtml(g.owner)}</strong></td><td class="num">${informeNum(g.tablas)}</td>
+          <td class="num">${g.medidas ? (g.suma / g.medidas).toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%' : '—'}</td>
+          <td class="num">${informeNum(g.estables)}</td><td class="num"><strong>${informeNum(g.incidencias)}</strong></td>
+          <td>${g.peor ? escapeHtml(`${g.peor.t.n} (${g.peor.promedio}%)`) : '—'}</td></tr>`).join('') + '</tbody></table>';
+    }
+
+    function renderEstTabla(tablas) {
+      const contenedor = informeEl('est-tabla');
+      if (!tablas.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas para los filtros seleccionados.</div>'; return; }
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>Tabla</th><th>Estado de la tabla</th><th>Calidad</th><th class="num">Promedio</th><th class="num">Días con datos</th>
+        <th class="num">Días &lt; 100%</th><th class="num">Incidencias</th><th class="num">Días vol. 0</th><th>Proceso</th><th>Data Engineer</th><th>Data Scientist</th><th>Dirección</th></tr></thead><tbody>` +
+        tablas.map(x => {
+          const [claseCalidad, etiqueta] = EST_CALIDAD[x.status];
+          const qClase = x.status === 'ok' ? 'q-ok' : (x.status === 'pending' || x.status === 'sindatos' ? 'q-pending' : 'q-err');
+          const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+          return `<tr class="inf-clic" data-tabla="${escapeHtml(x.t.n)}" title="Abrir el detalle por regla y por día">
+            <td><strong>${escapeHtml(x.t.n)}</strong></td><td>${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)}</td>
+            <td><span class="inf-badge ${claseCalidad}">${etiqueta}</span></td>
+            <td class="num"><span class="quality-val ${qClase}">${x.promedio}%</span></td><td class="num">${informeNum(x.diasConDatos)}</td>
+            <td class="num">${informeNum(x.diasBajo100)}</td><td class="num">${informeNum(x.incidencias)}</td><td class="num">${informeNum(x.diasVolumenCero)}</td>
+            <td>${escapeHtml(procesos)}</td><td>${escapeHtml(x.t.de)}</td><td>${escapeHtml(x.t.ds)}</td><td>${escapeHtml(x.t.dir)}</td></tr>`;
+        }).join('') + '</tbody></table>';
+    }
+
+    // Detalle por día y regla de una tabla: viene de la caché del servidor (sin releer la hoja)
+    // y se guarda en memoria para reabrirlo al instante.
+    function abrirDetalleEstabilidad(nombre) {
+      const x = estCalculo && estCalculo.tablas.find(f => f.t.n === nombre);
+      if (!x) return;
+      document.getElementById('modal-content').classList.add('stability-modal');
+      document.getElementById('modal-header').style.borderBottom = '3px solid var(--bbva-naranja)';
+      document.getElementById('modal-title').textContent = nombre;
+      document.getElementById('modal-sub').textContent = `${estFiltros.alcance === 'ambos' ? 'Todas las reglas' : 'MVP Técnico'} · ${estFiltros.ventana} días hasta ${estCalculo.referencia}`;
+      document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle…</div>';
+      document.getElementById('modal-overlay').classList.add('open');
+      if (!estDetalles[nombre]) {
+        estDetalles[nombre] = callServer('obtenerDetalleEstabilidadTabla', nombre);
+        estDetalles[nombre].catch(function() { delete estDetalles[nombre]; });
+      }
+      estDetalles[nombre].then(function(detalle) { pintarDetalleEstabilidad(x, detalle); })
+        .catch(function(err) {
+          document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>Error cargando el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
+        });
+    }
+
+    function pintarDetalleEstabilidad(x, detalle) {
+      const todas = estFiltros.alcance === 'ambos';
+      const fechas = informeData.fechas;
+      const posicion = {};
+      fechas.forEach((f, i) => { posicion[f] = i; });
+      const ventana = new Set(estCalculo.indices.map(i => fechas[i]));
+      const reglas = {};
+      informeData.reglas.forEach(r => { reglas[r.id] = r; });
+      const filas = (detalle.filas || []).filter(f => ventana.has(f[0]) && (todas || (reglas[f[1]] || {}).modo === 'tecnico'))
+        .sort((a, b) => b[0].localeCompare(a[0]) || a[1].localeCompare(b[1], 'es', { numeric: true }));
+      const diasVol0 = estCalculo.indices.filter(i => x.t._mapa.vt.has(i) || (todas && x.t._mapa.vf.has(i))).map(i => fechas[i]);
+      const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+      const cuerpo = filas.length ? filas.map(f => {
+        const prom = estPromedioCorte(x.t, posicion[f[0]], todas);
+        const [clase, etiqueta] = EST_ESTADO_REGLA[f[3]] || EST_ESTADO_REGLA.C;
+        return `<tr><td>${escapeHtml(f[0])}</td><td><strong>${prom === null ? '—' : prom + '%'}</strong></td><td>${escapeHtml(f[1])}</td>
+          <td>${escapeHtml((reglas[f[1]] || {}).nombre || '')}</td><td>${f[2] === null ? '—' : f[2] + '%'}</td><td><span class="inf-badge ${clase}">${etiqueta}</span></td></tr>`;
+      }).join('') : '<tr><td colspan="6">Sin reglas en el período seleccionado.</td></tr>';
+      document.getElementById('modal-body').innerHTML = `
+        <div class="modal-kpi-row">
+          <div class="mkpi"><div class="mkpi-val">${x.promedio}%</div><div class="mkpi-lbl">Promedio ${estFiltros.ventana} días</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.diasConDatos}</div><div class="mkpi-lbl">Días con datos</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.fallos}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--gray-600);"><strong>Estado:</strong> ${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)} &nbsp;·&nbsp; <strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(x.t.de)} &nbsp;·&nbsp; <strong>Data Scientist:</strong> ${escapeHtml(x.t.ds)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(x.t.dir)}${diasVol0.length ? ` &nbsp;·&nbsp; <strong>Volumen 0:</strong> ${escapeHtml(diasVol0.join(', '))}` : ''}</div>
+        <div class="stability-table-wrap" style="max-height:440px;"><table class="stability-table"><thead><tr><th>Fecha</th><th>Promedio diario</th><th>Regla #</th><th>Regla</th><th>% de la regla</th><th>Estado</th></tr></thead><tbody>${cuerpo}</tbody></table></div>`;
+    }
+
+    function inicializarEstabilidad() {
+      const leer = (id, clave, convertir) => informeEl(id).addEventListener('change', e => {
+        estFiltros[clave] = convertir ? convertir(e.target.value) : e.target.value;
+        if (clave === 'ventana') actualizarNotaEstabilidad();
+        renderEstabilidad();
+      });
+      leer('est-ventana', 'ventana', Number); leer('est-estadotabla', 'estadoTabla'); leer('est-alcance', 'alcance');
+      leer('est-proceso', 'proceso'); leer('est-de', 'de'); leer('est-dir', 'dir'); leer('est-grupo', 'grupo');
+      let temporizador = null;
+      informeEl('est-buscar').addEventListener('input', e => {
+        window.clearTimeout(temporizador);
+        temporizador = window.setTimeout(() => { estFiltros.buscar = e.target.value; renderEstabilidad(); }, 200);
+      });
+      informeEl('est-fecha').addEventListener('change', e => {
+        const ultimo = informeData && informeData.fechas.length ? informeData.fechas[informeData.fechas.length - 1] : '';
+        estFiltros.fecha = e.target.value || ultimo;
+        renderEstabilidad();
+      });
+      informeEl('est-refrescar').addEventListener('click', () => { Object.keys(estDetalles).forEach(k => delete estDetalles[k]); cargarInformeFallos(true); });
+      informeEl('est-tabla').addEventListener('click', e => {
+        const fila = e.target.closest('[data-tabla]');
+        if (fila) abrirDetalleEstabilidad(fila.getAttribute('data-tabla'));
+      });
+      informeEl('inf-tab-recurrentes').addEventListener('click', () => mostrarInforme('recurrentes'));
+      informeEl('inf-tab-estabilidad').addEventListener('click', () => mostrarInforme('estabilidad'));
+    }
+    document.addEventListener('DOMContentLoaded', inicializarEstabilidad);
+
     function mostrarVista(vista) {
       const esCalidadFuncional = currentQualityMode === 'funcional';
       const configuracion = {
         dashboard: {
           display:'block', titulo:esCalidadFuncional ? 'Fallos Funcionales' : 'MVP Técnico',
           subtitulo:esCalidadFuncional ? 'Control de advertencias y reglas no críticas' : 'Control de reglas críticas de calidad'
+        },
+        informes: {
+          display:'block', titulo:'Informes de Calidad',
+          subtitulo:'Reincidencia, estabilidad y responsables por tabla'
         },
         traceability: {
           display:'flex', titulo:'Trazabilidad Técnica',
@@ -1435,16 +2373,32 @@
         }
       };
       if (!configuracion[vista]) return;
-      ['dashboard', 'traceability', 'admin'].forEach(nombre => {
+      ['dashboard', 'informes', 'traceability', 'admin'].forEach(nombre => {
         const elemento = document.getElementById(`view-${nombre}`);
         if (elemento) elemento.style.display = nombre === vista ? configuracion[nombre].display : 'none';
+        // Informes pertenece al grupo Calidad: ambas vistas resaltan el mismo botón.
+        if (nombre === 'informes') return;
         const boton = document.getElementById(`nav-${nombre}`);
-        if (boton) boton.classList.toggle('active', nombre === vista);
+        const activo = nombre === 'dashboard' ? (vista === 'dashboard' || vista === 'informes') : nombre === vista;
+        if (boton) boton.classList.toggle('active', activo);
       });
+      actualizarSubmodulosCalidad(vista);
       currentView = vista;
       document.getElementById('topbar-view-title').textContent = configuracion[vista].titulo;
       document.getElementById('topbar-view-subtitle').textContent = configuracion[vista].subtitulo;
       if (vista === 'admin' && !adminCargada) cargarAdministracion(false);
+      if (vista === 'informes') mostrarInforme(informeActivo);
+    }
+
+    // Marca como activo solo el submódulo de Calidad que se está mostrando.
+    function actualizarSubmodulosCalidad(vista) {
+      const activo = vista === 'informes' ? 'informes' : (vista === 'dashboard' ? currentQualityMode : '');
+      ['tecnico', 'funcional', 'informes'].forEach(modo => {
+        const boton = document.getElementById(`quality-mode-${modo}`);
+        if (!boton) return;
+        boton.classList.toggle('active', modo === activo);
+        boton.setAttribute('aria-selected', String(modo === activo));
+      });
     }
 
     function setAdminBusy(ocupado) {
@@ -1652,6 +2606,10 @@
     }
 
     function mostrarCalidad(modo) {
+      if (modo === 'informes') {
+        mostrarVista('informes');
+        return;
+      }
       setQualityMode(modo);
       mostrarVista('dashboard');
     }
@@ -1913,161 +2871,6 @@
       }
     }
 
-    function openStabilityMonitor() {
-      if (!fechaReferenciaEstabilidad) {
-        showToast('Carga primero una fecha única o un rango para definir el período de estabilidad.', 'warning');
-        return;
-      }
-      stabilityReport = null;
-      stabilityFilterState = { proceso:'all', de:'all', direccion:'all', search:'' };
-      document.getElementById('modal-content').classList.add('stability-modal');
-      document.getElementById('modal-title').textContent = 'Monitoreo de estabilidad';
-      document.getElementById('modal-sub').textContent = 'Calculando los últimos 45 días corridos…';
-      document.getElementById('modal-header').style.borderBottom = '3px solid var(--bbva-naranja)';
-      document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Analizando estabilidad por tabla y regla…</div>';
-      document.getElementById('modal-overlay').classList.add('open');
-
-      callServer('obtenerMonitoreoEstabilidad', fechaReferenciaEstabilidad)
-        .then(function(res) {
-          stabilityReport = res || { desde:'', hasta:'', tablas:[] };
-          renderStabilityReport();
-        })
-        .catch(function(err) {
-          document.getElementById('modal-sub').textContent = 'No se pudo generar el informe';
-          document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>Error cargando estabilidad</strong>${escapeHtml(mensajeError(err))}</div></div>`;
-          showToast('No se pudo cargar estabilidad: ' + mensajeError(err), 'error');
-          console.error('Error cargando monitoreo de estabilidad:', err);
-        });
-    }
-
-    function stabilityOptions(valores, seleccionado, etiquetas) {
-      return valores.map(v => `<option value="${escapeHtml(v)}" ${v === seleccionado ? 'selected' : ''}>${escapeHtml(etiquetas && etiquetas[v] ? etiquetas[v] : v)}</option>`).join('');
-    }
-
-    function renderStabilityReport() {
-      const tablas = (stabilityReport && stabilityReport.tablas) || [];
-      const procesos = Array.from(new Set(tablas.flatMap(t => t.procesos || []))).sort();
-      const dataEngineers = Array.from(new Set(tablas.map(t => t.dataEngineer || 'BAU'))).sort((a,b) => a.localeCompare(b));
-      const direcciones = Array.from(new Set(tablas.map(t => t.direccion || 'Local'))).sort((a,b) => a.localeCompare(b));
-
-      document.getElementById('modal-title').textContent = 'Monitoreo de estabilidad';
-      document.getElementById('modal-sub').textContent = stabilityReport.desde && stabilityReport.hasta
-        ? `${stabilityReport.desde} → ${stabilityReport.hasta} · 45 días corridos` : 'Sin datos disponibles';
-      document.getElementById('modal-body').innerHTML = `
-        <div class="stability-filters">
-          <div class="stability-filter"><label>Proceso</label><select id="stability-proceso" onchange="renderStabilityRows()"><option value="all">Todos</option>${stabilityOptions(procesos, stabilityFilterState.proceso, PROCESS_LABELS)}</select></div>
-          <div class="stability-filter"><label>Data Engineer</label><select id="stability-de" onchange="renderStabilityRows()"><option value="all">Todos</option>${stabilityOptions(dataEngineers, stabilityFilterState.de)}</select></div>
-          <div class="stability-filter"><label>Dirección</label><select id="stability-dir" onchange="renderStabilityRows()"><option value="all">Todas</option>${stabilityOptions(direcciones, stabilityFilterState.direccion)}</select></div>
-          <div class="stability-filter"><label>Tabla</label><input id="stability-search" value="${escapeHtml(stabilityFilterState.search)}" placeholder="Buscar tabla…" oninput="renderStabilityRows()"></div>
-        </div>
-        <div class="modal-kpi-row">
-          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-tablas">0</div><div class="mkpi-lbl">Tablas</div></div>
-          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-promedio">0%</div><div class="mkpi-lbl">Promedio calidad</div></div>
-          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-estables">0</div><div class="mkpi-lbl">Estables al 100%</div></div>
-          <div class="mkpi"><div class="mkpi-val" id="stability-kpi-incidencias">0</div><div class="mkpi-lbl">Incidencias</div></div>
-        </div>
-        <div class="stability-table-wrap">
-          <table class="stability-table">
-            <thead><tr><th>Tabla</th><th>Proceso</th><th>Data Engineer</th><th>Dirección</th><th>Días</th><th>Promedio</th><th>Incidencias</th></tr></thead>
-            <tbody id="stability-table-body"></tbody>
-          </table>
-        </div>`;
-      renderStabilityRows();
-    }
-
-    function renderStabilityRows() {
-      if (!stabilityReport) return;
-      const procEl = document.getElementById('stability-proceso');
-      const deEl = document.getElementById('stability-de');
-      const dirEl = document.getElementById('stability-dir');
-      const searchEl = document.getElementById('stability-search');
-      if (!procEl || !deEl || !dirEl || !searchEl) return;
-
-      stabilityFilterState = {
-        proceso: procEl.value,
-        de: deEl.value,
-        direccion: dirEl.value,
-        search: searchEl.value
-      };
-      const busqueda = stabilityFilterState.search.trim().toLowerCase();
-      const filtradas = stabilityReport.tablas.filter(t => {
-        if (stabilityFilterState.proceso !== 'all' && !(t.procesos || []).includes(stabilityFilterState.proceso)) return false;
-        if (stabilityFilterState.de !== 'all' && t.dataEngineer !== stabilityFilterState.de) return false;
-        if (stabilityFilterState.direccion !== 'all' && t.direccion !== stabilityFilterState.direccion) return false;
-        return !busqueda || t.nombre.toLowerCase().includes(busqueda);
-      }).sort((a,b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.promedio - b.promedio || a.nombre.localeCompare(b.nombre));
-
-      const tbody = document.getElementById('stability-table-body');
-      if (filtradas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-400);">No hay tablas para los filtros seleccionados.</td></tr>';
-      } else {
-        tbody.innerHTML = filtradas.map(t => {
-          const indice = stabilityReport.tablas.indexOf(t);
-          const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
-          const incidencias = t.errores + t.advertencias + t.diasVolumenCero;
-          const qClass = t.status === 'ok' ? 'q-ok' : (t.status === 'warn' ? 'q-warn' : (t.status === 'pending' ? 'q-pending' : 'q-err'));
-          return `<tr onclick="openStabilityTable(${indice})">
-            <td><strong>${escapeHtml(t.nombre)}</strong></td><td class="stability-processes">${escapeHtml(procesos)}</td>
-            <td>${escapeHtml(t.dataEngineer)}</td><td>${escapeHtml(t.direccion)}</td><td>${t.diasConDatos}</td>
-            <td><span class="quality-val ${qClass}">${t.promedio}%</span></td><td>${incidencias}</td></tr>`;
-        }).join('');
-      }
-
-      const promedio = filtradas.length ? filtradas.reduce((s,t) => s + t.promedio, 0) / filtradas.length : 0;
-      const estables = filtradas.filter(t => t.status === 'ok' && t.promedio === 100).length;
-      const incidencias = filtradas.reduce((s,t) => s + t.errores + t.advertencias + t.diasVolumenCero, 0);
-      document.getElementById('stability-kpi-tablas').textContent = filtradas.length;
-      document.getElementById('stability-kpi-promedio').textContent = promedio.toFixed(2) + '%';
-      document.getElementById('stability-kpi-estables').textContent = estables;
-      document.getElementById('stability-kpi-incidencias').textContent = incidencias;
-    }
-
-    function openStabilityTable(indice) {
-      const t = stabilityReport && stabilityReport.tablas ? stabilityReport.tablas[indice] : null;
-      if (!t) return;
-      if (!t.detalleIncluido) {
-        document.getElementById('modal-title').textContent = t.nombre;
-        document.getElementById('modal-sub').textContent = 'Cargando estabilidad y desglose de reglas…';
-        document.getElementById('modal-body').innerHTML = '<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de estabilidad…</div>';
-        callServer('obtenerMonitoreoEstabilidad', fechaReferenciaEstabilidad, t.nombre)
-          .then(function(res) {
-            if (res && res.tablas && res.tablas.length > 0) {
-              Object.assign(t, res.tablas[0]);
-              t.detalleIncluido = true;
-              openStabilityTable(indice);
-            } else {
-              document.getElementById('modal-body').innerHTML = '<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div class="alert-card warn"><div><strong>Sin detalle</strong>No se encontraron datos para esta tabla en el período.</div></div>';
-            }
-          })
-          .catch(function(err) {
-            document.getElementById('modal-body').innerHTML = `<button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button><div class="alert-card err"><div><strong>Error cargando el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
-          });
-        return;
-      }
-      document.getElementById('modal-title').textContent = t.nombre;
-      document.getElementById('modal-sub').textContent = `Estabilidad ${stabilityReport.desde} → ${stabilityReport.hasta} · ${t.dataEngineer} · ${t.direccion}`;
-      const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
-      const reglasRows = t.reglas.length ? t.reglas.map(r => {
-        const clase = r.pendientes > 0 && r.ejecuciones === 0 ? 'q-pending' : (r.fallos > 0 || r.promedio < 100 ? 'q-err' : 'q-ok');
-        return `<tr><td>${escapeHtml(r.id)}</td><td>${escapeHtml(r.nombre)}</td><td><span class="quality-val ${clase}">${r.promedio}%</span></td><td>${r.ejecuciones}</td><td>${r.fallos}</td></tr>`;
-      }).join('') : '<tr><td colspan="5">Sin reglas disponibles.</td></tr>';
-      const diasRows = t.serieDiaria.slice().reverse().map(d => `<tr><td>${escapeHtml(d.fecha)}</td><td><strong>${d.promedio}%</strong></td></tr>`).join('');
-
-      document.getElementById('modal-body').innerHTML = `
-        <button class="stability-back" onclick="renderStabilityReport()">← Volver al informe</button>
-        <div class="modal-kpi-row">
-          <div class="mkpi"><div class="mkpi-val">${t.promedio}%</div><div class="mkpi-lbl">Promedio 45 días</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.diasConDatos}</div><div class="mkpi-lbl">Días con datos</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.errores + t.advertencias}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
-        </div>
-        <div style="font-size:13px;color:var(--gray-600);"><strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(t.dataEngineer)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(t.direccion)}</div>
-        <div class="stability-detail-grid">
-          <div><div class="section-sub">Desglose por regla</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>ID</th><th>Regla</th><th>Promedio</th><th>Ejecuciones</th><th>Fallos</th></tr></thead><tbody>${reglasRows}</tbody></table></div></div>
-          <div><div class="section-sub">Promedio diario</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>Fecha</th><th>Calidad</th></tr></thead><tbody>${diasRows}</tbody></table></div></div>
-        </div>`;
-    }
-
     function openModal(t) {
       document.getElementById('modal-content').classList.remove('stability-modal');
       document.getElementById('modal-title').textContent = t.name;
@@ -2081,6 +2884,10 @@
         document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de reglas…</div>';
         document.getElementById('modal-overlay').classList.add('open');
         t.detallePendiente = false;
+        // El histórico se pide a la vez que las reglas (no después): ambas
+        // consultas salen de caché y se resuelven en paralelo.
+        t.historicoPromesa = callServer('obtenerHistoricoTablaCalidad', t.name, t.qualityMode);
+        t.historicoPromesa.catch(function() {});
         callServer('obtenerDetalleReglasCalidad', t.name, t.cutoffDate, t.qualityMode)
           .then(function(reglas) {
             t.reglas = Array.isArray(reglas) ? reglas : [];
@@ -2178,8 +2985,9 @@
         return;
       }
 
-      callServer('obtenerDetalleTablaCalidad', t.name, t.cutoffDate, t.qualityMode)
+      (t.historicoPromesa || callServer('obtenerHistoricoTablaCalidad', t.name, t.qualityMode))
         .then(function(detalle) {
+          t.historicoPromesa = null;
           const historico = detalle && detalle.historico ? detalle.historico : [];
           t.historico = historico;
           t.limiteHistorico = detalle && detalle.limiteHistorico ? detalle.limiteHistorico : t.limiteHistorico;
@@ -2195,6 +3003,7 @@
           renderQualityChart(historico, t.quality);
         })
         .catch(function() {
+          t.historicoPromesa = null;
           const loadMsg = document.getElementById('chart-loading-msg');
           if (loadMsg) loadMsg.textContent = 'No se pudieron cargar los datos históricos.';
         });

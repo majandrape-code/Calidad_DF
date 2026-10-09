@@ -104,10 +104,88 @@ para no mezclar reglas técnicas y funcionales. El gráfico muestra los últimos
 10 cortes disponibles para tablas diarias y los últimos 3 cortes de fin de mes
 para tablas mensuales.
 
-Durante la carga del monitor se cachean únicamente las reglas del corte visible,
-sin recorrer ni serializar todos los históricos. Al abrir una tabla, el modal
-muestra primero esas reglas y solicita el histórico en segundo plano. Si la
-caché no está disponible, el servidor reconstruye solo la respuesta solicitada.
+Durante la carga del monitor se cachean únicamente las reglas del corte visible.
+Al abrir una tabla, el modal pide a la vez las reglas y el histórico. El histórico
+de **todas** las tablas se calcula en una sola lectura de la hoja y se guarda en
+la caché en fragmentos pequeños (`obtenerHistoricoTablaCalidad`); la carga inicial
+lo precalienta en segundo plano (`precalentarHistoricoCalidad`). Así, la primera
+apertura de cualquier tabla deja de leer la hoja completa. Si la caché no está
+disponible, el servidor reconstruye el índice en una única lectura.
+
+## Informes de Calidad
+
+El submódulo **Informes** (Calidad → Informes) analiza el histórico de la hoja
+`calidad` y reúne dos informes en pestañas. El antiguo botón *Monitoreo de
+estabilidad* del dashboard ya no existe: su contenido vive ahora en la pestaña
+**Estabilidad**.
+
+### Estabilidad
+
+Calidad de las tablas en una ventana de **30, 45 (por defecto) o 90 días** que termina
+en la fecha de referencia (por defecto, el último corte). Filtros: fecha de
+referencia, ventana, **estado de la tabla** (Productivas por defecto, En desarrollo
+o Todas), **reglas** (solo MVP Técnico por defecto, o todas), proceso, Data Engineer,
+dirección y búsqueda. Todos los filtros se aplican en el navegador, sin volver a
+leer Sheets.
+
+KPIs:
+
+| KPI | Cálculo |
+| --- | --- |
+| Promedio de calidad | Promedio de los promedios diarios de cada tabla |
+| Estables al 100% | Tablas sin fallos, sin volumen 0 y con promedio 100% |
+| Con incidencias | Tablas con fallos de reglas o días con volumen 0 |
+| Tablas con volumen 0 | % de tablas con algún día sin registros en el rango; **no cuenta las tablas con periodicidad `manual`** |
+| Calidad < 100% por más de 4 días | % de tablas cuyo promedio diario fue inferior a 100% en más de 4 días del rango |
+
+Incluye la distribución del promedio por rangos, la estabilidad por responsable
+(Data Engineer, Data Scientist o dirección) y la tabla por tabla con su **estado
+(productiva / en desarrollo)**. Al pulsar una tabla se abre una única tabla de
+detalle con fecha, promedio diario, regla y % de la regla. El detalle sale de la
+caché del servidor (se calcula junto con el informe en una sola lectura de la hoja),
+así que abre sin releer la hoja completa.
+
+### Fallos recurrentes
+
+- **KPIs principales**: tablas evaluadas, estables, fallos crónicos, reaperturas,
+  tiempo medio de resolución, concentración y tabla con más fallos. Los KPIs de
+  grupo son botones: al pulsarlos filtran el resto de la pantalla.
+- **Ranking de reincidencia**: días con fallo en 30 y 90 días, racha actual,
+  MTTR y reaperturas, siempre con **responsable técnico (Data Engineer)**,
+  **Data Scientist** y dirección de cada tabla.
+- **Pareto** de incidencias por tabla y **mapa de calor** tabla × corte.
+- **Fallos por dimensión y regla**, y **fallos por responsable** (agrupable por
+  Data Engineer, Data Scientist, dirección o responsable funcional).
+- Filtros dinámicos: ventana (30/90 días), alcance (MVP Técnico, Funcional o
+  ambos), **estado de la tabla (Productivas por defecto)**, periodicidad,
+  responsables, dirección, umbral de recurrencia y búsqueda.
+
+Definiciones (todas sobre los cortes disponibles en la hoja):
+
+| Métrica | Cálculo |
+| --- | --- |
+| Día con fallo | Corte en el que al menos una regla del alcance no está `Exitosa` ni `Pendiente` |
+| Racha actual | Cortes consecutivos fallando hasta el último; un pendiente no la corta |
+| Recurrente | Tabla con al menos N días con fallo en la ventana (N configurable) |
+| Crónica | Racha actual de 5 cortes o más |
+| Estable | Con ejecuciones en la ventana y sin ningún fallo |
+| MTTR | Días entre el primer fallo y el primer corte correcto posterior (incidencias cerradas) |
+| Reapertura | Nuevo fallo en ≤ 7 días desde que se resolvió una incidencia |
+| Concentración | % de incidencias que generan el 30% de las tablas con más fallos |
+
+La dimensión y el nombre de cada regla salen de `CATALOGO_REGLAS` en `Codigo.gs`,
+que replica el catálogo oficial: **Disponibilidad** (1-1, 1-2), **Completitud**
+(2-1 a 2-4), **Validez** (3-1 a 3-5) y **Consistencia** (4-1, 4-2, 4-3).
+
+**Puntualidad**: los fallos de reglas que no llegaron a ejecutarse dentro del ANS
+(`g_quality_rule_status_type = NO ENCONTRADO`, si la columna existe) se cuentan como
+Puntualidad. El ANS es el plazo en días hábiles (`ttmm` de la hoja o columna de
+gobierno); si una tabla no lo informa se asume **1**. El informe usa la caché de
+calidad y se puede refrescar con **Actualizar datos**.
+
+**Pendiente:** el informe de *Acierto de Elipses* necesita primero etiquetar cada
+alerta como Real / Falso positivo / Pendiente; sin esa columna no se puede
+calcular la precisión.
 
 ## Despliegue
 
