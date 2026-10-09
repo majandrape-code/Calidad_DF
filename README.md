@@ -152,6 +152,14 @@ detalle con fecha, promedio diario, regla y % de la regla. El detalle sale de la
 caché del servidor (se calcula junto con el informe en una sola lectura de la hoja),
 así que abre sin releer la hoja completa.
 
+La columna *Calidad* distingue **Con fallos** (alguna regla del alcance falló),
+**Volumen 0** (sin fallos de reglas pero con días sin registros: las reglas pueden
+verse al 100%), **Estable**, **Pendiente** y **Sin datos**. El detalle indica el
+*motivo del estado*, resalta las filas con incidencia y permite mostrar solo esos
+días. Un porcentaje menor a 100 nunca se redondea a 100 (por ejemplo 99,99998% se
+muestra como 99,99%), y un estado de regla distinto de Exitosa, Pendiente, Advertencia
+o Crítico se etiqueta *Desconocido* en lugar de Crítico.
+
 ### Fallos recurrentes
 
 - **KPIs principales**: tablas evaluadas, estables, fallos crónicos, reaperturas,

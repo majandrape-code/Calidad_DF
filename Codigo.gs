@@ -1717,7 +1717,15 @@ function leerFragmento_(cache, prefijo, clave) {
 }
 
 var PRIORIDAD_ESTADO_DETALLE = { E: 1, P: 2, A: 3, C: 4 };
-var LETRAS_ESTADO_DETALLE = ['', 'E', 'P', 'A', 'C'];
+// E exitosa · P pendiente · D desconocido (sin % calculado) · A advertencia · C crítico
+var LETRAS_ESTADO_DETALLE = ['', 'E', 'P', 'D', 'A', 'C'];
+
+// Redondea a 2 decimales sin mostrar 100 cuando el valor real es menor: una regla con
+// 99,99998% (1 error entre millones de filas) falla, pero un 100 la haría parecer perfecta.
+function redondearPct_(valor) {
+  var redondeado = parseFloat(valor.toFixed(2));
+  return redondeado >= 100 && valor < 100 ? 99.99 : redondeado;
+}
 
 // Calcula el informe a partir de las filas ya leídas. Es una función pura (no
 // toca servicios de Google) para poder probarla con datos sintéticos.
@@ -1824,12 +1832,13 @@ function construirInformeFallos_(datos, gobierno) {
       var delCorte = t.det[pos] || (t.det[pos] = {});
       var detalleRegla = delCorte[idRegla] || (delCorte[idRegla] = { s: 0, c: 0, p: 1 });
       if (medida) { detalleRegla.s += calidad; detalleRegla.c++; }
-      var prioridad = estado === 'EXITOSA' ? 1 : (estado === 'PENDIENTE' ? 2 : (estado === 'ADVERTENCIA' ? 3 : 4));
+      var prioridad = estado === 'EXITOSA' ? 1 : (estado === 'PENDIENTE' ? 2 : (estado === 'ADVERTENCIA' ? 4
+        : (estado === 'CRITICO' || estado === 'CRÍTICO' ? 5 : 3)));
       if (prioridad > detalleRegla.p) detalleRegla.p = prioridad;
     }
   }
 
-  var promedio = function(suma, cuenta) { return parseFloat((suma / cuenta).toFixed(2)); };
+  var promedio = function(suma, cuenta) { return redondearPct_(suma / cuenta); };
   var detalle = {};
   var salida = Object.keys(tablas).sort().map(function(clave) {
     var t = tablas[clave];
