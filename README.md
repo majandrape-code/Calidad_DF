@@ -98,6 +98,13 @@ trazabilidad, gobierno, responsable, dirección, búsqueda y periodicidad:
 Los dos submódulos se seleccionan desde la navegación superior de Calidad. La
 aplicación siempre inicia en **MVP Técnico**.
 
+**Mantener siempre el último corte mensual:** junto al botón *Cargar* hay un check que,
+además del corte elegido (por ejemplo el último diario), trae siempre el último corte
+mensual: la fecha más reciente con filas de tablas mensuales, y solo esas tablas. No
+duplica filas si el corte ya viene en la consulta ni se aplica al elegir cortes
+*Mensuales*. La preferencia se recuerda en el navegador y la franja de estado indica la
+fecha del corte mensual incluido (`+ corte mensual AAAA-MM-DD`).
+
 El filtro **Periodicidad** permite mostrar todas las tablas, solo diarias o solo
 mensuales. Al abrir una tabla, el detalle y el histórico se conservan por vista
 para no mezclar reglas técnicas y funcionales. El gráfico muestra los últimos
@@ -165,9 +172,9 @@ Definiciones (todas sobre los cortes disponibles en la hoja):
 | Métrica | Cálculo |
 | --- | --- |
 | Día con fallo | Corte en el que al menos una regla del alcance no está `Exitosa` ni `Pendiente` |
-| Racha actual | Cortes consecutivos fallando hasta el último; un pendiente no la corta |
-| Recurrente | Tabla con al menos N días con fallo en la ventana (N configurable) |
-| Crónica | Racha actual de 5 cortes o más |
+| Racha actual | Cortes consecutivos fallando hasta el último; un pendiente no la corta. En tablas mensuales se cuenta en cierres de mes |
+| Recurrente | **Diarias:** al menos N días con fallo en la ventana (N configurable). **Mensuales:** fallan 2 de los últimos 3 cierres de mes |
+| Crónica | **Diarias:** racha actual de 5 cortes o más. **Mensuales:** fallan los cierres de mes (último corte de cada mes) de los últimos 3 meses |
 | Estable | Con ejecuciones en la ventana y sin ningún fallo |
 | MTTR | Días entre el primer fallo y el primer corte correcto posterior (incidencias cerradas) |
 | Reapertura | Nuevo fallo en ≤ 7 días desde que se resolvió una incidencia |
@@ -182,10 +189,6 @@ que replica el catálogo oficial: **Disponibilidad** (1-1, 1-2), **Completitud**
 Puntualidad. El ANS es el plazo en días hábiles (`ttmm` de la hoja o columna de
 gobierno); si una tabla no lo informa se asume **1**. El informe usa la caché de
 calidad y se puede refrescar con **Actualizar datos**.
-
-**Pendiente:** el informe de *Acierto de Elipses* necesita primero etiquetar cada
-alerta como Real / Falso positivo / Pendiente; sin esa columna no se puede
-calcular la precisión.
 
 ## Despliegue
 

@@ -45,10 +45,10 @@
     .btn-toggle-view:active { transform: translateY(0); }
 
     .topbar-nav { display: flex; align-items: center; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,.15); border-radius: 8px; background: rgba(255,255,255,.06); }
-    .nav-view-btn { height: 34px; border: none; border-radius: 6px; padding: 0 13px; background: transparent; color: rgba(255,255,255,.68); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+    .nav-view-btn { height: 42px; border: none; border-radius: 8px; padding: 0 14px; background: transparent; color: rgba(255,255,255,.75); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
     .nav-view-btn:hover { color: white; background: rgba(255,255,255,.1); }
     .nav-view-btn.active { color: white; background: var(--bbva-naranja); }
-    .nav-view-btn svg { width: 15px; height: 15px; }
+    .nav-view-btn svg { width: 17px; height: 17px; }
     .nav-quality-group { height: 42px; display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.07); border: 1.5px solid rgba(245,130,32,.55); }
     .nav-quality-group.active { background: rgba(255,255,255,.14); border-color: var(--bbva-naranja); box-shadow: 0 0 0 2px rgba(245,130,32,.25); }
     .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.18); padding: 0 14px; background: transparent; color: white; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
@@ -217,12 +217,15 @@
     /* Bloque izquierdo: fecha */
     .date-block {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 6px 10px;
       padding: 10px 20px 10px 0;
       border-right: 1px solid rgba(255,255,255,.12);
       flex-shrink: 0;
     }
+    .chk-mensual { display: inline-flex; align-items: center; gap: 7px; flex-basis: 100%; cursor: pointer; color: rgba(255,255,255,.75); font-size: 10px; font-weight: 700; line-height: 1.25; letter-spacing: .3px; text-transform: uppercase; }
+    .chk-mensual input { width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--bbva-naranja); cursor: pointer; }
     .date-label {
       font-size: 10px;
       font-weight: 700;
@@ -820,6 +823,10 @@
           </svg>
           Cargar
         </button>
+        <label class="chk-mensual" for="chk-ultimo-mensual" title="Además del corte elegido, trae siempre el último corte mensual (solo tablas mensuales)">
+          <input type="checkbox" id="chk-ultimo-mensual" onchange="alternarUltimoMensual()">
+          <span>Mantener siempre el último corte mensual</span>
+        </label>
       </div>
 
       <!-- BLOQUE PROCESO -->
@@ -1071,7 +1078,6 @@
         <div class="inf-tabs" role="tablist" aria-label="Informes disponibles">
           <button id="inf-tab-recurrentes" class="inf-tab active" role="tab" aria-selected="true">Fallos recurrentes</button>
           <button id="inf-tab-estabilidad" class="inf-tab" role="tab" aria-selected="false">Estabilidad</button>
-          <button id="inf-tab-elipses" class="inf-tab" role="tab" aria-selected="false" disabled title="Requiere primero etiquetar cada alerta como Real / Falso positivo / Pendiente">Acierto de Elipses · próximamente</button>
         </div>
       </div>
 
@@ -1422,6 +1428,7 @@
 
         // Carga la calidad de la última fecha disponible automáticamente (en paralelo)
         // para que el dashboard aparezca poblado sin esperar al botón "Cargar".
+        restaurarUltimoMensual();
         cargarCalidadInicial();
 
         const registrarPresencia = () => callServer('registrarConexionUsuario')
@@ -1429,6 +1436,21 @@
         registrarPresencia();
         window.setInterval(registrarPresencia, 5 * 60 * 1000);
     });
+
+    // Preferencia "mantener siempre el último corte mensual": se recuerda entre sesiones.
+    const CLAVE_ULTIMO_MENSUAL = 'calidad_mantener_ultimo_mensual';
+    let corteMensualActivo = '';
+    function incluirUltimoMensual() {
+      const check = document.getElementById('chk-ultimo-mensual');
+      return !!(check && check.checked);
+    }
+    function alternarUltimoMensual() {
+      try { window.localStorage.setItem(CLAVE_ULTIMO_MENSUAL, incluirUltimoMensual() ? '1' : '0'); } catch (e) {}
+      if (document.getElementById('date-picker').value) loadDashboard();   // recarga con la nueva preferencia
+    }
+    function restaurarUltimoMensual() {
+      try { document.getElementById('chk-ultimo-mensual').checked = window.localStorage.getItem(CLAVE_ULTIMO_MENSUAL) === '1'; } catch (e) {}
+    }
 
     // Trae la última fecha disponible + sus datos de calidad en una sola llamada
     // y pinta el dashboard al entrar a la app.
@@ -1451,7 +1473,7 @@
         if (overlay) overlay.style.display = 'none';
       };
 
-      callServer('obtenerCargaInicial')
+      callServer('obtenerCargaInicial', incluirUltimoMensual())
         .then(function(carga) {
           // carga es { ultimaFecha, datos: { filas, procesos, dir, ds, de } }
           if (!carga || !carga.ultimaFecha) {
@@ -1600,7 +1622,8 @@
     // ==========================================
     // INFORMES DE CALIDAD · cálculo (sin DOM)
     // ==========================================
-    const INFORME_RACHA_CRONICA = 5;      // cortes consecutivos fallando
+    const INFORME_RACHA_CRONICA = 5;      // tablas diarias: cortes consecutivos fallando
+    const INFORME_CIERRES_MENSUALES = 3;  // tablas mensuales: cierres de mes evaluados (últimos 3 meses)
     const INFORME_DIAS_REAPERTURA = 7;    // días tras la resolución para considerar reapertura
     const INFORME_TOP_PARETO = 15;
 
@@ -1660,6 +1683,22 @@
           if (e === '3') racha++; else break;
         }
 
+        // Tablas mensuales: se evalúa el último corte de cada mes (cierre de mes) de los
+        // últimos 3 meses. Crónica = falla los 3 cierres; recurrente = falla 2 de los 3.
+        let cierres = null;
+        if (esMensual) {
+          const ultimoDelMes = {};
+          for (let i = 0; i < fechas.length; i++) {
+            if (estados[i] !== '1' && estados[i] !== '3') continue;
+            ultimoDelMes[fechas[i].slice(0, 7)] = i;
+          }
+          const lista = Object.keys(ultimoDelMes).sort().slice(-INFORME_CIERRES_MENSUALES).map(m => estados[ultimoDelMes[m]]);
+          let seguidos = 0;
+          for (let k = lista.length - 1; k >= 0 && lista[k] === '3'; k--) seguidos++;
+          cierres = { total: lista.length, fallos: lista.filter(e => e === '3').length, seguidos };
+          racha = seguidos;   // en tablas mensuales la racha se cuenta en cierres de mes
+        }
+
         // Incidencias: desde el primer fallo hasta el primer corte correcto posterior.
         const cerradas = [];
         let abierta = null, cierre = -1, reaperturas = 0;
@@ -1694,14 +1733,16 @@
         });
 
         let categoria;
-        if (fallosVentana === 0 && medidos === 0) categoria = 'sindatos';
-        else if (racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
-        else if (fallosVentana >= f.umbral) categoria = 'recurrente';
+        const sinCierres = !cierres || cierres.total === 0;
+        if (fallosVentana === 0 && medidos === 0 && sinCierres) categoria = 'sindatos';
+        else if (esMensual ? (cierres.total >= INFORME_CIERRES_MENSUALES && cierres.fallos === INFORME_CIERRES_MENSUALES)
+                           : racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
+        else if (esMensual ? cierres.fallos >= 2 : fallosVentana >= f.umbral) categoria = 'recurrente';
         else if (fallosVentana > 0) categoria = 'ocasional';
         else categoria = 'estable';
 
         resultado.tablas.push({
-          t, estados, fallos30, fallos90, fallosVentana, racha, categoria,
+          t, estados, fallos30, fallos90, fallosVentana, racha, categoria, esMensual, cierres,
           esRecurrente: categoria === 'cronica' || categoria === 'recurrente',
           cerradas: cerradasVentana.length, sumaResolucion,
           mttr: cerradasVentana.length ? sumaResolucion / cerradasVentana.length : null,
@@ -1849,7 +1890,7 @@
       const tiles = [
         { cat: '', clase: '', lbl: 'Tablas evaluadas', val: informeNum(k.evaluadas), sub: `Con ejecuciones en los últimos ${v} días` },
         { cat: 'estable', clase: 'ok', lbl: 'Tablas estables', val: informeNum(k.estables), pct: k.evaluadas ? k.estables / k.evaluadas : 0, sub: 'Sin ningún fallo en la ventana' },
-        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `${INFORME_RACHA_CRONICA}+ cortes consecutivos fallando` },
+        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `Diarias: ${INFORME_RACHA_CRONICA}+ cortes seguidos fallando · Mensuales: fallan los últimos ${INFORME_CIERRES_MENSUALES} cierres de mes` },
         { cat: 'reabierta', clase: 'warn', lbl: 'Reaperturas', val: informeNum(k.reabiertas), sub: `Tablas que vuelven a fallar en ≤ ${INFORME_DIAS_REAPERTURA} días (${informeNum(k.reaperturas)} eventos)` },
         { cat: '', clase: '', lbl: 'Tiempo medio de resolución', val: informeDec(k.mttr), unidad: k.mttr === null ? '' : 'días', sub: `MTTR sobre ${informeNum(k.resueltas)} incidencias cerradas` },
         { cat: '', clase: 'warn', lbl: 'Concentración', val: informePct(k.concentracion), sub: `El 30% de las tablas con fallo (${informeNum(k.topTreintaN)} de ${informeNum(k.conFallo)}) genera ese % de las ${informeNum(k.incidencias)} incidencias` },
@@ -1939,7 +1980,7 @@
           <td><span class="inf-badge ${x.categoria}">${INFORME_ESTADOS[x.categoria]}</span></td>
           <td class="num"><strong>${informeNum(x.fallos30)}</strong></td>
           <td class="num"><strong>${informeNum(x.fallos90)}</strong></td>
-          <td class="num">${x.racha ? informeNum(x.racha) : '—'}</td>
+          <td class="num">${x.racha ? informeNum(x.racha) + (x.esMensual ? (x.racha === 1 ? ' cierre' : ' cierres') : '') : '—'}</td>
           <td class="num">${informeDec(x.mttr)}</td>
           <td class="num">${x.reaperturas ? informeNum(x.reaperturas) : '—'}</td>
           <td>${escapeHtml(x.t.de)}</td>
@@ -2540,7 +2581,7 @@
       strip.style.display = 'flex';
       document.getElementById('strip-info').textContent = "Consultando base de datos corporativa...";
       
-      callServer('obtenerDatosMonitor', dateVal, modo === 'rango' ? dateValFin : '', frecuenciaCorte)
+      callServer('obtenerDatosMonitor', dateVal, modo === 'rango' ? dateValFin : '', frecuenciaCorte, incluirUltimoMensual())
         .then(function(res) {
           aplicarDatosMonitor(res, dateVal);
           btnLoad.innerHTML = originalText;
@@ -2559,6 +2600,7 @@
     // res es { filas, procesos, dir, ds, de }
     function aplicarDatosMonitor(res, dateVal) {
       tableData = (res && res.filas) ? res.filas : [];
+      corteMensualActivo = (res && res.corteMensual) ? res.corteMensual : '';
       tableData.forEach(tabla => { tabla.detallesVista = {}; });
 
       // Poblar TODOS los mapas desde la respuesta de calidad
@@ -2644,7 +2686,8 @@
       else if (pending > 0) { pill.className = 'status-pill pill-pending'; pill.textContent = 'PENDIENTE DE CARGA'; }
       else { pill.className = 'status-pill pill-ok'; pill.textContent = 'CALIDAD ÓPTIMA'; }
       
-      document.getElementById('strip-info').textContent = `${ok}/${total} tablas OK · ${pending} pendientes · ${warn} con advertencias · ${err} con fallos`;
+      document.getElementById('strip-info').textContent = `${ok}/${total} tablas OK · ${pending} pendientes · ${warn} con advertencias · ${err} con fallos` +
+        (corteMensualActivo ? ` · + corte mensual ${corteMensualActivo}` : '');
     }
 
     function sortBy(key) {
