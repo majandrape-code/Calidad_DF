@@ -54,6 +54,8 @@ def main() -> int:
         "quality-mode-informes", "view-informes", "inf-kpis", "inf-pareto",
         "inf-reglas", "inf-ranking", "inf-heat", "inf-owners", "inf-tab-estabilidad",
         "inf-panel-estabilidad", "est-kpis", "est-dist", "est-owners", "est-tabla",
+        "est-fecha", "est-nota", "est-ventana", "est-estadotabla", "est-alcance",
+        "inf-estadotabla",
     }
     missing_ids = sorted(required_ids - parser.ids)
     require(not missing_ids, "Faltan IDs de Administración: " + ", ".join(missing_ids), errors)
@@ -72,6 +74,7 @@ def main() -> int:
         "registrarConexionUsuario", "registrarOperacion_", "claveCache_",
         "obtenerInformeFallosRecurrentes", "construirInformeFallos_",
         "obtenerHistoricoTablaCalidad", "precalentarHistoricoCalidad",
+        "obtenerDetalleEstabilidadTabla", "reconstruirBaseInformes_",
     }
     missing_symbols = sorted(required_server_symbols - server_functions)
     require(not missing_symbols, "Faltan funciones administrativas: " + ", ".join(missing_symbols), errors)
@@ -152,13 +155,24 @@ def main() -> int:
         errors,
     )
     require(
-        "obtenerMonitoreoEstabilidad" in client and "abrirDetalleEstabilidad" in client,
-        "La pestaña Estabilidad de Informes debe usar obtenerMonitoreoEstabilidad.",
+        "abrirDetalleEstabilidad" in client and "obtenerDetalleEstabilidadTabla" in client
+        and "calcularEstabilidad" in client,
+        "La pestaña Estabilidad debe calcular en el navegador y pedir el detalle a la caché.",
         errors,
     )
     require(
-        "dataScientist: g.dataScientist" in server,
-        "El monitor de estabilidad debe incluir el Data Scientist de cada tabla.",
+        "obtenerMonitoreoEstabilidad" not in server and "obtenerMonitoreoEstabilidad" not in client,
+        "El monitor antiguo, que releía la hoja completa en cada clic, no debe volver.",
+        errors,
+    )
+    require(
+        "estadoTabla: 'productiva'" in client and 'id="est-estadotabla"' in client,
+        "Los informes deben cargar por defecto las tablas productivas.",
+        errors,
+    )
+    require(
+        "id=\"est-ds\"" not in client,
+        "La pestaña Estabilidad ya no debe tener filtro de Data Scientist.",
         errors,
     )
     require(

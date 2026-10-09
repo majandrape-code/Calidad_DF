@@ -193,6 +193,7 @@
     .inf-tip { position: fixed; z-index: 6000; pointer-events: none; max-width: 280px; background: var(--navy); color: white; border-radius: 7px; padding: 8px 10px; font-size: 11px; line-height: 1.4; box-shadow: var(--shadow-lg); display: none; }
     .inf-tip strong { display: block; font-size: 14px; }
     .inf-tip span { opacity: .75; }
+    .inf-hint { display: block; margin-top: 3px; max-width: 190px; color: var(--gray-400); font-size: 10px; line-height: 1.3; }
     .inf-clic { cursor: pointer; }
     .inf-clic:hover td { background: #F0F7FF; }
     .inf-empty { padding: 26px; text-align: center; color: var(--gray-400); font-size: 13px; }
@@ -1080,6 +1081,8 @@
           <select id="inf-ventana"><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select></div>
         <div class="inf-field"><label for="inf-alcance">Alcance de reglas</label>
           <select id="inf-alcance"><option value="tecnico">MVP Técnico (críticas)</option><option value="funcional">Funcional (no críticas)</option><option value="ambos">Ambos</option></select></div>
+        <div class="inf-field"><label for="inf-estadotabla">Estado de la tabla</label>
+          <select id="inf-estadotabla"><option value="productiva" selected>Productivas</option><option value="en desarrollo">En desarrollo</option><option value="">Todas</option></select></div>
         <div class="inf-field"><label for="inf-periodicidad">Periodicidad</label>
           <select id="inf-periodicidad"><option value="">Todas</option><option value="diaria">Diarias</option><option value="mensual">Mensuales</option></select></div>
         <div class="inf-field"><label for="inf-de">Responsable técnico</label><select id="inf-de"><option value="">Todos</option></select></div>
@@ -1128,10 +1131,16 @@
 
       <div id="inf-panel-estabilidad" style="display:none;">
         <div class="inf-filters" aria-label="Filtros de estabilidad">
-          <div class="inf-field"><label for="est-fecha">Fecha de referencia</label><input id="est-fecha" type="date"></div>
+          <div class="inf-field"><label for="est-fecha">Fecha de referencia</label><input id="est-fecha" type="date">
+            <small class="inf-hint" id="est-nota"></small></div>
+          <div class="inf-field"><label for="est-ventana">Ventana</label>
+            <select id="est-ventana"><option value="30">Últimos 30 días</option><option value="45" selected>Últimos 45 días</option><option value="90">Últimos 90 días</option></select></div>
+          <div class="inf-field"><label for="est-estadotabla">Estado de la tabla</label>
+            <select id="est-estadotabla"><option value="productiva" selected>Productivas</option><option value="en desarrollo">En desarrollo</option><option value="">Todas</option></select></div>
+          <div class="inf-field"><label for="est-alcance">Reglas</label>
+            <select id="est-alcance"><option value="tecnico" selected>Solo MVP Técnico</option><option value="ambos">Todas las reglas</option></select></div>
           <div class="inf-field"><label for="est-proceso">Proceso</label><select id="est-proceso"><option value="">Todos</option></select></div>
           <div class="inf-field"><label for="est-de">Data Engineer</label><select id="est-de"><option value="">Todos</option></select></div>
-          <div class="inf-field"><label for="est-ds">Data Scientist</label><select id="est-ds"><option value="">Todos</option></select></div>
           <div class="inf-field"><label for="est-dir">Dirección</label><select id="est-dir"><option value="">Todas</option></select></div>
           <div class="inf-field"><label for="est-buscar">Tabla</label><input id="est-buscar" type="search" placeholder="Buscar tabla…" autocomplete="off"></div>
           <button id="est-refrescar" class="admin-btn" type="button">Actualizar datos</button>
@@ -1142,7 +1151,7 @@
           <div class="inf-kpis" id="est-kpis"></div>
           <div class="inf-grid2">
             <section class="inf-card">
-              <div class="inf-card-head"><div><h2>Distribución del promedio de calidad</h2><p>Número de tablas por rango, últimos 45 días corridos</p></div></div>
+              <div class="inf-card-head"><div><h2>Distribución del promedio de calidad</h2><p>Número de tablas por rango de promedio en la ventana seleccionada</p></div></div>
               <div class="inf-card-body" id="est-dist"></div>
             </section>
             <section class="inf-card">
@@ -1628,6 +1637,7 @@
 
       data.tablas.forEach(t => {
         const esMensual = String(t.per).toLowerCase() === 'mensual';
+        if (f.estadoTabla && (t.es || 'desconocido') !== f.estadoTabla) return;
         if (f.periodicidad === 'mensual' && !esMensual) return;
         if (f.periodicidad === 'diaria' && esMensual) return;
         if (f.de && t.de !== f.de) return;
@@ -1711,7 +1721,6 @@
       resultado.kpis = {
         evaluadas: evaluadas.length,
         estables: evaluadas.filter(x => x.categoria === 'estable').length,
-        recurrentes: evaluadas.filter(x => x.esRecurrente).length,
         cronicas: evaluadas.filter(x => x.categoria === 'cronica').length,
         reabiertas: evaluadas.filter(x => x.reaperturas > 0).length,
         reaperturas: evaluadas.reduce((s, x) => s + x.reaperturas, 0),
@@ -1719,10 +1728,7 @@
         resueltas, incidencias, conFallo: conFallo.length,
         topTreintaN: topTreinta.length,
         concentracion: incidencias ? topTreinta.reduce((s, x) => s + x.fallosVentana, 0) / incidencias : 0,
-        // Tabla con más fallos y responsables de las tablas con fallos recurrentes.
-        topTabla: conFallo.length ? conFallo[0] : null,
-        dataEngineers: new Set(evaluadas.filter(x => x.esRecurrente).map(x => x.t.de)).size,
-        dataScientists: new Set(evaluadas.filter(x => x.esRecurrente).map(x => x.t.ds)).size
+        topTabla: conFallo.length ? conFallo[0] : null
       };
       return resultado;
     }
@@ -1741,7 +1747,7 @@
     let informeData = null;
     let informeCargando = false;
     const informeFiltros = {
-      ventana: 30, alcance: 'tecnico', periodicidad: '', de: '', ds: '', dir: '',
+      ventana: 30, alcance: 'tecnico', estadoTabla: 'productiva', periodicidad: '', de: '', ds: '', dir: '',
       umbral: 3, buscar: '', categoria: '', topN: 10, grupo: 'de'
     };
     const INFORME_ESTADOS = {
@@ -1753,29 +1759,42 @@
     function informePct(valor) { return (valor * 100).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + '%'; }
     function informeDec(valor) { return valor === null ? '—' : valor.toLocaleString('es-ES', { maximumFractionDigits: 1 }); }
 
+    // Un único mensaje de estado para las dos pestañas, que comparten los datos.
+    function informeMensaje(texto, esError) {
+      ['inf-estado', 'est-estado'].forEach(id => {
+        const el = informeEl(id);
+        el.className = 'inf-status' + (esError ? ' error' : '');
+        el.textContent = texto;
+        el.style.display = 'block';
+      });
+    }
+
     function cargarInformeFallos(forzar) {
       if (informeCargando) return;
       informeCargando = true;
-      const estado = informeEl('inf-estado');
-      estado.className = 'inf-status';
-      estado.textContent = '⌛ Calculando el informe…';
-      estado.style.display = 'block';
-      if (!informeData) informeEl('inf-contenido').style.display = 'none';
+      informeMensaje('⌛ Calculando los informes…', false);
+      if (!informeData) { informeEl('inf-contenido').style.display = 'none'; informeEl('est-contenido').style.display = 'none'; }
       informeEl('inf-refrescar').disabled = true;
+      informeEl('est-refrescar').disabled = true;
       callServer('obtenerInformeFallosRecurrentes', !!forzar)
         .then(function(data) {
           informeData = data || { fechas: [], reglas: [], tablas: [] };
           poblarFiltrosInforme();
+          poblarFiltrosEstabilidad();
           renderInforme();
+          renderEstabilidad();
+          if (informeData.tablas.length) {
+            informeEl('est-contenido').style.display = 'block';
+          }
         })
         .catch(function(err) {
-          estado.className = 'inf-status error';
-          estado.textContent = 'No se pudo calcular el informe: ' + mensajeError(err);
+          informeMensaje('No se pudo calcular el informe: ' + mensajeError(err), true);
           showToast('No se pudo calcular el informe: ' + mensajeError(err), 'error');
         })
         .then(function() {
           informeCargando = false;
           informeEl('inf-refrescar').disabled = false;
+          informeEl('est-refrescar').disabled = false;
         });
     }
 
@@ -1803,15 +1822,14 @@
 
     function renderInforme() {
       if (!informeData) return;
-      const estado = informeEl('inf-estado');
       if (!informeData.tablas.length) {
-        estado.className = 'inf-status';
-        estado.textContent = 'La hoja de calidad no tiene ejecuciones para construir el informe.';
-        estado.style.display = 'block';
+        informeMensaje('La hoja de calidad no tiene ejecuciones para construir los informes.', false);
         informeEl('inf-contenido').style.display = 'none';
+        informeEl('est-contenido').style.display = 'none';
         return;
       }
-      estado.style.display = 'none';
+      informeEl('inf-estado').style.display = 'none';
+      informeEl('est-estado').style.display = 'none';
       informeEl('inf-contenido').style.display = 'block';
 
       const calculo = calcularInformeFallos(informeData, informeFiltros);
@@ -1831,15 +1849,12 @@
       const tiles = [
         { cat: '', clase: '', lbl: 'Tablas evaluadas', val: informeNum(k.evaluadas), sub: `Con ejecuciones en los últimos ${v} días` },
         { cat: 'estable', clase: 'ok', lbl: 'Tablas estables', val: informeNum(k.estables), pct: k.evaluadas ? k.estables / k.evaluadas : 0, sub: 'Sin ningún fallo en la ventana' },
-        { cat: 'recurrente', clase: 'err', lbl: 'Fallos recurrentes', val: informeNum(k.recurrentes), pct: k.evaluadas ? k.recurrentes / k.evaluadas : 0, sub: `≥ ${informeFiltros.umbral} días con fallo o racha crónica` },
         { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `${INFORME_RACHA_CRONICA}+ cortes consecutivos fallando` },
         { cat: 'reabierta', clase: 'warn', lbl: 'Reaperturas', val: informeNum(k.reabiertas), sub: `Tablas que vuelven a fallar en ≤ ${INFORME_DIAS_REAPERTURA} días (${informeNum(k.reaperturas)} eventos)` },
         { cat: '', clase: '', lbl: 'Tiempo medio de resolución', val: informeDec(k.mttr), unidad: k.mttr === null ? '' : 'días', sub: `MTTR sobre ${informeNum(k.resueltas)} incidencias cerradas` },
         { cat: '', clase: 'warn', lbl: 'Concentración', val: informePct(k.concentracion), sub: `El 30% de las tablas con fallo (${informeNum(k.topTreintaN)} de ${informeNum(k.conFallo)}) genera ese % de las ${informeNum(k.incidencias)} incidencias` },
         { cat: '', clase: 'err', lbl: 'Tabla con más fallos', val: k.topTabla ? informeNum(k.topTabla.fallosVentana) : '—', unidad: k.topTabla ? 'días' : '',
-          sub: k.topTabla ? `${k.topTabla.t.n} · DE: ${k.topTabla.t.de} · DS: ${k.topTabla.t.ds}` : 'Sin fallos en la ventana' },
-        { cat: '', clase: '', lbl: 'Responsables a cargo', val: informeNum(k.dataEngineers + k.dataScientists),
-          sub: `${informeNum(k.dataEngineers)} Data Engineers y ${informeNum(k.dataScientists)} Data Scientists con tablas recurrentes` }
+          sub: k.topTabla ? `${k.topTabla.t.n} · DE: ${k.topTabla.t.de} · DS: ${k.topTabla.t.ds}` : 'Sin fallos en la ventana' }
       ];
       informeEl('inf-kpis').innerHTML = tiles.map(t => {
         const activo = t.cat && informeFiltros.categoria === t.cat ? ' active' : '';
@@ -1995,6 +2010,7 @@
       leer('inf-ventana', 'ventana', Number);
       leer('inf-alcance', 'alcance');
       leer('inf-periodicidad', 'periodicidad');
+      leer('inf-estadotabla', 'estadoTabla');
       leer('inf-de', 'de'); leer('inf-ds', 'ds'); leer('inf-dir', 'dir');
       leer('inf-umbral', 'umbral', Number);
       leer('inf-topn', 'topN', Number);
@@ -2034,13 +2050,100 @@
     // ==========================================
     // INFORMES DE CALIDAD · estabilidad (antes "Monitoreo de estabilidad")
     // ==========================================
+    const EST_DIAS_BAJO_100 = 4;   // "más de 4 días" con calidad inferior a 100%
+
+    function estIndicesVentana(fechas, referencia, ventana) {
+      const lista = [];
+      for (let i = 0; i < fechas.length; i++) {
+        if (fechas[i] <= referencia && informeDias(fechas[i], referencia) < ventana) lista.push(i);
+      }
+      return lista;
+    }
+
+    // Promedio de calidad de una tabla en un corte: null si no hubo medición.
+    // Los cortes medidos sin entrada en la serie valen 100 (la serie solo guarda los < 100).
+    function estPromedioCorte(t, i, todas) {
+      if (!(t.mt[i] === '1' || (todas && t.mf[i] === '1'))) return null;
+      const entrada = (todas ? t._mapa.aa : t._mapa.at)[i];
+      return entrada === undefined ? 100 : entrada;
+    }
+
+    function calcularEstabilidad(data, f) {
+      const fechas = data.fechas || [];
+      const referencia = f.fecha || fechas[fechas.length - 1] || '';
+      const indices = estIndicesVentana(fechas, referencia, f.ventana);
+      const conjunto = new Set(indices);
+      const todas = f.alcance === 'ambos';
+      const reglaTecnica = {};
+      (data.reglas || []).forEach(r => { reglaTecnica[r.id] = r.modo === 'tecnico'; });
+      const enAlcance = id => todas || reglaTecnica[id] === true;
+      const busqueda = String(f.buscar || '').trim().toLowerCase();
+      const tablas = [];
+
+      (data.tablas || []).forEach(t => {
+        if (f.estadoTabla && (t.es || 'desconocido') !== f.estadoTabla) return;
+        if (f.proceso && (t.pr || []).indexOf(f.proceso) === -1) return;
+        if (f.de && t.de !== f.de) return;
+        if (f.dir && t.dir !== f.dir) return;
+        if (busqueda && t.n.toLowerCase().indexOf(busqueda) === -1) return;
+        if (!t._mapa) {
+          const aMapa = pares => { const m = {}; pares.forEach(p => { m[p[0]] = p[1]; }); return m; };
+          t._mapa = { at: aMapa(t.at), aa: aMapa(t.aa), vt: new Set(t.vt), vf: new Set(t.vf) };
+        }
+
+        let medidos = 0, suma = 0, bajo100 = 0, diasVolumenCero = 0, reglasConFallo = 0;
+        let hayFallo = false, hayDato = false;
+        indices.forEach(i => {
+          const prom = estPromedioCorte(t, i, todas);
+          if (prom !== null) { medidos++; suma += prom; if (prom < 100) bajo100++; }
+          const e = informeEstadoCorte(t, i, todas ? 'ambos' : 'tecnico');
+          if (e !== '0') hayDato = true;
+          if (e === '3') hayFallo = true;
+          if (t._mapa.vt.has(i) || (todas && t._mapa.vf.has(i))) diasVolumenCero++;
+        });
+        t.x.forEach(par => {
+          if (conjunto.has(par[0])) par[1].forEach(m => { if (enAlcance(m.replace('*', ''))) reglasConFallo++; });
+        });
+
+        const promedio = medidos ? parseFloat((suma / medidos).toFixed(2)) : 0;
+        const status = (hayFallo || diasVolumenCero > 0) ? 'err' : (medidos > 0 ? 'ok' : (hayDato ? 'pending' : 'sindatos'));
+        tablas.push({
+          t, promedio, diasConDatos: medidos, diasBajo100: bajo100, diasVolumenCero,
+          fallos: reglasConFallo, incidencias: reglasConFallo + diasVolumenCero, status,
+          estable100: status === 'ok' && promedio === 100,
+          manual: String(t.per).toLowerCase() === 'manual'
+        });
+      });
+      return { referencia, indices, tablas };
+    }
+
+    function kpisEstabilidad(tablas) {
+      const analizadas = tablas.filter(x => x.status !== 'sindatos');
+      const medidas = analizadas.filter(x => x.diasConDatos > 0);
+      const noManuales = analizadas.filter(x => !x.manual);
+      const conVolumenCero = noManuales.filter(x => x.diasVolumenCero > 0).length;
+      const bajo100 = analizadas.filter(x => x.diasBajo100 > EST_DIAS_BAJO_100).length;
+      return {
+        analizadas: analizadas.length,
+        promedio: medidas.length ? medidas.reduce((s, x) => s + x.promedio, 0) / medidas.length : 0,
+        estables: analizadas.filter(x => x.estable100).length,
+        conIncidencias: analizadas.filter(x => x.incidencias > 0).length,
+        evaluadasVolumen: noManuales.length, conVolumenCero,
+        pctVolumenCero: noManuales.length ? conVolumenCero / noManuales.length : 0,
+        bajo100, pctBajo100: analizadas.length ? bajo100 / analizadas.length : 0
+      };
+    }
+
     let informeActivo = 'recurrentes';
-    let estData = null;
-    let estCargando = false;
-    const estFiltros = { fecha: '', proceso: '', de: '', ds: '', dir: '', buscar: '', grupo: 'de' };
-    const EST_ESTADOS = {
-      ok: ['estable', 'Estable'], warn: ['ocasional', 'Advertencias'], err: ['recurrente', 'Con fallos'], pending: ['sindatos', 'Pendiente']
+    const estFiltros = {
+      fecha: '', ventana: 45, estadoTabla: 'productiva', alcance: 'tecnico',
+      proceso: '', de: '', dir: '', buscar: '', grupo: 'de'
     };
+    let estCalculo = null;
+    const estDetalles = {};
+    const EST_ESTADOS_TABLA = { productiva: 'Productiva', 'en desarrollo': 'En desarrollo', desconocido: 'Desconocido' };
+    const EST_CALIDAD = { ok: ['estable', 'Estable'], err: ['recurrente', 'Con fallos'], pending: ['ocasional', 'Pendiente'], sindatos: ['sindatos', 'Sin datos'] };
+    const EST_ESTADO_REGLA = { E: ['estable', 'Exitosa'], A: ['ocasional', 'Advertencia'], C: ['recurrente', 'Crítico'], P: ['sindatos', 'Pendiente'] };
 
     function mostrarInforme(nombre) {
       informeActivo = nombre;
@@ -2050,37 +2153,7 @@
         tab.classList.toggle('active', n === nombre);
         tab.setAttribute('aria-selected', String(n === nombre));
       });
-      if (nombre === 'recurrentes' && !informeData && !informeCargando) cargarInformeFallos(false);
-      if (nombre === 'estabilidad' && !estData && !estCargando) cargarEstabilidad(false);
-    }
-
-    function cargarEstabilidad(forzar) {
-      if (estCargando) return;
-      estCargando = true;
-      const estado = informeEl('est-estado');
-      estado.className = 'inf-status';
-      estado.textContent = '⌛ Analizando estabilidad por tabla y regla…';
-      estado.style.display = 'block';
-      if (!estData) informeEl('est-contenido').style.display = 'none';
-      informeEl('est-refrescar').disabled = true;
-      // Sin fecha elegida se usa la del dashboard o, en su defecto, el último corte disponible.
-      const fecha = estFiltros.fecha || fechaReferenciaEstabilidad || '';
-      callServer('obtenerMonitoreoEstabilidad', fecha, '', !!forzar)
-        .then(function(res) {
-          estData = res || { desde: '', hasta: '', tablas: [] };
-          if (estData.hasta) { estFiltros.fecha = estData.hasta; informeEl('est-fecha').value = estData.hasta; }
-          poblarFiltrosEstabilidad();
-          renderEstabilidad();
-        })
-        .catch(function(err) {
-          estado.className = 'inf-status error';
-          estado.textContent = 'No se pudo calcular la estabilidad: ' + mensajeError(err);
-          showToast('No se pudo cargar estabilidad: ' + mensajeError(err), 'error');
-        })
-        .then(function() {
-          estCargando = false;
-          informeEl('est-refrescar').disabled = false;
-        });
+      if (!informeData && !informeCargando) cargarInformeFallos(false);
     }
 
     function poblarFiltrosEstabilidad() {
@@ -2100,36 +2173,34 @@
         estFiltros[clave] = select.value;
       };
       const unicos = lista => Array.from(new Set(lista)).sort((a, b) => a.localeCompare(b));
-      llenar('est-proceso', 'proceso', unicos(estData.tablas.flatMap(t => t.procesos || [])), PROCESS_LABELS);
-      llenar('est-de', 'de', unicos(estData.tablas.map(t => t.dataEngineer || 'BAU')));
-      llenar('est-ds', 'ds', unicos(estData.tablas.map(t => t.dataScientist || 'BAU')));
-      llenar('est-dir', 'dir', unicos(estData.tablas.map(t => t.direccion || 'Local')));
+      llenar('est-proceso', 'proceso', unicos(informeData.tablas.flatMap(t => t.pr || [])), PROCESS_LABELS);
+      llenar('est-de', 'de', unicos(informeData.tablas.map(t => t.de || 'BAU')));
+      llenar('est-dir', 'dir', unicos(informeData.tablas.map(t => t.dir || 'Local')));
+      const fechas = informeData.fechas;
+      const campoFecha = informeEl('est-fecha');
+      if (fechas.length) {
+        campoFecha.min = fechas[0];
+        campoFecha.max = fechas[fechas.length - 1];
+        if (!estFiltros.fecha || estFiltros.fecha > fechas[fechas.length - 1]) estFiltros.fecha = fechas[fechas.length - 1];
+        campoFecha.value = estFiltros.fecha;
+      }
+      actualizarNotaEstabilidad();
     }
 
-    function incidenciasEstabilidad(t) { return t.errores + t.advertencias + t.diasVolumenCero; }
+    function actualizarNotaEstabilidad() {
+      informeEl('est-nota').textContent = `A partir de este día siempre se toman los últimos ${estFiltros.ventana} días.`;
+    }
 
     function renderEstabilidad() {
-      const estado = informeEl('est-estado');
-      if (!estData || !estData.tablas.length) {
-        estado.className = 'inf-status';
-        estado.textContent = 'No hay ejecuciones de calidad en el período para calcular la estabilidad.';
-        estado.style.display = 'block';
-        informeEl('est-contenido').style.display = 'none';
-        return;
-      }
-      estado.style.display = 'none';
-      informeEl('est-contenido').style.display = 'block';
-      const busqueda = estFiltros.buscar.trim().toLowerCase();
-      const tablas = estData.tablas.filter(t => {
-        if (estFiltros.proceso && (t.procesos || []).indexOf(estFiltros.proceso) === -1) return false;
-        if (estFiltros.de && (t.dataEngineer || 'BAU') !== estFiltros.de) return false;
-        if (estFiltros.ds && (t.dataScientist || 'BAU') !== estFiltros.ds) return false;
-        if (estFiltros.dir && (t.direccion || 'Local') !== estFiltros.dir) return false;
-        return !busqueda || t.nombre.toLowerCase().indexOf(busqueda) > -1;
-      }).sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.promedio - b.promedio ||
-        incidenciasEstabilidad(b) - incidenciasEstabilidad(a) || a.nombre.localeCompare(b.nombre));
-
-      informeEl('est-meta').textContent = `${estData.desde} → ${estData.hasta} · 45 días corridos · ${informeNum(estData.tablas.length)} tablas`;
+      if (!informeData || !informeData.tablas.length) return;
+      estCalculo = calcularEstabilidad(informeData, estFiltros);
+      const tablas = estCalculo.tablas.slice().sort((a, b) =>
+        (a.status === 'err' ? 0 : a.status === 'pending' ? 1 : a.status === 'ok' ? 2 : 3) - (b.status === 'err' ? 0 : b.status === 'pending' ? 1 : b.status === 'ok' ? 2 : 3) ||
+        a.promedio - b.promedio || b.incidencias - a.incidencias || a.t.n.localeCompare(b.t.n));
+      const inicio = new Date(estCalculo.referencia + 'T00:00:00Z');
+      inicio.setUTCDate(inicio.getUTCDate() - (estFiltros.ventana - 1));
+      const desde = inicio.toISOString().slice(0, 10);
+      informeEl('est-meta').textContent = `${desde} → ${estCalculo.referencia} · ${estFiltros.ventana} días · ${informeNum(tablas.length)} tablas`;
       renderEstKpis(tablas);
       renderEstDistribucion(tablas);
       renderEstOwners(tablas);
@@ -2137,20 +2208,14 @@
     }
 
     function renderEstKpis(tablas) {
-      const medidas = tablas.filter(t => t.diasConDatos > 0);
-      const promedio = medidas.length ? medidas.reduce((s, t) => s + t.promedio, 0) / medidas.length : 0;
-      const estables = tablas.filter(t => t.status === 'ok' && t.promedio === 100).length;
-      const conIncidencias = tablas.filter(t => incidenciasEstabilidad(t) > 0).length;
-      const volumenCero = tablas.reduce((s, t) => s + t.diasVolumenCero, 0);
-      const peor = medidas.slice().sort((a, b) => a.promedio - b.promedio || incidenciasEstabilidad(b) - incidenciasEstabilidad(a))[0];
+      const k = kpisEstabilidad(tablas);
       const tiles = [
-        { clase: '', lbl: 'Tablas analizadas', val: informeNum(tablas.length), sub: 'Con los filtros actuales' },
-        { clase: promedio >= 95 ? 'ok' : (promedio >= 80 ? 'warn' : 'err'), lbl: 'Promedio de calidad', val: promedio.toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%', sub: 'Promedio de los promedios diarios de cada tabla' },
-        { clase: 'ok', lbl: 'Estables al 100%', val: informeNum(estables), pct: tablas.length ? estables / tablas.length : 0, sub: 'Calidad perfecta y sin incidencias' },
-        { clase: 'err', lbl: 'Con incidencias', val: informeNum(conIncidencias), pct: tablas.length ? conIncidencias / tablas.length : 0, sub: 'Fallos, advertencias o volumen 0' },
-        { clase: 'warn', lbl: 'Días con volumen 0', val: informeNum(volumenCero), sub: 'Tabla-días sin registros cargados' },
-        { clase: peor && peor.promedio < 100 ? 'err' : '', lbl: 'Tabla menos estable', val: peor ? peor.promedio.toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%' : '—',
-          sub: peor ? `${peor.nombre} · DE: ${peor.dataEngineer || 'BAU'} · DS: ${peor.dataScientist || 'BAU'}` : 'Sin mediciones' }
+        { clase: '', lbl: 'Tablas analizadas', val: informeNum(k.analizadas), sub: `Con ejecuciones en los últimos ${estFiltros.ventana} días` },
+        { clase: k.promedio >= 95 ? 'ok' : (k.promedio >= 80 ? 'warn' : 'err'), lbl: 'Promedio de calidad', val: k.promedio.toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%', sub: 'Promedio de los promedios diarios de cada tabla' },
+        { clase: 'ok', lbl: 'Estables al 100%', val: informeNum(k.estables), pct: k.analizadas ? k.estables / k.analizadas : 0, sub: 'Calidad perfecta y sin incidencias' },
+        { clase: 'err', lbl: 'Con incidencias', val: informeNum(k.conIncidencias), pct: k.analizadas ? k.conIncidencias / k.analizadas : 0, sub: 'Fallos de reglas o volumen 0' },
+        { clase: 'warn', lbl: 'Tablas con volumen 0', val: informePct(k.pctVolumenCero), sub: `${informeNum(k.conVolumenCero)} de ${informeNum(k.evaluadasVolumen)} tablas con algún día sin registros (no cuenta las tablas manuales)` },
+        { clase: 'err', lbl: `Calidad < 100% por más de ${EST_DIAS_BAJO_100} días`, val: informePct(k.pctBajo100), sub: `${informeNum(k.bajo100)} de ${informeNum(k.analizadas)} tablas en el rango seleccionado` }
       ];
       informeEl('est-kpis').innerHTML = tiles.map(t => `<div class="inf-kpi ${t.clase}"><div class="inf-kpi-lbl">${escapeHtml(t.lbl)}</div>
         <div class="inf-kpi-val">${escapeHtml(t.val)}${t.pct !== undefined ? `<small>${informePct(t.pct)}</small>` : ''}</div>
@@ -2158,12 +2223,13 @@
     }
 
     function renderEstDistribucion(tablas) {
+      const medidas = tablas.filter(x => x.diasConDatos > 0);
       const cubos = [
-        { lbl: '100%', n: tablas.filter(t => t.diasConDatos > 0 && t.promedio >= 100).length },
-        { lbl: '95% a menos de 100%', n: tablas.filter(t => t.diasConDatos > 0 && t.promedio >= 95 && t.promedio < 100).length },
-        { lbl: '80% a menos de 95%', n: tablas.filter(t => t.diasConDatos > 0 && t.promedio >= 80 && t.promedio < 95).length },
-        { lbl: 'Menos de 80%', n: tablas.filter(t => t.diasConDatos > 0 && t.promedio < 80).length },
-        { lbl: 'Sin mediciones', n: tablas.filter(t => t.diasConDatos === 0).length }
+        { lbl: '100%', n: medidas.filter(x => x.promedio >= 100).length },
+        { lbl: '95% a menos de 100%', n: medidas.filter(x => x.promedio >= 95 && x.promedio < 100).length },
+        { lbl: '80% a menos de 95%', n: medidas.filter(x => x.promedio >= 80 && x.promedio < 95).length },
+        { lbl: 'Menos de 80%', n: medidas.filter(x => x.promedio < 80).length },
+        { lbl: 'Sin mediciones', n: tablas.filter(x => x.diasConDatos === 0).length }
       ];
       const max = Math.max.apply(null, cubos.map(c => c.n).concat([1]));
       informeEl('est-dist').innerHTML = '<div class="inf-bars">' + cubos.map(c => `<div class="inf-bar-row"><span>${escapeHtml(c.lbl)}</span>
@@ -2171,105 +2237,112 @@
     }
 
     function renderEstOwners(tablas) {
-      const campo = { de: 'dataEngineer', ds: 'dataScientist', dir: 'direccion' }[estFiltros.grupo];
+      const campo = { de: 'de', ds: 'ds', dir: 'dir' }[estFiltros.grupo];
       const grupos = {};
-      tablas.forEach(t => {
-        const clave = t[campo] || 'Sin asignar';
+      tablas.forEach(x => {
+        const clave = x.t[campo] || 'Sin asignar';
         const g = grupos[clave] || (grupos[clave] = { owner: clave, tablas: 0, suma: 0, medidas: 0, estables: 0, incidencias: 0, peor: null });
         g.tablas++;
-        if (t.diasConDatos > 0) { g.suma += t.promedio; g.medidas++; if (!g.peor || t.promedio < g.peor.promedio) g.peor = t; }
-        if (t.status === 'ok' && t.promedio === 100) g.estables++;
-        g.incidencias += incidenciasEstabilidad(t);
+        if (x.diasConDatos > 0) { g.suma += x.promedio; g.medidas++; if (!g.peor || x.promedio < g.peor.promedio) g.peor = x; }
+        if (x.estable100) g.estables++;
+        g.incidencias += x.incidencias;
       });
-      const filas = Object.keys(grupos).map(k => grupos[k])
-        .sort((a, b) => b.incidencias - a.incidencias || a.owner.localeCompare(b.owner));
+      const filas = Object.keys(grupos).map(k => grupos[k]).sort((a, b) => b.incidencias - a.incidencias || a.owner.localeCompare(b.owner));
       informeEl('est-owners').innerHTML = !filas.length ? '<div class="inf-empty">Sin datos para agrupar.</div>' :
         `<table class="inf-table"><thead><tr><th>Responsable</th><th class="num">Tablas</th><th class="num">Promedio</th><th class="num">Estables</th><th class="num">Incidencias</th><th>Tabla menos estable</th></tr></thead><tbody>` +
         filas.map(g => `<tr><td><strong>${escapeHtml(g.owner)}</strong></td><td class="num">${informeNum(g.tablas)}</td>
           <td class="num">${g.medidas ? (g.suma / g.medidas).toLocaleString('es-ES', { maximumFractionDigits: 2 }) + '%' : '—'}</td>
           <td class="num">${informeNum(g.estables)}</td><td class="num"><strong>${informeNum(g.incidencias)}</strong></td>
-          <td>${g.peor ? escapeHtml(`${g.peor.nombre} (${g.peor.promedio}%)`) : '—'}</td></tr>`).join('') + '</tbody></table>';
+          <td>${g.peor ? escapeHtml(`${g.peor.t.n} (${g.peor.promedio}%)`) : '—'}</td></tr>`).join('') + '</tbody></table>';
     }
 
     function renderEstTabla(tablas) {
       const contenedor = informeEl('est-tabla');
       if (!tablas.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas para los filtros seleccionados.</div>'; return; }
-      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>Tabla</th><th>Estado</th><th class="num">Promedio</th><th class="num">Días con datos</th>
-        <th class="num">Incidencias</th><th class="num">Días vol. 0</th><th>Proceso</th><th>Data Engineer</th><th>Data Scientist</th><th>Dirección</th></tr></thead><tbody>` +
-        tablas.map(t => {
-          const [claseEstado, etiqueta] = EST_ESTADOS[t.status] || EST_ESTADOS.pending;
-          const qClase = t.status === 'ok' ? 'q-ok' : (t.status === 'warn' ? 'q-warn' : (t.status === 'pending' ? 'q-pending' : 'q-err'));
-          const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
-          return `<tr class="inf-clic" data-tabla="${escapeHtml(t.nombre)}" title="Abrir el detalle por regla y por día">
-            <td><strong>${escapeHtml(t.nombre)}</strong></td><td><span class="inf-badge ${claseEstado}">${etiqueta}</span></td>
-            <td class="num"><span class="quality-val ${qClase}">${t.promedio}%</span></td><td class="num">${informeNum(t.diasConDatos)}</td>
-            <td class="num">${informeNum(incidenciasEstabilidad(t))}</td><td class="num">${informeNum(t.diasVolumenCero)}</td>
-            <td>${escapeHtml(procesos)}</td><td>${escapeHtml(t.dataEngineer || 'BAU')}</td><td>${escapeHtml(t.dataScientist || 'BAU')}</td><td>${escapeHtml(t.direccion || 'Local')}</td></tr>`;
+      contenedor.innerHTML = `<table class="inf-table"><thead><tr><th>Tabla</th><th>Estado de la tabla</th><th>Calidad</th><th class="num">Promedio</th><th class="num">Días con datos</th>
+        <th class="num">Días &lt; 100%</th><th class="num">Incidencias</th><th class="num">Días vol. 0</th><th>Proceso</th><th>Data Engineer</th><th>Data Scientist</th><th>Dirección</th></tr></thead><tbody>` +
+        tablas.map(x => {
+          const [claseCalidad, etiqueta] = EST_CALIDAD[x.status];
+          const qClase = x.status === 'ok' ? 'q-ok' : (x.status === 'pending' || x.status === 'sindatos' ? 'q-pending' : 'q-err');
+          const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+          return `<tr class="inf-clic" data-tabla="${escapeHtml(x.t.n)}" title="Abrir el detalle por regla y por día">
+            <td><strong>${escapeHtml(x.t.n)}</strong></td><td>${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)}</td>
+            <td><span class="inf-badge ${claseCalidad}">${etiqueta}</span></td>
+            <td class="num"><span class="quality-val ${qClase}">${x.promedio}%</span></td><td class="num">${informeNum(x.diasConDatos)}</td>
+            <td class="num">${informeNum(x.diasBajo100)}</td><td class="num">${informeNum(x.incidencias)}</td><td class="num">${informeNum(x.diasVolumenCero)}</td>
+            <td>${escapeHtml(procesos)}</td><td>${escapeHtml(x.t.de)}</td><td>${escapeHtml(x.t.ds)}</td><td>${escapeHtml(x.t.dir)}</td></tr>`;
         }).join('') + '</tbody></table>';
     }
 
-    // Detalle por regla y por día de una tabla (se calcula bajo demanda).
+    // Detalle por día y regla de una tabla: viene de la caché del servidor (sin releer la hoja)
+    // y se guarda en memoria para reabrirlo al instante.
     function abrirDetalleEstabilidad(nombre) {
-      const t = estData && estData.tablas.find(x => x.nombre === nombre);
-      if (!t) return;
+      const x = estCalculo && estCalculo.tablas.find(f => f.t.n === nombre);
+      if (!x) return;
       document.getElementById('modal-content').classList.add('stability-modal');
       document.getElementById('modal-header').style.borderBottom = '3px solid var(--bbva-naranja)';
-      document.getElementById('modal-title').textContent = t.nombre;
+      document.getElementById('modal-title').textContent = nombre;
+      document.getElementById('modal-sub').textContent = `${estFiltros.alcance === 'ambos' ? 'Todas las reglas' : 'MVP Técnico'} · ${estFiltros.ventana} días hasta ${estCalculo.referencia}`;
+      document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle…</div>';
       document.getElementById('modal-overlay').classList.add('open');
-      if (!t.detalleIncluido) {
-        document.getElementById('modal-sub').textContent = 'Cargando estabilidad y desglose de reglas…';
-        document.getElementById('modal-body').innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);">⌛ Cargando detalle de estabilidad…</div>';
-        callServer('obtenerMonitoreoEstabilidad', estData.hasta, t.nombre)
-          .then(function(res) {
-            if (res && res.tablas && res.tablas.length > 0) {
-              Object.assign(t, res.tablas[0]);
-              t.detalleIncluido = true;
-              abrirDetalleEstabilidad(nombre);
-            } else {
-              document.getElementById('modal-body').innerHTML = '<div class="alert-card warn"><div><strong>Sin detalle</strong>No se encontraron datos para esta tabla en el período.</div></div>';
-            }
-          })
-          .catch(function(err) {
-            document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>Error cargando el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
-          });
-        return;
+      if (!estDetalles[nombre]) {
+        estDetalles[nombre] = callServer('obtenerDetalleEstabilidadTabla', nombre);
+        estDetalles[nombre].catch(function() { delete estDetalles[nombre]; });
       }
-      document.getElementById('modal-sub').textContent = `Estabilidad ${estData.desde} → ${estData.hasta} · ${t.dataEngineer} · ${t.dataScientist || 'BAU'} · ${t.direccion}`;
-      const procesos = (t.procesos || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
-      const reglasRows = t.reglas.length ? t.reglas.map(r => {
-        const clase = r.pendientes > 0 && r.ejecuciones === 0 ? 'q-pending' : (r.fallos > 0 || r.promedio < 100 ? 'q-err' : 'q-ok');
-        return `<tr><td>${escapeHtml(r.id)}</td><td>${escapeHtml(r.nombre)}</td><td><span class="quality-val ${clase}">${r.promedio}%</span></td><td>${r.ejecuciones}</td><td>${r.fallos}</td></tr>`;
-      }).join('') : '<tr><td colspan="5">Sin reglas disponibles.</td></tr>';
-      const diasRows = t.serieDiaria.slice().reverse().map(d => `<tr><td>${escapeHtml(d.fecha)}</td><td><strong>${d.promedio}%</strong></td></tr>`).join('');
+      estDetalles[nombre].then(function(detalle) { pintarDetalleEstabilidad(x, detalle); })
+        .catch(function(err) {
+          document.getElementById('modal-body').innerHTML = `<div class="alert-card err"><div><strong>Error cargando el detalle</strong>${escapeHtml(mensajeError(err))}</div></div>`;
+        });
+    }
+
+    function pintarDetalleEstabilidad(x, detalle) {
+      const todas = estFiltros.alcance === 'ambos';
+      const fechas = informeData.fechas;
+      const posicion = {};
+      fechas.forEach((f, i) => { posicion[f] = i; });
+      const ventana = new Set(estCalculo.indices.map(i => fechas[i]));
+      const reglas = {};
+      informeData.reglas.forEach(r => { reglas[r.id] = r; });
+      const filas = (detalle.filas || []).filter(f => ventana.has(f[0]) && (todas || (reglas[f[1]] || {}).modo === 'tecnico'))
+        .sort((a, b) => b[0].localeCompare(a[0]) || a[1].localeCompare(b[1], 'es', { numeric: true }));
+      const diasVol0 = estCalculo.indices.filter(i => x.t._mapa.vt.has(i) || (todas && x.t._mapa.vf.has(i))).map(i => fechas[i]);
+      const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
+      const cuerpo = filas.length ? filas.map(f => {
+        const prom = estPromedioCorte(x.t, posicion[f[0]], todas);
+        const [clase, etiqueta] = EST_ESTADO_REGLA[f[3]] || EST_ESTADO_REGLA.C;
+        return `<tr><td>${escapeHtml(f[0])}</td><td><strong>${prom === null ? '—' : prom + '%'}</strong></td><td>${escapeHtml(f[1])}</td>
+          <td>${escapeHtml((reglas[f[1]] || {}).nombre || '')}</td><td>${f[2] === null ? '—' : f[2] + '%'}</td><td><span class="inf-badge ${clase}">${etiqueta}</span></td></tr>`;
+      }).join('') : '<tr><td colspan="6">Sin reglas en el período seleccionado.</td></tr>';
       document.getElementById('modal-body').innerHTML = `
         <div class="modal-kpi-row">
-          <div class="mkpi"><div class="mkpi-val">${t.promedio}%</div><div class="mkpi-lbl">Promedio 45 días</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.diasConDatos}</div><div class="mkpi-lbl">Días con datos</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.errores + t.advertencias}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
-          <div class="mkpi"><div class="mkpi-val">${t.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.promedio}%</div><div class="mkpi-lbl">Promedio ${estFiltros.ventana} días</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.diasConDatos}</div><div class="mkpi-lbl">Días con datos</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.fallos}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
+          <div class="mkpi"><div class="mkpi-val">${x.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
         </div>
-        <div style="font-size:13px;color:var(--gray-600);"><strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(t.dataEngineer)} &nbsp;·&nbsp; <strong>Data Scientist:</strong> ${escapeHtml(t.dataScientist || 'BAU')} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(t.direccion)}</div>
-        <div class="stability-detail-grid">
-          <div><div class="section-sub">Desglose por regla</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>ID</th><th>Regla</th><th>Promedio</th><th>Ejecuciones</th><th>Fallos</th></tr></thead><tbody>${reglasRows}</tbody></table></div></div>
-          <div><div class="section-sub">Promedio diario</div><div class="stability-table-wrap"><table class="stability-table"><thead><tr><th>Fecha</th><th>Calidad</th></tr></thead><tbody>${diasRows}</tbody></table></div></div>
-        </div>`;
+        <div style="font-size:13px;color:var(--gray-600);"><strong>Estado:</strong> ${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)} &nbsp;·&nbsp; <strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(x.t.de)} &nbsp;·&nbsp; <strong>Data Scientist:</strong> ${escapeHtml(x.t.ds)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(x.t.dir)}${diasVol0.length ? ` &nbsp;·&nbsp; <strong>Volumen 0:</strong> ${escapeHtml(diasVol0.join(', '))}` : ''}</div>
+        <div class="stability-table-wrap" style="max-height:440px;"><table class="stability-table"><thead><tr><th>Fecha</th><th>Promedio diario</th><th>Regla #</th><th>Regla</th><th>% de la regla</th><th>Estado</th></tr></thead><tbody>${cuerpo}</tbody></table></div>`;
     }
 
     function inicializarEstabilidad() {
-      const leer = (id, clave) => informeEl(id).addEventListener('change', e => { estFiltros[clave] = e.target.value; renderEstabilidad(); });
-      leer('est-proceso', 'proceso'); leer('est-de', 'de'); leer('est-ds', 'ds'); leer('est-dir', 'dir'); leer('est-grupo', 'grupo');
+      const leer = (id, clave, convertir) => informeEl(id).addEventListener('change', e => {
+        estFiltros[clave] = convertir ? convertir(e.target.value) : e.target.value;
+        if (clave === 'ventana') actualizarNotaEstabilidad();
+        renderEstabilidad();
+      });
+      leer('est-ventana', 'ventana', Number); leer('est-estadotabla', 'estadoTabla'); leer('est-alcance', 'alcance');
+      leer('est-proceso', 'proceso'); leer('est-de', 'de'); leer('est-dir', 'dir'); leer('est-grupo', 'grupo');
       let temporizador = null;
       informeEl('est-buscar').addEventListener('input', e => {
         window.clearTimeout(temporizador);
         temporizador = window.setTimeout(() => { estFiltros.buscar = e.target.value; renderEstabilidad(); }, 200);
       });
-      // Cambiar la fecha de referencia recalcula los 45 días en el servidor.
       informeEl('est-fecha').addEventListener('change', e => {
-        estFiltros.fecha = e.target.value;
-        estData = null;
-        cargarEstabilidad(false);
+        const ultimo = informeData && informeData.fechas.length ? informeData.fechas[informeData.fechas.length - 1] : '';
+        estFiltros.fecha = e.target.value || ultimo;
+        renderEstabilidad();
       });
-      informeEl('est-refrescar').addEventListener('click', () => cargarEstabilidad(true));
+      informeEl('est-refrescar').addEventListener('click', () => { Object.keys(estDetalles).forEach(k => delete estDetalles[k]); cargarInformeFallos(true); });
       informeEl('est-tabla').addEventListener('click', e => {
         const fila = e.target.closest('[data-tabla]');
         if (fila) abrirDetalleEstabilidad(fila.getAttribute('data-tabla'));

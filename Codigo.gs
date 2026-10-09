@@ -1204,10 +1204,11 @@ function precalentarHistoricoCalidad() {
   var config = obtenerConfiguracion_();
   var cache = CacheService.getScriptCache();
   try {
-    if (parseInt(cache.get(claveIndiceHistorico_(config, 'meta')), 10)) return { estado: 'listo' };
+    if (parseInt(cache.get(claveIndiceHistorico_(config, 'meta')), 10) &&
+        parseInt(cache.get(claveInformeBase_(config) + '_n'), 10)) return { estado: 'listo' };
   } catch (e) {}
-  var resultado = reconstruirIndiceHistoricoCalidad_(config, cache, '', '');
-  return { estado: 'calculado', tablas: Object.keys(resultado.indice).length };
+  var base = reconstruirBaseInformes_(config, cache);
+  return { estado: 'calculado', tablas: base.informe.tablas.length };
 }
 
 // Devuelve reglas e histórico de una tabla y fecha. Si ambos están en caché no
@@ -1569,199 +1570,6 @@ function obtenerHistoricoCalidad(nombreTabla) {
 }
 
 // ==========================================
-// MÓDULO 2C: MONITOREO DE ESTABILIDAD (45 días corridos)
-// ==========================================
-
-function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle, forzar) {
-  var config = obtenerConfiguracion_();
-  var cache = CacheService.getScriptCache();
-  var fechaHastaSolicitada = formatearFechaSQL(fechaReferencia);
-  var nombreObjetivo = (nombreTablaDetalle || '').toString().trim().replace(/\\/g, '').toLowerCase();
-  var cacheKey = fechaHastaSolicitada
-    ? claveCache_('estabilidad_45_v8', [config.calidadSheetId, fechaHastaSolicitada]) : '';
-
-  // El resumen puede salir de caché sin volver a leer la hoja. Los detalles de
-  // tabla se calculan bajo demanda y no comparten esta respuesta resumida.
-  if (cacheKey && !nombreObjetivo && !forzar) {
-    try {
-      var hit = cache.get(cacheKey);
-      if (hit) return JSON.parse(hit);
-    } catch (eCache) {}
-  }
-
-  var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
-  var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
-  var datos = leerDatosCalidad_(hoja);
-  if (datos.length < 2) return { desde: '', hasta: '', tablas: [] };
-
-  var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
-  var idx = {
-    fecha:      headers.indexOf('gf_cutoff_date'),
-    tabla:      headers.indexOf('tabla_auditada'),
-    calidadPct: headers.indexOf('gf_quality_rule_compliance_per'),
-    estado:     headers.indexOf('estado_error'),
-    regla:      headers.indexOf('nombre_regla'),
-    volumen:    headers.indexOf('gf_qr_cplc_denominator_number'),
-    idRegla:    buscarIndiceIdReglaCalidad_(headers)
-  };
-  validarCabeceras_(idx, {
-    fecha: 'gf_cutoff_date',
-    tabla: 'tabla_auditada',
-    calidadPct: 'gf_quality_rule_compliance_per',
-    estado: 'estado_error',
-    regla: 'nombre_regla',
-    volumen: 'gf_qr_cplc_denominator_number'
-  }, 'la hoja calidad');
-
-  // Compatibilidad: si no se recibe fecha desde la interfaz, usar el último
-  // corte disponible. Normalmente la referencia será la fecha única elegida o
-  // la fecha final del rango seleccionado por el usuario.
-  if (!fechaHastaSolicitada) {
-    for (var i = 1; i < datos.length; i++) {
-      var fechaFila = formatearFechaSQL(datos[i][idx.fecha]);
-      if (fechaFila && fechaFila > fechaHastaSolicitada) fechaHastaSolicitada = fechaFila;
-    }
-  }
-  if (!fechaHastaSolicitada) return { desde: '', hasta: '', tablas: [] };
-
-  cacheKey = claveCache_('estabilidad_45_v8', [config.calidadSheetId, fechaHastaSolicitada]);
-
-  var partesFecha = fechaHastaSolicitada.split('-');
-  var fechaDesdeObj = new Date(Number(partesFecha[0]), Number(partesFecha[1]) - 1, Number(partesFecha[2]));
-  fechaDesdeObj.setDate(fechaDesdeObj.getDate() - 44);
-  var fechaDesde = formatearFechaSQL(fechaDesdeObj);
-  var govData = obtenerEstadosYListaTablas();
-  var grupos = {};
-
-  for (var f = 1; f < datos.length; f++) {
-    var fila = datos[f];
-    var fecha = formatearFechaSQL(fila[idx.fecha]);
-    if (!fecha || fecha < fechaDesde || fecha > fechaHastaSolicitada) continue;
-
-    var nombreTabla = fila[idx.tabla] ? fila[idx.tabla].toString().trim().replace(/\\/g, '') : '';
-    if (!nombreTabla) continue;
-    var claveTabla = nombreTabla.toLowerCase();
-    if (nombreObjetivo && claveTabla !== nombreObjetivo) continue;
-
-    if (!grupos[claveTabla]) {
-      var procesosTabla = govData.mapeoProcesos[claveTabla] || {};
-      var procesosActivos = [];
-      for (var proceso in procesosTabla) {
-        if (procesosTabla[proceso] === true) procesosActivos.push(proceso);
-      }
-      grupos[claveTabla] = {
-        nombre: nombreTabla,
-        dataEngineer: govData.mapeoDE[claveTabla] || 'BAU',
-        dataScientist: govData.mapeoDS[claveTabla] || 'BAU',
-        direccion: govData.mapeoDir[claveTabla] || 'Local',
-        procesos: procesosActivos,
-        fechas: {},
-        reglas: {},
-        errores: 0,
-        advertencias: 0,
-        pendientes: 0,
-        fechasVolumenCero: {}
-      };
-    }
-
-    var grupo = grupos[claveTabla];
-    var estado = fila[idx.estado] ? fila[idx.estado].toString().trim().toUpperCase() : '';
-    var esPendiente = estado === 'PENDIENTE';
-    var calidad = parseFloat(fila[idx.calidadPct]);
-    if (!isNaN(calidad) && !esPendiente) {
-      if (!grupo.fechas[fecha]) grupo.fechas[fecha] = { suma: 0, conteo: 0 };
-      grupo.fechas[fecha].suma += calidad;
-      grupo.fechas[fecha].conteo++;
-    }
-
-    var nombreRegla = fila[idx.regla] ? fila[idx.regla].toString().trim() : 'Regla Desconocida';
-    var idRegla = idx.idRegla > -1 ? normalizarIdReglaCalidad_(fila[idx.idRegla]) : '';
-    if (!idRegla) continue;
-    var claveRegla = idRegla + '||' + nombreRegla;
-    if (!grupo.reglas[claveRegla]) {
-      grupo.reglas[claveRegla] = { id: idRegla, nombre: nombreRegla, suma: 0, conteo: 0, fallos: 0, pendientes: 0 };
-    }
-    if (!isNaN(calidad) && !esPendiente) {
-      grupo.reglas[claveRegla].suma += calidad;
-      grupo.reglas[claveRegla].conteo++;
-    }
-
-    if (estado && estado !== 'EXITOSA') {
-      if (estado === 'PENDIENTE') {
-        grupo.reglas[claveRegla].pendientes++;
-        grupo.pendientes++;
-      }
-      else if (estado === 'ADVERTENCIA') {
-        grupo.reglas[claveRegla].fallos++;
-        grupo.advertencias++;
-      }
-      else {
-        grupo.reglas[claveRegla].fallos++;
-        grupo.errores++;
-      }
-    }
-
-    var volumen = parseInt(fila[idx.volumen], 10);
-    if (!esPendiente && !isNaN(volumen) && volumen === 0) grupo.fechasVolumenCero[fecha] = true;
-  }
-
-  var resultadoTablas = [];
-  for (var clave in grupos) {
-    var g = grupos[clave];
-    var serieDiaria = [];
-    var sumaPromediosDiarios = 0;
-    Object.keys(g.fechas).sort().forEach(function(fecha) {
-      var dia = g.fechas[fecha];
-      var promedioDia = parseFloat((dia.suma / dia.conteo).toFixed(2));
-      serieDiaria.push({ fecha: fecha, promedio: promedioDia });
-      sumaPromediosDiarios += promedioDia;
-    });
-    var promedioTabla = serieDiaria.length > 0
-      ? parseFloat((sumaPromediosDiarios / serieDiaria.length).toFixed(2)) : 0;
-
-    var reglas = [];
-    for (var claveR in g.reglas) {
-      var regla = g.reglas[claveR];
-      reglas.push({
-        id: regla.id,
-        nombre: regla.nombre,
-        promedio: regla.conteo > 0 ? parseFloat((regla.suma / regla.conteo).toFixed(2)) : 0,
-        ejecuciones: regla.conteo,
-        fallos: regla.fallos,
-        pendientes: regla.pendientes
-      });
-    }
-    reglas.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
-
-    var diasVolumenCero = Object.keys(g.fechasVolumenCero).length;
-    resultadoTablas.push({
-      nombre: g.nombre,
-      dataEngineer: g.dataEngineer,
-      dataScientist: g.dataScientist,
-      direccion: g.direccion,
-      procesos: g.procesos,
-      promedio: promedioTabla,
-      diasConDatos: serieDiaria.length,
-      errores: g.errores,
-      advertencias: g.advertencias,
-      pendientes: g.pendientes,
-      diasVolumenCero: diasVolumenCero,
-      status: (g.errores > 0 || diasVolumenCero > 0) ? 'err' : (g.advertencias > 0 ? 'warn' : (g.pendientes > 0 ? 'pending' : 'ok')),
-      serieDiaria: nombreObjetivo ? serieDiaria : [],
-      reglas: nombreObjetivo ? reglas : [],
-      detalleIncluido: !!nombreObjetivo
-    });
-  }
-  resultadoTablas.sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
-
-  var resultado = { desde: fechaDesde, hasta: fechaHastaSolicitada, tablas: resultadoTablas };
-  if (!nombreObjetivo) {
-    try { cache.put(cacheKey, JSON.stringify(resultado), config.cacheCalidadSegundos); } catch (ePut) {}
-  }
-  return resultado;
-}
-
-// ==========================================
 // MÓDULO 3: INFORMES DE CALIDAD
 // ==========================================
 // El informe de fallos recurrentes se alimenta del histórico de ejecuciones de
@@ -1823,24 +1631,73 @@ function leerCacheFragmentado_(cache, clave) {
   }
 }
 
+// Reparte un objeto {clave: valor} en fragmentos de caché pequeños: leer una
+// clave cuesta una sola lectura de caché, sin tocar Sheets.
+function guardarFragmentos_(cache, prefijo, objeto, segundos, metaExtra) {
+  var claves = Object.keys(objeto);
+  var fragmentos = Math.max(1, Math.ceil(JSON.stringify(objeto).length / HISTORICO_FRAGMENTO_OBJETIVO));
+  for (var intento = 0; intento < 5; intento++) {
+    var partes = [];
+    for (var n = 0; n < fragmentos; n++) partes.push({});
+    claves.forEach(function(clave) { partes[hashTablaCalidad_(clave) % fragmentos][clave] = objeto[clave]; });
+    var textos = partes.map(function(parte) { return JSON.stringify(parte); });
+    var maximo = textos.reduce(function(m, t) { return Math.max(m, t.length); }, 0);
+    if (maximo > HISTORICO_FRAGMENTO_MAXIMO) { fragmentos *= 2; continue; }
+    var valores = {};
+    textos.forEach(function(texto, i) { valores[prefijo + '_s' + i] = texto; });
+    var nombres = Object.keys(valores);
+    try {
+      for (var desde = 0; desde < nombres.length; desde += 50) {
+        var lote = {};
+        nombres.slice(desde, desde + 50).forEach(function(nombre) { lote[nombre] = valores[nombre]; });
+        cache.putAll(lote, segundos);
+      }
+      var meta = metaExtra || {};
+      meta.n = fragmentos;
+      cache.put(prefijo + '_meta', JSON.stringify(meta), segundos);   // al final: su presencia implica los fragmentos
+    } catch (e) {
+      console.warn('No se pudo guardar ' + prefijo + ': ' + e.message);
+    }
+    return;
+  }
+}
+
+function leerFragmento_(cache, prefijo, clave) {
+  try {
+    var meta = JSON.parse(cache.get(prefijo + '_meta') || 'null');
+    if (!meta || !meta.n) return null;
+    var texto = cache.get(prefijo + '_s' + (hashTablaCalidad_(clave) % meta.n));
+    if (!texto) return null;
+    return { meta: meta, valor: JSON.parse(texto)[clave] || null };
+  } catch (e) {
+    return null;
+  }
+}
+
+var PRIORIDAD_ESTADO_DETALLE = { E: 1, P: 2, A: 3, C: 4 };
+var LETRAS_ESTADO_DETALLE = ['', 'E', 'P', 'A', 'C'];
+
 // Calcula el informe a partir de las filas ya leídas. Es una función pura (no
 // toca servicios de Google) para poder probarla con datos sintéticos.
+// Devuelve además `detalle` (reglas por tabla y corte), que no viaja al navegador.
 function construirInformeFallos_(datos, gobierno) {
-  if (!datos || datos.length < 2) return { fechas: [], reglas: [], tablas: [] };
+  if (!datos || datos.length < 2) return { fechas: [], reglas: [], tablas: [], detalle: {} };
   var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
   var idx = {
     fecha:   headers.indexOf('gf_cutoff_date'),
     tabla:   headers.indexOf('tabla_auditada'),
     estado:  headers.indexOf('estado_error'),
     regla:   headers.indexOf('nombre_regla'),
+    calidadPct: headers.indexOf('gf_quality_rule_compliance_per'),
+    volumen: headers.indexOf('gf_qr_cplc_denominator_number'),
     periodicidad: headers.indexOf('g_qr_execution_frequency_type'),
     estadoRegla:  headers.indexOf('g_quality_rule_status_type'),
     ans:     headers.indexOf('ttmm'),
     idRegla: buscarIndiceIdReglaCalidad_(headers)
   };
   validarCabeceras_(idx, {
-    fecha: 'gf_cutoff_date', tabla: 'tabla_auditada', estado: 'estado_error',
-    regla: 'nombre_regla', idRegla: 'principle_rule_type'
+    fecha: 'gf_cutoff_date', tabla: 'tabla_auditada', estado: 'estado_error', regla: 'nombre_regla',
+    calidadPct: 'gf_quality_rule_compliance_per', volumen: 'gf_qr_cplc_denominator_number', idRegla: 'principle_rule_type'
   }, 'la hoja calidad');
 
   // Los últimos N cortes disponibles forman el eje de fechas del informe.
@@ -1852,6 +1709,12 @@ function construirInformeFallos_(datos, gobierno) {
   var fechas = Object.keys(fechasUnicas).sort().slice(-INFORME_MAX_CORTES);
   var posicion = {};
   fechas.forEach(function(f, n) { posicion[f] = n; });
+  var cortes = fechas.length;
+  var serie = function(valor) {
+    var lista = new Array(cortes);
+    for (var k = 0; k < cortes; k++) lista[k] = valor;
+    return lista;
+  };
 
   var tablas = {};
   var reglas = {};
@@ -1867,24 +1730,40 @@ function construirInformeFallos_(datos, gobierno) {
     var clave = nombre.toLowerCase();
     var t = tablas[clave];
     if (!t) {
-      var ceros = fechas.map(function() { return ESTADO_SIN_DATO; });
-      t = tablas[clave] = { nombre: nombre, periodicidad: '', ans: '', tec: ceros.slice(), fun: ceros.slice(), fallos: {} };
+      t = tablas[clave] = {
+        nombre: nombre, periodicidad: '', ans: '',
+        tec: serie(ESTADO_SIN_DATO), fun: serie(ESTADO_SIN_DATO),
+        sumT: serie(0), cntT: serie(0), sumF: serie(0), cntF: serie(0),
+        volT: {}, volF: {}, fallos: {}, det: {}
+      };
     }
-    if (!t.ans && idx.ans > -1 && String(fila[idx.ans]).trim() !== '') t.ans = String(fila[idx.ans]).trim();
     if (!t.periodicidad && idx.periodicidad > -1 && fila[idx.periodicidad] !== '') {
       t.periodicidad = String(fila[idx.periodicidad]).trim();
     }
+    if (!t.ans && idx.ans > -1 && String(fila[idx.ans]).trim() !== '') t.ans = String(fila[idx.ans]).trim();
 
     var estado = fila[idx.estado] ? fila[idx.estado].toString().trim().toUpperCase() : '';
     var codigo = estado === 'EXITOSA' ? ESTADO_OK
       : (estado === 'PENDIENTE' ? ESTADO_PENDIENTE : (estado === '' ? ESTADO_SIN_DATO : ESTADO_FALLO));
-    var serie = esReglaMvpTecnico_(idRegla) ? t.tec : t.fun;
-    if (codigo > serie[pos]) serie[pos] = codigo;   // fallo > pendiente > ok > sin dato
+    var esTecnica = esReglaMvpTecnico_(idRegla);
+    var estados = esTecnica ? t.tec : t.fun;
+    if (codigo > estados[pos]) estados[pos] = codigo;   // fallo > pendiente > ok > sin dato
+
+    // Un pendiente aún no tiene medición: no entra en promedios ni en volumen.
+    var esPendiente = codigo === ESTADO_PENDIENTE;
+    var calidad = parseFloat(fila[idx.calidadPct]);
+    var medida = !esPendiente && !isNaN(calidad);
+    if (medida) {
+      if (esTecnica) { t.sumT[pos] += calidad; t.cntT[pos]++; }
+      else { t.sumF[pos] += calidad; t.cntF[pos]++; }
+    }
+    var volumen = parseInt(fila[idx.volumen], 10);
+    if (!esPendiente && !isNaN(volumen) && volumen === 0) (esTecnica ? t.volT : t.volF)[pos] = true;
 
     if (!reglas[idRegla]) {
       var catalogo = CATALOGO_REGLAS[idRegla];
       reglas[idRegla] = {
-        id: idRegla, modo: esReglaMvpTecnico_(idRegla) ? 'tecnico' : 'funcional',
+        id: idRegla, modo: esTecnica ? 'tecnico' : 'funcional',
         nombre: catalogo ? catalogo.nombre : (fila[idx.regla] ? fila[idx.regla].toString().trim() : 'Regla ' + idRegla),
         dimension: catalogo ? catalogo.dimension : 'Otras'
       };
@@ -1897,13 +1776,54 @@ function construirInformeFallos_(datos, gobierno) {
       var marca = idRegla + (noEjecutada ? '*' : '');
       if (t.fallos[pos].indexOf(marca) === -1) t.fallos[pos].push(marca);
     }
+
+    // Detalle por regla y corte: promedio de sus filas y el peor estado observado.
+    if (codigo !== ESTADO_SIN_DATO) {
+      var delCorte = t.det[pos] || (t.det[pos] = {});
+      var detalleRegla = delCorte[idRegla] || (delCorte[idRegla] = { s: 0, c: 0, p: 1 });
+      if (medida) { detalleRegla.s += calidad; detalleRegla.c++; }
+      var prioridad = estado === 'EXITOSA' ? 1 : (estado === 'PENDIENTE' ? 2 : (estado === 'ADVERTENCIA' ? 3 : 4));
+      if (prioridad > detalleRegla.p) detalleRegla.p = prioridad;
+    }
   }
 
+  var promedio = function(suma, cuenta) { return parseFloat((suma / cuenta).toFixed(2)); };
+  var detalle = {};
   var salida = Object.keys(tablas).sort().map(function(clave) {
     var t = tablas[clave];
+    var medidoT = '', medidoF = '', promT = [], promTodas = [], volT = [], volF = [];
+    for (var p = 0; p < cortes; p++) {
+      var cT = t.cntT[p], cF = t.cntF[p];
+      medidoT += cT > 0 ? '1' : '0';
+      medidoF += cF > 0 ? '1' : '0';
+      // Los promedios de 100% no se envían: un corte medido sin entrada vale 100.
+      if (cT > 0) { var aT = promedio(t.sumT[p], cT); if (aT !== 100) promT.push([p, aT]); }
+      if (cT + cF > 0) { var aA = promedio(t.sumT[p] + t.sumF[p], cT + cF); if (aA !== 100) promTodas.push([p, aA]); }
+      if (t.volT[p]) volT.push(p);
+      if (t.volF[p]) volF.push(p);
+    }
+
+    var porCorte = {};
+    Object.keys(t.det).forEach(function(p) {
+      porCorte[p] = Object.keys(t.det[p]).sort().map(function(id) {
+        var d = t.det[p][id];
+        var letra = LETRAS_ESTADO_DETALLE[d.p];
+        if (d.c > 0 && letra === 'E' && promedio(d.s, d.c) === 100) return id;   // 100% y exitosa: solo el id
+        return id + '~' + (d.c > 0 ? promedio(d.s, d.c) : '') + '~' + letra;
+      }).join('|');
+    });
+    detalle[clave] = porCorte;
+
+    var perGobierno = (gobierno.mapeoPeriodicidad && gobierno.mapeoPeriodicidad[clave]) || '';
+    var esManual = String(t.periodicidad).toLowerCase() === 'manual' || String(perGobierno).toLowerCase() === 'manual';
+    var procesos = [];
+    var flags = (gobierno.mapeoProcesos && gobierno.mapeoProcesos[clave]) || {};
+    Object.keys(flags).forEach(function(proceso) { if (flags[proceso] === true) procesos.push(proceso); });
     return {
       n: t.nombre,
-      per: t.periodicidad || (gobierno.mapeoPeriodicidad && gobierno.mapeoPeriodicidad[clave]) || 'Diaria',
+      per: esManual ? 'manual' : (t.periodicidad || perGobierno || 'Diaria'),
+      es: (gobierno.mapeoEstados && gobierno.mapeoEstados[clave]) || 'desconocido',
+      pr: procesos,
       de: (gobierno.mapeoDE && gobierno.mapeoDE[clave]) || 'BAU',
       ds: (gobierno.mapeoDS && gobierno.mapeoDS[clave]) || 'BAU',
       fn: (gobierno.mapeoFuncional && gobierno.mapeoFuncional[clave]) || 'BAU',
@@ -1911,31 +1831,84 @@ function construirInformeFallos_(datos, gobierno) {
       ans: t.ans || (gobierno.mapeoTTM && gobierno.mapeoTTM[clave]) || ANS_POR_DEFECTO,
       t: t.tec.join(''),
       f: t.fun.join(''),
+      mt: medidoT, mf: medidoF,
+      at: promT, aa: promTodas, vt: volT, vf: volF,
       x: Object.keys(t.fallos).map(function(p) { return [Number(p), t.fallos[p]]; })
     };
   });
   var listaReglas = Object.keys(reglas).sort().map(function(id) { return reglas[id]; });
-  return { fechas: fechas, reglas: listaReglas, tablas: salida };
+  return { fechas: fechas, reglas: listaReglas, tablas: salida, detalle: detalle };
+}
+
+function claveInformeBase_(config) {
+  return ['informe_base_v2', 'v' + config.cacheVersion, config.calidadSheetId, config.gobiernoSheetId].join('_');
+}
+
+function claveDetalleEstabilidad_(config) {
+  return ['est_detalle_v1', 'v' + config.cacheVersion, config.calidadSheetId].join('_');
+}
+
+// Una sola lectura de la hoja alimenta el informe, el detalle por tabla y el
+// histórico del modal; todo queda en caché y los filtros no vuelven a Sheets.
+function reconstruirBaseInformes_(config, cache) {
+  var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
+  var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
+  var datos = leerDatosCalidad_(hoja);
+  var informe = construirInformeFallos_(datos, obtenerEstadosYListaTablas());
+  var detalle = informe.detalle;
+  delete informe.detalle;
+  informe.generado = new Date().toISOString();
+  guardarCacheFragmentado_(cache, claveInformeBase_(config), JSON.stringify(informe), config.cacheCalidadSegundos);
+  guardarFragmentos_(cache, claveDetalleEstabilidad_(config), detalle, config.cacheCalidadSegundos, { fechas: informe.fechas });
+  if (datos.length > 1) {
+    var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
+    guardarIndiceHistoricoCalidad_(config, cache,
+      construirIndiceHistoricoCalidad_(datos, indicesColumnasCalidad_(headers), '', '').indice);
+  }
+  return { informe: informe, detalle: detalle };
 }
 
 function obtenerInformeFallosRecurrentes(forzar) {
   return ejecutarConRegistro_('informe_fallos_recurrentes', 'calidad', function() {
     var config = obtenerConfiguracion_();
     var cache = CacheService.getScriptCache();
-    var clave = claveCache_('informe_fallos_v1', [config.calidadSheetId, config.gobiernoSheetId]);
-
-    var enCache = forzar ? null : leerCacheFragmentado_(cache, clave);
+    var enCache = forzar ? null : leerCacheFragmentado_(cache, claveInformeBase_(config));
     if (enCache) {
       try { return JSON.parse(enCache); } catch (eParse) {}
     }
-
-    var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
-    var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
-    var informe = construirInformeFallos_(leerDatosCalidad_(hoja), obtenerEstadosYListaTablas());
-    informe.generado = new Date().toISOString();
-    guardarCacheFragmentado_(cache, clave, JSON.stringify(informe), config.cacheCalidadSegundos);
-    return informe;
+    return reconstruirBaseInformes_(config, cache).informe;
   });
+}
+
+// Reglas por corte de una tabla, para el detalle de estabilidad. Sale del
+// fragmento de caché de esa tabla; solo si falta se relee la hoja (una vez,
+// reconstruyendo también la caché para los clics siguientes).
+function obtenerDetalleEstabilidadTabla(nombreTabla) {
+  var clave = nombreTablaClave_(nombreTabla);
+  if (!clave) return { filas: [] };
+  var config = obtenerConfiguracion_();
+  var cache = CacheService.getScriptCache();
+  var prefijo = claveDetalleEstabilidad_(config);
+  var enCache = leerFragmento_(cache, prefijo, clave);
+  var porCorte, fechas;
+  if (enCache) {
+    porCorte = enCache.valor || {};
+    fechas = enCache.meta.fechas || [];
+  } else {
+    var base = reconstruirBaseInformes_(config, cache);
+    porCorte = base.detalle[clave] || {};
+    fechas = base.informe.fechas;
+  }
+  var filas = [];
+  Object.keys(porCorte).forEach(function(pos) {
+    porCorte[pos].split('|').forEach(function(texto) {
+      if (!texto) return;
+      var partes = texto.split('~');
+      var pct = partes.length === 1 ? 100 : (partes[1] === '' ? null : parseFloat(partes[1]));
+      filas.push([fechas[Number(pos)], partes[0], pct, partes.length === 1 ? 'E' : partes[2]]);
+    });
+  });
+  return { filas: filas };
 }
 
 // Helpers

@@ -121,20 +121,35 @@ estabilidad* del dashboard ya no existe: su contenido vive ahora en la pestaña
 
 ### Estabilidad
 
-Calidad de los últimos 45 días corridos hasta una fecha de referencia (por defecto
-la del dashboard o el último corte). Incluye KPIs (tablas, promedio de calidad,
-estables al 100%, con incidencias, días con volumen 0, tabla menos estable), la
-distribución del promedio por rangos, la estabilidad por responsable (Data
-Engineer, Data Scientist o dirección) y la tabla completa. Al pulsar una tabla se
-abre el detalle por regla y por día. Filtros: fecha, proceso, Data Engineer, Data
-Scientist, dirección y búsqueda.
+Calidad de las tablas en una ventana de **30, 45 (por defecto) o 90 días** que termina
+en la fecha de referencia (por defecto, el último corte). Filtros: fecha de
+referencia, ventana, **estado de la tabla** (Productivas por defecto, En desarrollo
+o Todas), **reglas** (solo MVP Técnico por defecto, o todas), proceso, Data Engineer,
+dirección y búsqueda. Todos los filtros se aplican en el navegador, sin volver a
+leer Sheets.
+
+KPIs:
+
+| KPI | Cálculo |
+| --- | --- |
+| Promedio de calidad | Promedio de los promedios diarios de cada tabla |
+| Estables al 100% | Tablas sin fallos, sin volumen 0 y con promedio 100% |
+| Con incidencias | Tablas con fallos de reglas o días con volumen 0 |
+| Tablas con volumen 0 | % de tablas con algún día sin registros en el rango; **no cuenta las tablas con periodicidad `manual`** |
+| Calidad < 100% por más de 4 días | % de tablas cuyo promedio diario fue inferior a 100% en más de 4 días del rango |
+
+Incluye la distribución del promedio por rangos, la estabilidad por responsable
+(Data Engineer, Data Scientist o dirección) y la tabla por tabla con su **estado
+(productiva / en desarrollo)**. Al pulsar una tabla se abre una única tabla de
+detalle con fecha, promedio diario, regla y % de la regla. El detalle sale de la
+caché del servidor (se calcula junto con el informe en una sola lectura de la hoja),
+así que abre sin releer la hoja completa.
 
 ### Fallos recurrentes
 
-- **KPIs principales**: tablas evaluadas, estables, con fallos recurrentes,
-  crónicas, reaperturas, tiempo medio de resolución, concentración, tabla con más
-  fallos y responsables a cargo (Data Engineers y Data Scientists con tablas
-  recurrentes). Los KPIs de grupo son botones: al pulsarlos filtran el resto de la pantalla.
+- **KPIs principales**: tablas evaluadas, estables, fallos crónicos, reaperturas,
+  tiempo medio de resolución, concentración y tabla con más fallos. Los KPIs de
+  grupo son botones: al pulsarlos filtran el resto de la pantalla.
 - **Ranking de reincidencia**: días con fallo en 30 y 90 días, racha actual,
   MTTR y reaperturas, siempre con **responsable técnico (Data Engineer)**,
   **Data Scientist** y dirección de cada tabla.
@@ -142,7 +157,8 @@ Scientist, dirección y búsqueda.
 - **Fallos por dimensión y regla**, y **fallos por responsable** (agrupable por
   Data Engineer, Data Scientist, dirección o responsable funcional).
 - Filtros dinámicos: ventana (30/90 días), alcance (MVP Técnico, Funcional o
-  ambos), periodicidad, responsables, dirección, umbral de recurrencia y búsqueda.
+  ambos), **estado de la tabla (Productivas por defecto)**, periodicidad,
+  responsables, dirección, umbral de recurrencia y búsqueda.
 
 Definiciones (todas sobre los cortes disponibles en la hoja):
 
