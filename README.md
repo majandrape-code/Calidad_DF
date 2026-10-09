@@ -115,11 +115,26 @@ disponible, el servidor reconstruye el índice en una única lectura.
 ## Informes de Calidad
 
 El submódulo **Informes** (Calidad → Informes) analiza el histórico de la hoja
-`calidad`. Hoy incluye el informe **Fallos recurrentes**:
+`calidad` y reúne dos informes en pestañas. El antiguo botón *Monitoreo de
+estabilidad* del dashboard ya no existe: su contenido vive ahora en la pestaña
+**Estabilidad**.
+
+### Estabilidad
+
+Calidad de los últimos 45 días corridos hasta una fecha de referencia (por defecto
+la del dashboard o el último corte). Incluye KPIs (tablas, promedio de calidad,
+estables al 100%, con incidencias, días con volumen 0, tabla menos estable), la
+distribución del promedio por rangos, la estabilidad por responsable (Data
+Engineer, Data Scientist o dirección) y la tabla completa. Al pulsar una tabla se
+abre el detalle por regla y por día. Filtros: fecha, proceso, Data Engineer, Data
+Scientist, dirección y búsqueda.
+
+### Fallos recurrentes
 
 - **KPIs principales**: tablas evaluadas, estables, con fallos recurrentes,
-  crónicas, reaperturas, tiempo medio de resolución y concentración. Los KPIs
-  de grupo son botones: al pulsarlos filtran el resto de la pantalla.
+  crónicas, reaperturas, tiempo medio de resolución, concentración, tabla con más
+  fallos y responsables a cargo (Data Engineers y Data Scientists con tablas
+  recurrentes). Los KPIs de grupo son botones: al pulsarlos filtran el resto de la pantalla.
 - **Ranking de reincidencia**: días con fallo en 30 y 90 días, racha actual,
   MTTR y reaperturas, siempre con **responsable técnico (Data Engineer)**,
   **Data Scientist** y dirección de cada tabla.

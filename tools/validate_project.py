@@ -52,7 +52,8 @@ def main() -> int:
         "quality-mode-funcional", "select-periodicidad",
         "status-filter-warn", "status-filter-err",
         "quality-mode-informes", "view-informes", "inf-kpis", "inf-pareto",
-        "inf-reglas", "inf-ranking", "inf-heat", "inf-owners",
+        "inf-reglas", "inf-ranking", "inf-heat", "inf-owners", "inf-tab-estabilidad",
+        "inf-panel-estabilidad", "est-kpis", "est-dist", "est-owners", "est-tabla",
     }
     missing_ids = sorted(required_ids - parser.ids)
     require(not missing_ids, "Faltan IDs de Administración: " + ", ".join(missing_ids), errors)
@@ -143,6 +144,21 @@ def main() -> int:
     require(
         "Informes" in client and "quality-mode-informes" in client,
         "La navegación de Calidad debe incluir el submódulo Informes.",
+        errors,
+    )
+    require(
+        "openStabilityMonitor" not in client and "stability-launch" not in client,
+        "El monitor de estabilidad vive en Informes; no debe quedar su botón en el dashboard.",
+        errors,
+    )
+    require(
+        "obtenerMonitoreoEstabilidad" in client and "abrirDetalleEstabilidad" in client,
+        "La pestaña Estabilidad de Informes debe usar obtenerMonitoreoEstabilidad.",
+        errors,
+    )
+    require(
+        "dataScientist: g.dataScientist" in server,
+        "El monitor de estabilidad debe incluir el Data Scientist de cada tabla.",
         errors,
     )
     require(

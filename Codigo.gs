@@ -1572,17 +1572,17 @@ function obtenerHistoricoCalidad(nombreTabla) {
 // MÓDULO 2C: MONITOREO DE ESTABILIDAD (45 días corridos)
 // ==========================================
 
-function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle) {
+function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle, forzar) {
   var config = obtenerConfiguracion_();
   var cache = CacheService.getScriptCache();
   var fechaHastaSolicitada = formatearFechaSQL(fechaReferencia);
   var nombreObjetivo = (nombreTablaDetalle || '').toString().trim().replace(/\\/g, '').toLowerCase();
   var cacheKey = fechaHastaSolicitada
-    ? claveCache_('estabilidad_45_v7', [config.calidadSheetId, fechaHastaSolicitada]) : '';
+    ? claveCache_('estabilidad_45_v8', [config.calidadSheetId, fechaHastaSolicitada]) : '';
 
   // El resumen puede salir de caché sin volver a leer la hoja. Los detalles de
   // tabla se calculan bajo demanda y no comparten esta respuesta resumida.
-  if (cacheKey && !nombreObjetivo) {
+  if (cacheKey && !nombreObjetivo && !forzar) {
     try {
       var hit = cache.get(cacheKey);
       if (hit) return JSON.parse(hit);
@@ -1624,7 +1624,7 @@ function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle) {
   }
   if (!fechaHastaSolicitada) return { desde: '', hasta: '', tablas: [] };
 
-  cacheKey = claveCache_('estabilidad_45_v7', [config.calidadSheetId, fechaHastaSolicitada]);
+  cacheKey = claveCache_('estabilidad_45_v8', [config.calidadSheetId, fechaHastaSolicitada]);
 
   var partesFecha = fechaHastaSolicitada.split('-');
   var fechaDesdeObj = new Date(Number(partesFecha[0]), Number(partesFecha[1]) - 1, Number(partesFecha[2]));
@@ -1652,6 +1652,7 @@ function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle) {
       grupos[claveTabla] = {
         nombre: nombreTabla,
         dataEngineer: govData.mapeoDE[claveTabla] || 'BAU',
+        dataScientist: govData.mapeoDS[claveTabla] || 'BAU',
         direccion: govData.mapeoDir[claveTabla] || 'Local',
         procesos: procesosActivos,
         fechas: {},
@@ -1736,6 +1737,7 @@ function obtenerMonitoreoEstabilidad(fechaReferencia, nombreTablaDetalle) {
     resultadoTablas.push({
       nombre: g.nombre,
       dataEngineer: g.dataEngineer,
+      dataScientist: g.dataScientist,
       direccion: g.direccion,
       procesos: g.procesos,
       promedio: promedioTabla,
