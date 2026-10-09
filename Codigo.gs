@@ -734,7 +734,7 @@ function obtenerEstadosYListaTablas() {
 // en una sola llamada al servidor
 // ==========================================
 
-function obtenerCargaInicial() {
+function obtenerCargaInicial(incluirUltimoMensual) {
   return ejecutarConRegistro_('carga_inicial', 'calidad', function() {
     var config = obtenerConfiguracion_();
     var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
@@ -760,6 +760,7 @@ function obtenerCargaInicial() {
     if (!ultimaFecha) return { ultimaFecha: '', datos: [] };
 
     var datosCalidad = procesarDatosMonitor(datos, ultimaFecha, '', 'diaria');
+    if (incluirUltimoMensual) datosCalidad = agregarUltimoCorteMensual_(datos, datosCalidad);
     return { ultimaFecha: ultimaFecha, datos: datosCalidad };
   });
 }
@@ -1006,13 +1007,51 @@ function finalizarResumenReglasCalidad_(resumen, modo, sinRegistros) {
   };
 }
 
-function obtenerDatosMonitor(fechaDesdeStr, fechaHastaStr, frecuenciaCorte) {
+// El último corte mensual es la fecha más reciente con filas de tablas mensuales:
+// esas tablas solo se ejecutan en el cierre de cada mes.
+function buscarUltimoCorteMensual_(datos) {
+  if (!datos || datos.length < 2) return '';
+  var headers = datos[0].map(function(h) { return h.toString().toLowerCase().trim(); });
+  var iFecha = headers.indexOf('gf_cutoff_date');
+  var iPeriodicidad = headers.indexOf('g_qr_execution_frequency_type');
+  if (iFecha === -1 || iPeriodicidad === -1) return '';
+  var ultima = '';
+  for (var i = 1; i < datos.length; i++) {
+    if (datos[i][iPeriodicidad].toString().trim().toLowerCase() !== 'mensual') continue;
+    var fecha = formatearFechaSQL(datos[i][iFecha]);
+    if (fecha > ultima) ultima = fecha;
+  }
+  return ultima;
+}
+
+// Suma al resultado el último corte mensual (solo tablas mensuales) sin duplicar
+// filas que ya vengan en la consulta principal.
+function agregarUltimoCorteMensual_(datos, resultado) {
+  var fechaMensual = buscarUltimoCorteMensual_(datos);
+  if (!fechaMensual || !resultado || !resultado.filas) return resultado;
+  var extra = procesarDatosMonitor(datos, fechaMensual, '', 'diaria', 'mensual');
+  var vistos = {};
+  resultado.filas.forEach(function(fila) { vistos[fila.id] = true; });
+  ((extra && extra.filas) || []).forEach(function(fila) {
+    if (!vistos[fila.id]) resultado.filas.push(fila);
+  });
+  resultado.filas.sort(function(a, b) {
+    if (a.cutoffDate !== b.cutoffDate) return b.cutoffDate.localeCompare(a.cutoffDate);
+    return a.name.localeCompare(b.name);
+  });
+  resultado.corteMensual = fechaMensual;
+  return resultado;
+}
+
+function obtenerDatosMonitor(fechaDesdeStr, fechaHastaStr, frecuenciaCorte, incluirUltimoMensual) {
   return ejecutarConRegistro_('consultar_monitor', 'calidad', function() {
     var config = obtenerConfiguracion_();
     var ss = abrirSpreadsheetConfigurado_(config.calidadSheetId, 'el Google Sheet de calidad');
     var hoja = obtenerHojaConfigurada_(ss, 'calidad', 'el Google Sheet de calidad');
     var datos = leerDatosCalidad_(hoja);
-    return procesarDatosMonitor(datos, fechaDesdeStr, fechaHastaStr, frecuenciaCorte);
+    var resultado = procesarDatosMonitor(datos, fechaDesdeStr, fechaHastaStr, frecuenciaCorte);
+    var esMensual = String(frecuenciaCorte || 'diaria').toLowerCase() === 'mensual';
+    return incluirUltimoMensual && !esMensual ? agregarUltimoCorteMensual_(datos, resultado) : resultado;
   });
 }
 
@@ -1255,7 +1294,7 @@ function obtenerDetalleTablaCalidad(nombreTabla, fechaCorte, modoCalidad) {
 // Procesa los datos ya leídos de la hoja 'calidad' para una fecha (o rango) dada.
 // Separado de la lectura para poder reutilizar una única lectura de Sheets
 // (ver obtenerCargaInicial).
-function procesarDatosMonitor(datos, fechaDesdeStr, fechaHastaStr, frecuenciaCorte) {
+function procesarDatosMonitor(datos, fechaDesdeStr, fechaHastaStr, frecuenciaCorte, soloPeriodicidad) {
   if (datos.length < 2) return [];
 
   // Normalizar también los argumentos recibidos desde la interfaz. Una consulta
@@ -1338,6 +1377,9 @@ function procesarDatosMonitor(datos, fechaDesdeStr, fechaHastaStr, frecuenciaCor
       coincideFecha = ultimasFechasPorMes[fechaCasteada.substring(0, 7)] === fechaCasteada;
     }
     if (!coincideFecha) continue;
+
+    // Con soloPeriodicidad (p. ej. 'mensual') solo se procesan las tablas de esa periodicidad.
+    if (soloPeriodicidad && fila[idx.periodicidad].toString().trim().toLowerCase() !== soloPeriodicidad) continue;
 
     var nombreTabla = fila[idx.tabla] ? fila[idx.tabla].toString().trim() : "SIN_NOMBRE";
     var claveGob    = nombreTabla.toLowerCase().replace(/\\/g, '');
@@ -1675,7 +1717,15 @@ function leerFragmento_(cache, prefijo, clave) {
 }
 
 var PRIORIDAD_ESTADO_DETALLE = { E: 1, P: 2, A: 3, C: 4 };
-var LETRAS_ESTADO_DETALLE = ['', 'E', 'P', 'A', 'C'];
+// E exitosa · P pendiente · D desconocido (sin % calculado) · A advertencia · C crítico
+var LETRAS_ESTADO_DETALLE = ['', 'E', 'P', 'D', 'A', 'C'];
+
+// Redondea a 2 decimales sin mostrar 100 cuando el valor real es menor: una regla con
+// 99,99998% (1 error entre millones de filas) falla, pero un 100 la haría parecer perfecta.
+function redondearPct_(valor) {
+  var redondeado = parseFloat(valor.toFixed(2));
+  return redondeado >= 100 && valor < 100 ? 99.99 : redondeado;
+}
 
 // Calcula el informe a partir de las filas ya leídas. Es una función pura (no
 // toca servicios de Google) para poder probarla con datos sintéticos.
@@ -1782,12 +1832,13 @@ function construirInformeFallos_(datos, gobierno) {
       var delCorte = t.det[pos] || (t.det[pos] = {});
       var detalleRegla = delCorte[idRegla] || (delCorte[idRegla] = { s: 0, c: 0, p: 1 });
       if (medida) { detalleRegla.s += calidad; detalleRegla.c++; }
-      var prioridad = estado === 'EXITOSA' ? 1 : (estado === 'PENDIENTE' ? 2 : (estado === 'ADVERTENCIA' ? 3 : 4));
+      var prioridad = estado === 'EXITOSA' ? 1 : (estado === 'PENDIENTE' ? 2 : (estado === 'ADVERTENCIA' ? 4
+        : (estado === 'CRITICO' || estado === 'CRÍTICO' ? 5 : 3)));
       if (prioridad > detalleRegla.p) detalleRegla.p = prioridad;
     }
   }
 
-  var promedio = function(suma, cuenta) { return parseFloat((suma / cuenta).toFixed(2)); };
+  var promedio = function(suma, cuenta) { return redondearPct_(suma / cuenta); };
   var detalle = {};
   var salida = Object.keys(tablas).sort().map(function(clave) {
     var t = tablas[clave];

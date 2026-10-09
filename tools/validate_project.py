@@ -55,7 +55,7 @@ def main() -> int:
         "inf-reglas", "inf-ranking", "inf-heat", "inf-owners", "inf-tab-estabilidad",
         "inf-panel-estabilidad", "est-kpis", "est-dist", "est-owners", "est-tabla",
         "est-fecha", "est-nota", "est-ventana", "est-estadotabla", "est-alcance",
-        "inf-estadotabla",
+        "inf-estadotabla", "chk-ultimo-mensual",
     }
     missing_ids = sorted(required_ids - parser.ids)
     require(not missing_ids, "Faltan IDs de Administración: " + ", ".join(missing_ids), errors)
@@ -75,6 +75,7 @@ def main() -> int:
         "obtenerInformeFallosRecurrentes", "construirInformeFallos_",
         "obtenerHistoricoTablaCalidad", "precalentarHistoricoCalidad",
         "obtenerDetalleEstabilidadTabla", "reconstruirBaseInformes_",
+        "buscarUltimoCorteMensual_", "agregarUltimoCorteMensual_",
     }
     missing_symbols = sorted(required_server_symbols - server_functions)
     require(not missing_symbols, "Faltan funciones administrativas: " + ", ".join(missing_symbols), errors)
@@ -163,6 +164,21 @@ def main() -> int:
     require(
         "obtenerMonitoreoEstabilidad" not in server and "obtenerMonitoreoEstabilidad" not in client,
         "El monitor antiguo, que releía la hoja completa en cada clic, no debe volver.",
+        errors,
+    )
+    require(
+        "INFORME_CIERRES_MENSUALES" in client and "esMensual ? (cierres.total" in client,
+        "Las tablas mensuales deben evaluarse por los cierres de mes de los últimos 3 meses.",
+        errors,
+    )
+    require(
+        "incluirUltimoMensual()" in client and "incluirUltimoMensual" in server,
+        "El check de último corte mensual debe viajar del cliente al servidor.",
+        errors,
+    )
+    require(
+        "inf-tab-elipses" not in client,
+        "El informe de Elipses no debe aparecer como pestaña mientras no exista.",
         errors,
     )
     require(

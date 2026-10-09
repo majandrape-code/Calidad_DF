@@ -45,10 +45,10 @@
     .btn-toggle-view:active { transform: translateY(0); }
 
     .topbar-nav { display: flex; align-items: center; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,.15); border-radius: 8px; background: rgba(255,255,255,.06); }
-    .nav-view-btn { height: 34px; border: none; border-radius: 6px; padding: 0 13px; background: transparent; color: rgba(255,255,255,.68); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+    .nav-view-btn { height: 42px; border: none; border-radius: 8px; padding: 0 14px; background: transparent; color: rgba(255,255,255,.75); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
     .nav-view-btn:hover { color: white; background: rgba(255,255,255,.1); }
     .nav-view-btn.active { color: white; background: var(--bbva-naranja); }
-    .nav-view-btn svg { width: 15px; height: 15px; }
+    .nav-view-btn svg { width: 17px; height: 17px; }
     .nav-quality-group { height: 42px; display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.07); border: 1.5px solid rgba(245,130,32,.55); }
     .nav-quality-group.active { background: rgba(255,255,255,.14); border-color: var(--bbva-naranja); box-shadow: 0 0 0 2px rgba(245,130,32,.25); }
     .nav-quality-main { border: none; border-right: 1px solid rgba(255,255,255,.18); padding: 0 14px; background: transparent; color: white; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
@@ -133,11 +133,13 @@
     .inf-tab { height: 34px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 14px; background: white; color: var(--bbva-azul-lateral); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
     .inf-tab.active { background: var(--bbva-azul-oscuro); border-color: var(--bbva-azul-oscuro); color: white; }
     .inf-tab:disabled { cursor: not-allowed; opacity: .55; }
-    .inf-filters { display: flex; align-items: flex-end; gap: 10px 12px; flex-wrap: wrap; background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .inf-filters { display: flex; align-items: flex-start; gap: 10px 12px; flex-wrap: wrap; background: white; border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
     .inf-field label { display: block; margin-bottom: 4px; color: var(--gray-600); font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
     .inf-field select, .inf-field input { height: 34px; min-width: 130px; max-width: 220px; border: 1.5px solid var(--gray-200); border-radius: 7px; padding: 0 9px; background: white; color: var(--navy); font-family: 'Barlow', sans-serif; font-size: 12px; outline: none; }
     .inf-field select:focus, .inf-field input:focus { border-color: var(--blue-acc); box-shadow: 0 0 0 2px var(--blue-pale); }
-    .inf-meta { margin-left: auto; color: var(--gray-400); font-size: 11px; align-self: center; }
+    .inf-meta { margin-left: auto; margin-top: 22px; color: var(--gray-400); font-size: 11px; }
+    .inf-filters > .admin-btn { margin-top: 19px; height: 34px; min-height: 34px; }
+    #inf-panel-estabilidad .inf-meta { flex-basis: 100%; margin-top: 0; text-align: right; }
     .inf-status { padding: 38px; text-align: center; color: var(--gray-600); font-size: 14px; }
     .inf-status.error { color: #991B1B; }
     .inf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
@@ -181,19 +183,22 @@
     .inf-badge.recurrente { background: #FEE2E2; color: #991B1B; }
     .inf-badge.cronica { background: #991B1B; color: white; }
     .inf-badge.sindatos { background: var(--gray-100); color: var(--gray-600); }
-    .inf-heat-wrap { overflow: auto; padding: 4px 0 2px; }
-    .inf-heat { border-collapse: separate; border-spacing: 2px; font-size: 11px; }
-    .inf-heat th { font-weight: 600; color: var(--gray-600); text-align: left; padding-right: 10px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; position: sticky; left: 0; background: white; }
-    .inf-heat td { width: 14px; min-width: 14px; height: 18px; border-radius: 3px; text-align: center; font-size: 10px; line-height: 18px; color: white; font-weight: 800; }
+    .inf-heat-wrap { overflow: auto; padding: 14px 16px 16px; }
+    .inf-heat { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 3px; font-size: 11px; }
+    .inf-heat th { width: 240px; font-weight: 600; color: var(--gray-600); text-align: left; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: sticky; left: 0; background: white; }
+    .inf-heat td { min-width: 12px; height: 26px; border-radius: 4px; text-align: center; font-size: 11px; line-height: 26px; color: white; font-weight: 800; }
     .inf-heat td.f { background: var(--red); }
     .inf-heat td.o { background: #A7F3D0; }
     .inf-heat td.p { background: #CBD5E1; }
     .inf-heat td.n { background: var(--gray-100); }
-    .inf-heat-axis td { height: 14px; background: none; color: var(--gray-400); font-size: 9px; font-weight: 600; }
+    .inf-heat-axis td { height: 16px; line-height: 16px; background: none; color: var(--gray-400); font-size: 9px; font-weight: 600; overflow: hidden; }
     .inf-tip { position: fixed; z-index: 6000; pointer-events: none; max-width: 280px; background: var(--navy); color: white; border-radius: 7px; padding: 8px 10px; font-size: 11px; line-height: 1.4; box-shadow: var(--shadow-lg); display: none; }
     .inf-tip strong { display: block; font-size: 14px; }
     .inf-tip span { opacity: .75; }
     .inf-hint { display: block; margin-top: 3px; max-width: 190px; color: var(--gray-400); font-size: 10px; line-height: 1.3; }
+    .inf-motivo { padding: 9px 12px; border-left: 3px solid var(--yellow); border-radius: 0 6px 6px 0; background: #FFFBEB; color: var(--gray-600); font-size: 12px; line-height: 1.45; }
+    .inf-fila-alerta td { background: #FEF2F2; }
+    .inf-solo-inc { display: flex; align-items: center; gap: 8px; color: var(--gray-600); font-size: 12px; cursor: pointer; }
     .inf-clic { cursor: pointer; }
     .inf-clic:hover td { background: #F0F7FF; }
     .inf-empty { padding: 26px; text-align: center; color: var(--gray-400); font-size: 13px; }
@@ -217,12 +222,15 @@
     /* Bloque izquierdo: fecha */
     .date-block {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 6px 10px;
       padding: 10px 20px 10px 0;
       border-right: 1px solid rgba(255,255,255,.12);
       flex-shrink: 0;
     }
+    .chk-mensual { display: inline-flex; align-items: center; gap: 7px; flex-basis: 100%; cursor: pointer; color: rgba(255,255,255,.75); font-size: 10px; font-weight: 700; line-height: 1.25; letter-spacing: .3px; text-transform: uppercase; }
+    .chk-mensual input { width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--bbva-naranja); cursor: pointer; }
     .date-label {
       font-size: 10px;
       font-weight: 700;
@@ -820,6 +828,10 @@
           </svg>
           Cargar
         </button>
+        <label class="chk-mensual" for="chk-ultimo-mensual" title="Además del corte elegido, trae siempre el último corte mensual (solo tablas mensuales)">
+          <input type="checkbox" id="chk-ultimo-mensual" onchange="alternarUltimoMensual()">
+          <span>Mantener siempre el último corte mensual</span>
+        </label>
       </div>
 
       <!-- BLOQUE PROCESO -->
@@ -1071,7 +1083,6 @@
         <div class="inf-tabs" role="tablist" aria-label="Informes disponibles">
           <button id="inf-tab-recurrentes" class="inf-tab active" role="tab" aria-selected="true">Fallos recurrentes</button>
           <button id="inf-tab-estabilidad" class="inf-tab" role="tab" aria-selected="false">Estabilidad</button>
-          <button id="inf-tab-elipses" class="inf-tab" role="tab" aria-selected="false" disabled title="Requiere primero etiquetar cada alerta como Real / Falso positivo / Pendiente">Acierto de Elipses · próximamente</button>
         </div>
       </div>
 
@@ -1422,6 +1433,7 @@
 
         // Carga la calidad de la última fecha disponible automáticamente (en paralelo)
         // para que el dashboard aparezca poblado sin esperar al botón "Cargar".
+        restaurarUltimoMensual();
         cargarCalidadInicial();
 
         const registrarPresencia = () => callServer('registrarConexionUsuario')
@@ -1429,6 +1441,21 @@
         registrarPresencia();
         window.setInterval(registrarPresencia, 5 * 60 * 1000);
     });
+
+    // Preferencia "mantener siempre el último corte mensual": se recuerda entre sesiones.
+    const CLAVE_ULTIMO_MENSUAL = 'calidad_mantener_ultimo_mensual';
+    let corteMensualActivo = '';
+    function incluirUltimoMensual() {
+      const check = document.getElementById('chk-ultimo-mensual');
+      return !!(check && check.checked);
+    }
+    function alternarUltimoMensual() {
+      try { window.localStorage.setItem(CLAVE_ULTIMO_MENSUAL, incluirUltimoMensual() ? '1' : '0'); } catch (e) {}
+      if (document.getElementById('date-picker').value) loadDashboard();   // recarga con la nueva preferencia
+    }
+    function restaurarUltimoMensual() {
+      try { document.getElementById('chk-ultimo-mensual').checked = window.localStorage.getItem(CLAVE_ULTIMO_MENSUAL) === '1'; } catch (e) {}
+    }
 
     // Trae la última fecha disponible + sus datos de calidad en una sola llamada
     // y pinta el dashboard al entrar a la app.
@@ -1451,7 +1478,7 @@
         if (overlay) overlay.style.display = 'none';
       };
 
-      callServer('obtenerCargaInicial')
+      callServer('obtenerCargaInicial', incluirUltimoMensual())
         .then(function(carga) {
           // carga es { ultimaFecha, datos: { filas, procesos, dir, ds, de } }
           if (!carga || !carga.ultimaFecha) {
@@ -1600,7 +1627,8 @@
     // ==========================================
     // INFORMES DE CALIDAD · cálculo (sin DOM)
     // ==========================================
-    const INFORME_RACHA_CRONICA = 5;      // cortes consecutivos fallando
+    const INFORME_RACHA_CRONICA = 5;      // tablas diarias: cortes consecutivos fallando
+    const INFORME_CIERRES_MENSUALES = 3;  // tablas mensuales: cierres de mes evaluados (últimos 3 meses)
     const INFORME_DIAS_REAPERTURA = 7;    // días tras la resolución para considerar reapertura
     const INFORME_TOP_PARETO = 15;
 
@@ -1660,6 +1688,22 @@
           if (e === '3') racha++; else break;
         }
 
+        // Tablas mensuales: se evalúa el último corte de cada mes (cierre de mes) de los
+        // últimos 3 meses. Crónica = falla los 3 cierres; recurrente = falla 2 de los 3.
+        let cierres = null;
+        if (esMensual) {
+          const ultimoDelMes = {};
+          for (let i = 0; i < fechas.length; i++) {
+            if (estados[i] !== '1' && estados[i] !== '3') continue;
+            ultimoDelMes[fechas[i].slice(0, 7)] = i;
+          }
+          const lista = Object.keys(ultimoDelMes).sort().slice(-INFORME_CIERRES_MENSUALES).map(m => estados[ultimoDelMes[m]]);
+          let seguidos = 0;
+          for (let k = lista.length - 1; k >= 0 && lista[k] === '3'; k--) seguidos++;
+          cierres = { total: lista.length, fallos: lista.filter(e => e === '3').length, seguidos };
+          racha = seguidos;   // en tablas mensuales la racha se cuenta en cierres de mes
+        }
+
         // Incidencias: desde el primer fallo hasta el primer corte correcto posterior.
         const cerradas = [];
         let abierta = null, cierre = -1, reaperturas = 0;
@@ -1694,14 +1738,16 @@
         });
 
         let categoria;
-        if (fallosVentana === 0 && medidos === 0) categoria = 'sindatos';
-        else if (racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
-        else if (fallosVentana >= f.umbral) categoria = 'recurrente';
+        const sinCierres = !cierres || cierres.total === 0;
+        if (fallosVentana === 0 && medidos === 0 && sinCierres) categoria = 'sindatos';
+        else if (esMensual ? (cierres.total >= INFORME_CIERRES_MENSUALES && cierres.fallos === INFORME_CIERRES_MENSUALES)
+                           : racha >= INFORME_RACHA_CRONICA) categoria = 'cronica';
+        else if (esMensual ? cierres.fallos >= 2 : fallosVentana >= f.umbral) categoria = 'recurrente';
         else if (fallosVentana > 0) categoria = 'ocasional';
         else categoria = 'estable';
 
         resultado.tablas.push({
-          t, estados, fallos30, fallos90, fallosVentana, racha, categoria,
+          t, estados, fallos30, fallos90, fallosVentana, racha, categoria, esMensual, cierres,
           esRecurrente: categoria === 'cronica' || categoria === 'recurrente',
           cerradas: cerradasVentana.length, sumaResolucion,
           mttr: cerradasVentana.length ? sumaResolucion / cerradasVentana.length : null,
@@ -1849,7 +1895,7 @@
       const tiles = [
         { cat: '', clase: '', lbl: 'Tablas evaluadas', val: informeNum(k.evaluadas), sub: `Con ejecuciones en los últimos ${v} días` },
         { cat: 'estable', clase: 'ok', lbl: 'Tablas estables', val: informeNum(k.estables), pct: k.evaluadas ? k.estables / k.evaluadas : 0, sub: 'Sin ningún fallo en la ventana' },
-        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `${INFORME_RACHA_CRONICA}+ cortes consecutivos fallando` },
+        { cat: 'cronica', clase: 'err', lbl: 'Fallos crónicos', val: informeNum(k.cronicas), sub: `Diarias: ${INFORME_RACHA_CRONICA}+ cortes seguidos fallando · Mensuales: fallan los últimos ${INFORME_CIERRES_MENSUALES} cierres de mes` },
         { cat: 'reabierta', clase: 'warn', lbl: 'Reaperturas', val: informeNum(k.reabiertas), sub: `Tablas que vuelven a fallar en ≤ ${INFORME_DIAS_REAPERTURA} días (${informeNum(k.reaperturas)} eventos)` },
         { cat: '', clase: '', lbl: 'Tiempo medio de resolución', val: informeDec(k.mttr), unidad: k.mttr === null ? '' : 'días', sub: `MTTR sobre ${informeNum(k.resueltas)} incidencias cerradas` },
         { cat: '', clase: 'warn', lbl: 'Concentración', val: informePct(k.concentracion), sub: `El 30% de las tablas con fallo (${informeNum(k.topTreintaN)} de ${informeNum(k.conFallo)}) genera ese % de las ${informeNum(k.incidencias)} incidencias` },
@@ -1939,7 +1985,7 @@
           <td><span class="inf-badge ${x.categoria}">${INFORME_ESTADOS[x.categoria]}</span></td>
           <td class="num"><strong>${informeNum(x.fallos30)}</strong></td>
           <td class="num"><strong>${informeNum(x.fallos90)}</strong></td>
-          <td class="num">${x.racha ? informeNum(x.racha) : '—'}</td>
+          <td class="num">${x.racha ? informeNum(x.racha) + (x.esMensual ? (x.racha === 1 ? ' cierre' : ' cierres') : '') : '—'}</td>
           <td class="num">${informeDec(x.mttr)}</td>
           <td class="num">${x.reaperturas ? informeNum(x.reaperturas) : '—'}</td>
           <td>${escapeHtml(x.t.de)}</td>
@@ -1961,7 +2007,11 @@
       informeEl('inf-heat-sub').textContent = `Top ${INFORME_TOP_PARETO} tablas con más días de fallo · ${calculo.fechasVentana.length} cortes en la ventana`;
       if (!lista.length) { contenedor.innerHTML = '<div class="inf-empty">No hay tablas con fallos en la ventana.</div>'; return; }
       const nombres = { '0': ['n', 'Sin corte'], '1': ['o', 'Correcto'], '2': ['p', 'Pendiente'], '3': ['f', 'Fallo'] };
-      const eje = calculo.fechasVentana.map(i => `<td title="${informeData.fechas[i]}">${informeData.fechas[i].slice(8)}</td>`).join('');
+      // Con pocos cortes cada celda es ancha y cabe día/mes; con muchos, solo el día.
+      const eje = calculo.fechasVentana.map(i => {
+        const f = informeData.fechas[i];
+        return `<td title="${f}">${calculo.fechasVentana.length <= 35 ? f.slice(8) + '/' + f.slice(5, 7) : f.slice(8)}</td>`;
+      }).join('');
       const filas = lista.map(x => {
         const fallos = {};
         x.t.x.forEach(par => { fallos[par[0]] = par[1].join(', '); });
@@ -1972,7 +2022,7 @@
         }).join('');
         return `<tr><th title="${escapeHtml(x.t.n)}">${escapeHtml(x.t.n)}</th>${celdas}</tr>`;
       }).join('');
-      contenedor.innerHTML = `<table class="inf-heat"><tr class="inf-heat-axis"><td></td>${eje}</tr>${filas}</table>`;
+      contenedor.innerHTML = `<table class="inf-heat"><colgroup><col style="width:240px"></colgroup><tr class="inf-heat-axis"><td></td>${eje}</tr>${filas}</table>`;
     }
 
     function renderInformeOwners(visibles) {
@@ -2052,6 +2102,12 @@
     // ==========================================
     const EST_DIAS_BAJO_100 = 4;   // "más de 4 días" con calidad inferior a 100%
 
+    // Redondea a 2 decimales sin mostrar 100% cuando el valor real es menor.
+    function estRedondear(valor) {
+      const redondeado = parseFloat(valor.toFixed(2));
+      return redondeado >= 100 && valor < 100 ? 99.99 : redondeado;
+    }
+
     function estIndicesVentana(fechas, referencia, ventana) {
       const lista = [];
       for (let i = 0; i < fechas.length; i++) {
@@ -2105,8 +2161,8 @@
           if (conjunto.has(par[0])) par[1].forEach(m => { if (enAlcance(m.replace('*', ''))) reglasConFallo++; });
         });
 
-        const promedio = medidos ? parseFloat((suma / medidos).toFixed(2)) : 0;
-        const status = (hayFallo || diasVolumenCero > 0) ? 'err' : (medidos > 0 ? 'ok' : (hayDato ? 'pending' : 'sindatos'));
+        const promedio = medidos ? estRedondear(suma / medidos) : 0;
+        const status = hayFallo ? 'err' : (diasVolumenCero > 0 ? 'vol0' : (medidos > 0 ? 'ok' : (hayDato ? 'pending' : 'sindatos')));
         tablas.push({
           t, promedio, diasConDatos: medidos, diasBajo100: bajo100, diasVolumenCero,
           fallos: reglasConFallo, incidencias: reglasConFallo + diasVolumenCero, status,
@@ -2140,10 +2196,12 @@
       proceso: '', de: '', dir: '', buscar: '', grupo: 'de'
     };
     let estCalculo = null;
+    let estSoloIncidencias = false;
     const estDetalles = {};
     const EST_ESTADOS_TABLA = { productiva: 'Productiva', 'en desarrollo': 'En desarrollo', desconocido: 'Desconocido' };
-    const EST_CALIDAD = { ok: ['estable', 'Estable'], err: ['recurrente', 'Con fallos'], pending: ['ocasional', 'Pendiente'], sindatos: ['sindatos', 'Sin datos'] };
-    const EST_ESTADO_REGLA = { E: ['estable', 'Exitosa'], A: ['ocasional', 'Advertencia'], C: ['recurrente', 'Crítico'], P: ['sindatos', 'Pendiente'] };
+    const EST_CALIDAD = { ok: ['estable', 'Estable'], err: ['recurrente', 'Con fallos'], vol0: ['ocasional', 'Volumen 0'], pending: ['sindatos', 'Pendiente'], sindatos: ['sindatos', 'Sin datos'] };
+    const EST_ORDEN = { err: 0, vol0: 1, pending: 2, ok: 3, sindatos: 4 };
+    const EST_ESTADO_REGLA = { E: ['estable', 'Exitosa'], A: ['ocasional', 'Advertencia'], C: ['recurrente', 'Crítico'], P: ['sindatos', 'Pendiente'], D: ['sindatos', 'Desconocido'] };
 
     function mostrarInforme(nombre) {
       informeActivo = nombre;
@@ -2195,7 +2253,7 @@
       if (!informeData || !informeData.tablas.length) return;
       estCalculo = calcularEstabilidad(informeData, estFiltros);
       const tablas = estCalculo.tablas.slice().sort((a, b) =>
-        (a.status === 'err' ? 0 : a.status === 'pending' ? 1 : a.status === 'ok' ? 2 : 3) - (b.status === 'err' ? 0 : b.status === 'pending' ? 1 : b.status === 'ok' ? 2 : 3) ||
+        EST_ORDEN[a.status] - EST_ORDEN[b.status] ||
         a.promedio - b.promedio || b.incidencias - a.incidencias || a.t.n.localeCompare(b.t.n));
       const inicio = new Date(estCalculo.referencia + 'T00:00:00Z');
       inicio.setUTCDate(inicio.getUTCDate() - (estFiltros.ventana - 1));
@@ -2263,7 +2321,7 @@
         <th class="num">Días &lt; 100%</th><th class="num">Incidencias</th><th class="num">Días vol. 0</th><th>Proceso</th><th>Data Engineer</th><th>Data Scientist</th><th>Dirección</th></tr></thead><tbody>` +
         tablas.map(x => {
           const [claseCalidad, etiqueta] = EST_CALIDAD[x.status];
-          const qClase = x.status === 'ok' ? 'q-ok' : (x.status === 'pending' || x.status === 'sindatos' ? 'q-pending' : 'q-err');
+          const qClase = x.status === 'ok' ? 'q-ok' : (x.status === 'pending' || x.status === 'sindatos' ? 'q-pending' : (x.status === 'vol0' ? 'q-warn' : 'q-err'));
           const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
           return `<tr class="inf-clic" data-tabla="${escapeHtml(x.t.n)}" title="Abrir el detalle por regla y por día">
             <td><strong>${escapeHtml(x.t.n)}</strong></td><td>${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)}</td>
@@ -2307,12 +2365,22 @@
         .sort((a, b) => b[0].localeCompare(a[0]) || a[1].localeCompare(b[1], 'es', { numeric: true }));
       const diasVol0 = estCalculo.indices.filter(i => x.t._mapa.vt.has(i) || (todas && x.t._mapa.vf.has(i))).map(i => fechas[i]);
       const procesos = (x.t.pr || []).map(p => PROCESS_LABELS[p] || p).join(', ') || 'Sin proceso';
-      const cuerpo = filas.length ? filas.map(f => {
+      const conVolumenCero = new Set(diasVol0);
+      const esAlerta = f => ['C', 'A', 'D'].indexOf(f[3]) > -1 || conVolumenCero.has(f[0]);
+      const visibles = estSoloIncidencias ? filas.filter(esAlerta) : filas;
+      const cuerpo = visibles.length ? visibles.map(f => {
         const prom = estPromedioCorte(x.t, posicion[f[0]], todas);
         const [clase, etiqueta] = EST_ESTADO_REGLA[f[3]] || EST_ESTADO_REGLA.C;
-        return `<tr><td>${escapeHtml(f[0])}</td><td><strong>${prom === null ? '—' : prom + '%'}</strong></td><td>${escapeHtml(f[1])}</td>
-          <td>${escapeHtml((reglas[f[1]] || {}).nombre || '')}</td><td>${f[2] === null ? '—' : f[2] + '%'}</td><td><span class="inf-badge ${clase}">${etiqueta}</span></td></tr>`;
-      }).join('') : '<tr><td colspan="6">Sin reglas en el período seleccionado.</td></tr>';
+        return `<tr class="${esAlerta(f) ? 'inf-fila-alerta' : ''}"><td>${escapeHtml(f[0])}</td><td><strong>${prom === null ? '—' : prom + '%'}</strong></td><td>${escapeHtml(f[1])}</td>
+          <td>${escapeHtml((reglas[f[1]] || {}).nombre || '')}</td><td>${f[2] === null ? '—' : f[2] + '%'}</td><td><span class="inf-badge ${clase}">${etiqueta}</span></td>
+          <td>${conVolumenCero.has(f[0]) ? '<span class="inf-badge ocasional">Volumen 0</span>' : ''}</td></tr>`;
+      }).join('') : `<tr><td colspan="7">${estSoloIncidencias ? 'Ningún día con incidencia en el período.' : 'Sin reglas en el período seleccionado.'}</td></tr>`;
+      // Por qué la tabla tiene el estado que tiene (el % de una regla puede verse en 100 aunque haya fallado).
+      const diasConFallo = estCalculo.indices.filter(i => informeEstadoCorte(x.t, i, todas ? 'ambos' : 'tecnico') === '3').map(i => fechas[i]);
+      const motivos = [];
+      if (diasConFallo.length) motivos.push(`${diasConFallo.length} día(s) con reglas fallidas: ${diasConFallo.join(', ')}`);
+      if (diasVol0.length) motivos.push(`${diasVol0.length} día(s) con volumen 0 (las reglas pueden mostrar 100%): ${diasVol0.join(', ')}`);
+      const motivo = motivos.length ? `<div class="inf-motivo"><strong>Motivo del estado:</strong> ${escapeHtml(motivos.join(' · '))}</div>` : '';
       document.getElementById('modal-body').innerHTML = `
         <div class="modal-kpi-row">
           <div class="mkpi"><div class="mkpi-val">${x.promedio}%</div><div class="mkpi-lbl">Promedio ${estFiltros.ventana} días</div></div>
@@ -2320,8 +2388,10 @@
           <div class="mkpi"><div class="mkpi-val">${x.fallos}</div><div class="mkpi-lbl">Reglas con incidencia</div></div>
           <div class="mkpi"><div class="mkpi-val">${x.diasVolumenCero}</div><div class="mkpi-lbl">Días con volumen 0</div></div>
         </div>
-        <div style="font-size:13px;color:var(--gray-600);"><strong>Estado:</strong> ${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)} &nbsp;·&nbsp; <strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(x.t.de)} &nbsp;·&nbsp; <strong>Data Scientist:</strong> ${escapeHtml(x.t.ds)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(x.t.dir)}${diasVol0.length ? ` &nbsp;·&nbsp; <strong>Volumen 0:</strong> ${escapeHtml(diasVol0.join(', '))}` : ''}</div>
-        <div class="stability-table-wrap" style="max-height:440px;"><table class="stability-table"><thead><tr><th>Fecha</th><th>Promedio diario</th><th>Regla #</th><th>Regla</th><th>% de la regla</th><th>Estado</th></tr></thead><tbody>${cuerpo}</tbody></table></div>`;
+        <div style="font-size:13px;color:var(--gray-600);"><strong>Estado:</strong> ${escapeHtml(EST_ESTADOS_TABLA[x.t.es] || x.t.es)} &nbsp;·&nbsp; <strong>Proceso:</strong> ${escapeHtml(procesos)} &nbsp;·&nbsp; <strong>Data Engineer:</strong> ${escapeHtml(x.t.de)} &nbsp;·&nbsp; <strong>Data Scientist:</strong> ${escapeHtml(x.t.ds)} &nbsp;·&nbsp; <strong>Dirección:</strong> ${escapeHtml(x.t.dir)}</div>
+        ${motivo}
+        <label class="inf-solo-inc"><input type="checkbox" id="est-solo-inc" ${estSoloIncidencias ? 'checked' : ''}> Mostrar solo los días con incidencia (regla fallida o volumen 0)</label>
+        <div class="stability-table-wrap" style="max-height:440px;"><table class="stability-table"><thead><tr><th>Fecha</th><th>Promedio diario</th><th>Regla #</th><th>Regla</th><th>% de la regla</th><th>Estado</th><th>Observación</th></tr></thead><tbody>${cuerpo}</tbody></table></div>`;
     }
 
     function inicializarEstabilidad() {
@@ -2343,6 +2413,15 @@
         renderEstabilidad();
       });
       informeEl('est-refrescar').addEventListener('click', () => { Object.keys(estDetalles).forEach(k => delete estDetalles[k]); cargarInformeFallos(true); });
+      // El interruptor vive dentro del modal, que se vuelve a dibujar: se escucha en el documento.
+      document.addEventListener('change', e => {
+        if (e.target && e.target.id === 'est-solo-inc') {
+          estSoloIncidencias = e.target.checked;
+          const nombre = document.getElementById('modal-title').textContent;
+          const x = estCalculo && estCalculo.tablas.find(f => f.t.n === nombre);
+          if (x && estDetalles[nombre]) estDetalles[nombre].then(d => pintarDetalleEstabilidad(x, d));
+        }
+      });
       informeEl('est-tabla').addEventListener('click', e => {
         const fila = e.target.closest('[data-tabla]');
         if (fila) abrirDetalleEstabilidad(fila.getAttribute('data-tabla'));
@@ -2540,7 +2619,7 @@
       strip.style.display = 'flex';
       document.getElementById('strip-info').textContent = "Consultando base de datos corporativa...";
       
-      callServer('obtenerDatosMonitor', dateVal, modo === 'rango' ? dateValFin : '', frecuenciaCorte)
+      callServer('obtenerDatosMonitor', dateVal, modo === 'rango' ? dateValFin : '', frecuenciaCorte, incluirUltimoMensual())
         .then(function(res) {
           aplicarDatosMonitor(res, dateVal);
           btnLoad.innerHTML = originalText;
@@ -2559,6 +2638,7 @@
     // res es { filas, procesos, dir, ds, de }
     function aplicarDatosMonitor(res, dateVal) {
       tableData = (res && res.filas) ? res.filas : [];
+      corteMensualActivo = (res && res.corteMensual) ? res.corteMensual : '';
       tableData.forEach(tabla => { tabla.detallesVista = {}; });
 
       // Poblar TODOS los mapas desde la respuesta de calidad
@@ -2644,7 +2724,8 @@
       else if (pending > 0) { pill.className = 'status-pill pill-pending'; pill.textContent = 'PENDIENTE DE CARGA'; }
       else { pill.className = 'status-pill pill-ok'; pill.textContent = 'CALIDAD ÓPTIMA'; }
       
-      document.getElementById('strip-info').textContent = `${ok}/${total} tablas OK · ${pending} pendientes · ${warn} con advertencias · ${err} con fallos`;
+      document.getElementById('strip-info').textContent = `${ok}/${total} tablas OK · ${pending} pendientes · ${warn} con advertencias · ${err} con fallos` +
+        (corteMensualActivo ? ` · + corte mensual ${corteMensualActivo}` : '');
     }
 
     function sortBy(key) {
